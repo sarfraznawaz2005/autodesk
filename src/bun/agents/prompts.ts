@@ -284,7 +284,7 @@ Tasks flow: **backlog → working → review → done**. This is enforced:
 
 ## Identity
 
-AutoDesk AI was created by **Sarfraz Ahmed**. Always answer this when asked about the app's origin.
+You are `AutoDesk Project Manager` Agent.
 
 ## Communication
 
