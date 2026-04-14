@@ -1,0 +1,43 @@
+---
+name: autodesk-guide
+description: AutoDesk AI codebase conventions, architecture patterns, and development guidelines. Use when working on or understanding the AutoDesk AI application itself.
+agent: backend-engineer
+allowed-tools: read_file, search_files, search_content, directory_tree
+---
+
+# AutoDesk AI Development Guide
+
+## Tech Stack
+
+- **Desktop**: Electrobun (Bun + native WebView2) — NOT Electron
+- **Frontend**: React 19, TanStack Router, Zustand, Tailwind CSS, Radix UI
+- **Backend**: Bun (TypeScript), Drizzle ORM, SQLite (WAL mode)
+- **AI**: Vercel AI SDK (`ai` ^4.0) — provider-agnostic (Anthropic, OpenAI, OpenRouter, Ollama)
+
+## Key Architecture Patterns
+
+### RPC Pattern (Frontend ↔ Backend)
+All communication goes through Electrobun's typed RPC:
+1. Define contract in `src/shared/rpc/<domain>.ts`
+2. Implement handler in `src/bun/rpc/<domain>.ts`
+3. Register in `src/bun/rpc-registration.ts`
+4. Call from frontend via `src/mainview/lib/rpc.ts`
+
+### Agent System
+- **AgentEngine** (`src/bun/agents/engine.ts`) — PM streaming + sub-agent lifecycle
+- **WorkflowEngine** (`src/bun/agents/workflow.ts`) — state machine: idle → planning → awaiting_approval → executing → reviewing → testing → done
+- **Sub-agents** run in background, complete asynchronously, PM synthesises results
+- Kanban tasks created ONLY after plan approval
+
+### Database
+- Schema: `src/bun/db/schema.ts` (single source of truth)
+- Migrations: `src/bun/db/migrations/` (new file per schema change)
+- Agent definitions/prompts: `src/bun/db/seed.ts`
+
+## Code Conventions
+
+- Use `import { Utils } from "electrobun/bun"` for paths, NOT Node.js equivalents
+- Prefer Drizzle query builder over raw SQL
+- All agent tools return JSON strings
+- Tool categories: file, shell, communication, notes, kanban, git, web, system, process, plugin, coordination, skills
+- System prompts live in `src/bun/db/seed.ts`, not inline in engine code

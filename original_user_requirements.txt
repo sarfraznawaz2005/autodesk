@@ -1,0 +1,300 @@
+Here is rough idea of the project we need to build. Carefully read it, take your time and then let me know if you have any number of questions to be asked in a nice gui interace.
+
+# AutoDesk
+
+AI-powered development platform that replaces human developers with autonomous agent teams.
+
+AutoDesk is a desktop application made using `Electrobun` (you can use `electrobun` skill for this) where AI agents handle the entire software development lifecycle — from planning and coding to reviewing and testing. Each project gets its own team of AI agents that work autonomously based on human instructions. Human in loop for plan approvals and deployments though deployments can also be run by `devops-engineer` agent especially designed to run in deployment page.
+
+## Tech
+
+- Electrobun for cross platform app
+- Vercel AI SDK for unified ai interfernce, etc.
+- TypeScript and type checking, linting
+- Frontend framework (claude to decide but it must be modern, professional, famous and beautiful, we need Light theme only)
+- SQLite with WAL performant mode and corruption-safe, persistent conection or whatever best practices are.
+- Claude to decide further.
+- Modular Code
+- Tests for all important features
+- Reusable components
+- KISS, DRY, SOLID principles
+
+## Electrobun
+
+use `electrobun` skill for this.
+
+  Architecture
+
+  ┌─────────────────────────────────────────────┐
+  │  Frontend (React/Svelte/Vue/any web framework)
+  │  Runs in System WebView (or optional CEF)   │
+  └──────────────┬──────────────────────────────┘
+                 │  Typed RPC (postMessage + FFI + encrypted WebSockets)
+  ┌──────────────▼──────────────────────────────┐
+  │  Main Process (Bun runtime — TypeScript)    │
+  │  Window management, menus, tray, shortcuts  │
+  │  File I/O, process execution, business logic│
+  └──────────────┬──────────────────────────────┘
+                 │  Bun FFI
+  ┌──────────────▼──────────────────────────────┐
+  │  Native Layer (Zig + C++ + Obj-C)           │
+  │  OS-level APIs, webview management, bsdiff  │
+  └─────────────────────────────────────────────┘
+  
+  1. TypeScript everywhere — Unlike Tauri (Rust) or Wails (Go), your backend is also TypeScript running on Bun. No second language to learn.
+  2. 14 KB updates — The bsdiff system in Zig with SIMD + ZSTD compression is genuinely impressive. You ship tiny binary patches instead of full app
+  downloads.
+  3. <50ms cold start — Fastest of all the options.
+  4. OOPIF (Out-of-Process IFrames) — <electrobun-webview> gives you process-isolated web content that works like iframes but with real security
+  isolation. Unique feature.
+  5. Optional CEF — You can use the system webview by default (tiny), or bundle Chromium (consistent) — your choice per project.
+  6. Built-in distribution — Code signing, notarization, auto-updates, self-extracting bundles all built in. Bring your own S3/R2/GitHub Releases.
+  
+  ┌───────────────────────────┬───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┐
+  │     Your Requirement      │                                                Electrobun Support                                                 │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Cross-platform desktop    │ Windows, macOS, Linux from one codebase                                                                           │
+  │ app                       │                                                                                                                   │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Real-time UI updates      │ Typed RPC (bidirectional, type-safe Bun <-> Browser) + event system — faster than WebSockets since it's           │
+  │                           │ in-process                                                                                                        │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ WebSocket communication   │ Bun has native WebSocket support for external API calls (e.g., streaming from Claude API)                         │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Streaming LLM responses   │ Bun's fetch() with streaming + RPC send to push tokens to the UI in real-time                                     │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ File system access        │ Full Bun fs APIs — read, write, watch files                                                                       │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Process execution         │ Bun.spawn() / Bun.spawnSync() for running shell commands, capturing stdout/stderr                                 │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Terminal-like UI          │ Any web framework (React, Svelte, Vue) in the webview — full HTML/CSS/JS                                          │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Modern, interactive UI    │ System webview with any CSS framework, animations, etc.                                                           │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Small bundle size         │ ~14 MB vs Electron's 150MB+                                                                                       │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ Fast startup              │ <50ms cold start                                                                                                  │
+  ├───────────────────────────┼───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┤
+  │ TypeScript everywhere     │ Backend (Bun) and frontend — no second language needed                                                            │
+  └───────────────────────────┴───────────────────────────────────────────────────────────────────────────────────────────────────────────────────┘
+
+
+
+## Rough core Ideas of App:
+
+- 99% work done by agents - humans only approve/deploy/communicate
+- Agents follow specific workflows defined in workflows.
+- Humans can communicate with agents via various channels
+- Heartbeats (similar to openclaw but do we need this based on autodesk project requiremtns? claude to decide)
+- Consitution (set of hard boundaries/guardrails agents can not bypass) defined in global settings. claude to decide with it should be defaulted with.
+- Agents fully customizable for their behaviur/options
+- Realtime activity of counts, etc. Also let's say human asked project manager to perform some tasks and project manager spawed some agents but then human leaves chat page and comes back, things should not be lost.
+- If users stop agents working and come back and ask project manager: `what were we working on`? project-manager always looks curernt chat history + kanban tasks to provide answer. This makes system restart-safe which means agents always know where they left.
+
+### UI
+
+- Sidebar, top navbar and content area
+- Responsive UI
+	
+#### Screens
+
+- Onboarding Screen  - This shows when user is starting app first time and has not specified apis, models, etc. Settings will be saved in settings table. This screen will ask user to select ai provider (claude, openai, zai (coding plan only), openrouter, ollama) and based on selection, they will need to provide api key.
+
+- Dashboard: This will allow users to create new projects where they can name project and specify its folder (workspace dir) as well as description. UI will be sidebar, topnav and main content area. main content area will show projects in cards with their name on left, status on right, agents, tasks (kanban), time ago, bar graph of percentage complete. A search field to filer projects, etc. top navbar will show import from github, + New Project. Sidebar will include: Inbox, Agents, Cron Tasks, Channels, Skills (built-in plus user can create their own), Tools (this will include built-in tools + MCPs tab where users can add external mcps), Prompts, Statistics (claude to decide what to show here), Settings (global settings). Any more things to be decided by claude if they need to be added on sidebar in logical order.
+
+- Project View
+
+	- Things expected on sidebar (for when project is opened) but not limited to:
+		- Chat
+		- Inbox [realtime count of unread msgs] (when humans send any message to project manager via diff channels, it shows here and agent replies also show here so humans can see communication)
+		- Kanban [realtime count of total tasks]
+		- Activity [realtime total activity count]
+		- Notes - Agents can create documents during inter-communication as well as for humans here like prd.md, etc, this also includes agents' decisions, etc. Humans should be able to edit these. (markdown format raw)
+		- Git (branchs and pr management)
+		- Deploy
+		- Settings (project settings)
+		- Realtime Kanban tasks points graph eg (Backlog Working Done with appropriate colored indicators and counts above them)
+		- Any more things to be decided by claude if they need to be added on sidebar in logical order.
+		
+- Any more screens to be decided by claude if needed
+- Top navbar to be decided by claude based on dashboard vs project view
+- Sidebar must be collaspable
+	
+### Agents
+
+- `project-manager` (chief of all sub-agents and orchestrates all work, talks to humans, spawns sub-agents)
+- `software-architect` (think of it application architecht or system designer engineer)
+- `backend-engineer`
+- 'code-reviewer'
+- 'task-planner'
+- 'tester'
+- 'frontend_engineer'
+- `devops-engineer`
+- `documentor`
+- `performance-engineer`
+- `security-engineer`
+- `ui-ux-designer`
+- `data-engineer`
+
+	- Each agent will be especialized for thier tasks with special built-in prompts (humans can customize these)
+	- Except `project-manager`, all are sub-agents
+	- When humans send a message on chat interface, it goes to project-manager by default. However users can call other sub-agents as well using slash like `/tester prompt.`
+	- Humans can edit existing sub-agents or add more, this includes their system prompt, ai provider (claude, gemini, zai, openrouter, ollama, etc.), model and any other model specific settings per agent. Meaning, humans can customize entire behaviour of agents.
+	- System will automatically choose diff color for each agents (how they display in chats, etc.) but users should be ablto customize it as well.
+	- LSPs support when agents are writing code. Agents can work on any type of project whether be node, c#, php, ruby, etc.
+	- We should be able to communicate with project-manager agent via channels such as whatsapp, discord, telegram and it goes to Inbox of agent
+	- Agents will have all ncessary tools to work on project in autonoumous manner by default (rememebr, main purpose of this project is complete development from inception to production without much human intervention). This means agents will have all necessary tools like read, edit, write, shell, browser, todo managment for kanban, they should be able to add tasks to kanban, move them around, edit, mark done, etc.
+	- To achieve autonomous working of agents, claude will decide what built-in tools to create as part of this app
+	- To achieve autonomous working of agents, we need chrome-devtools-mcp built-in so agents can work with browser (https://github.com/ChromeDevTools/chrome-devtools-mcp)
+	- To achieve autonomous working of agents, claude will decide what built-in skills to create as part of this app
+	- Claude will create great system prompts tested and tried in battled scenarios for all of above agents backed-in by default
+	- Agents will have internal name as mentioend above so project manager can call them but also display name for humans in chats eg `software-architect` -> `Software Architect`. In chats it would show as `Software Architect`.
+	- Agent Customization (Sub-agents): Name, Color, System Prompt, AI Provider, Model, Model settings such as temprature, context length, thinking budget (low, medium, high), etc. Claude to decide further.
+	- Agent Customization (Project Manager): Name, Color, System Prompt, AI Provider, Model, Model settings such as temprature, context length, , thinking budget (low, medium, high), etc. Max Concurrent Agents (how many concurrent agents can project manager spawn: 1, 2, 3, 5, 10, 25, default 3). Claude to decide further.
+	- If project workspace path contains AGENTS.md or CLAUDE.md, project-manager should respect it.
+	- All other goodies as in claude cli such as loop detection, conversation auto compactation, etc. backed in
+	- Claude to decide further what else we need based on this project requirements.
+	
+#### Orchestration
+
+Only Project Manager agent can orchestrates/spawn other agents concurrently. Max of 3 by default.
+
+CRITICAL RULE: Tasks assigned to spawned agents must NOT be inter-dependedent. Only completely diff tasks can be assigned so we dont have two agents working on same task by mistake.
+	
+### Chat
+
+- Conversations with history support
+- Conversation sidebar (after main sidebar, hidden by default unless user opens it via button icon)
+- Conversation title created with user's first message
+- Must use markdown redering for ai replies
+- Syntax highlighting for code snippets in ai responses for all languages
+- Users can pin, rename and delete conversations by right clicking on them. Delete confirmations with nice ui dialog (create re-usable component), renaming in-place.
+- We do not show sub-agents stuff in main chat, they show on pane to the right called Activity (conv sidebar - main area - activity pane). This will be helpful as it does not clutter main conversation to save tokens and context. The divider between main area and activity pane can be shifted left/right to gain more space for both areas if needed.
+- We should be able to delete and copy individual chat bubbles for both humans and ai.
+- If users stop agents working and come back and ask project manager: `what were we working on`? project-manager always looks curernt chat history + kanban tasks to provide answer. This makes system restart-safe which means agents always know where they left.
+- Agents and subagnets name show with diff assigned bg color in main area and activity with round like-wise icon.
+- In activiyt pain, we show all activity chronologically such as agent's thinking, tool calls. etc. Thinking will have brain icon and other tools should also have corresponding icons. Thinking should be expanded by default unlikw other tool calls but users should be able to toggle them.
+- When tools are running, they show running status either via spinner or some other icon indicator
+- On top of activity pane, we show how many agents are spawed by pm, we should also be able to filter by agents to see only their activity
+- When chat message is sent by human, we show stop button in chat input so human can stop all processing immediately be if pm or sub-agents
+- When pm is working, we do not allow sending another message and on top of conv we show `Agents working...` when they are working
+- Human should be able to recall last sent message by pressing up arrow key.
+- Typing `/clear` clears chat and other relevant things needed similar to claude code cli
+- Humans can also chat with sub-agents directly by typing `/tester` for example.
+- When human types `/`, we show all what is available including sub-agents, skills, builti-in commands such as clear, etc.
+- Chat input should also allow uploading documents which can be docs, images, etc
+- If ai model supports image creation, interface should be able to show those images too.
+- In activity, we should also see activiyt of tasks being moved to diff columns in kanban by agent
+- Any other stuff to be decided by claude code as per requiremtns of project or best practices of ai chat interfaces.
+	
+### Projects
+
+Expected fields for project in db:
+
+- Name, Description, Status (Active, Idle, Paused, Completed), Workspace Path, GitHub repository URL, Working branch, etc.
+
+### Global Settings
+- Default AI model
+- AI Providers (and relevant fields)
+- GitHub personal access token
+- Note: Default settings applied to all new projects. These can be overridden in each project's settings.
+	
+### Project Settings
+General
+- Project Name
+- Description
+- Status
+- Workspace Path
+- GitHub Repository URL
+- Working Branch
+
+AI
+- AI Model
+- Max Concurrent Agents
+- Thinking Budget
+- System Prompt
+- Constitution
+- Shell Approval Mode (Ask for each command, Auto-approve everything, Use allowlist). `Auto-approve everything` should still not be able to run descructive commands.
+- Agent Plan Approval Mode (Ask each time, Auto-Approve)
+- Allowed Shell Patterns
+- Blocked Tools
+- Shell Timeout
+
+Deployments
+- Staging Branch
+- Staging Command
+- Staging URL
+- likewise production branch and stuff
+
+Integrations
+- GitHub webhook URL
+- Webhook secret
+- GitHub Authentication Status
+
+`Delete Project` red button after confirmation - once deleted, all of stuff related to its also gets deleted.
+
+Rest of settings for global/project to be decided by claude based on project reqruiemetns.
+
+### Workflows
+
+#### General Workflow (Must follow always)
+
+0. Human Prompt -> 1. Project Manager (spawns or replies directly based on prompt) -> 2. Task Planner (creates project/task plan) 3. PM presents human with plan created by task planner to approve in a big nice dialog/modal with editable contents -> 4. User approves and plan gets saved in notes table 5. Task Planner creates tasks based on approved plan in kanban and reports back to PM once done 6. -> PM spawns Backend Engineer|Frontend Engineer 7. -> Code Reviewer (here if code review found issues, it will communicate accordingly and then pm will ask back to Backend Engineer|Frontend Engineer to fix it. Max of 3 turns by default but configurable in project settings) 8. -> Tester (again if tester found issues, it will communicate accordingly and then pm will ask back to Backend Engineer|Frontend Engineer to fix it. Max of 3 turns by default but configurable in project settings, same setting applies for both) -> Done (pm moves task to Done column in kanban)
+
+	Note 1: If `Agent Plan Approval Mode` is set to `Auto-Approve`, we dont present plan to user, we just assume it is approved and proceed.
+	Note 1: During the process pm call spwan other agents as well such as data engineer, performance engineer, etc based on task.	
+	Note 2: We should have docs tab in activity pane which should show any notes/docs created during the conv so humans can view them any time.
+	Hint: This notes and artifacts idea is similar to google's Antigravity to give you idea, you may check it out if needed on internet.
+
+### Constitution
+
+Consitution is set of common rules all agents must follow. This can be defiend in global project settings and overriden in project settings. Claude should come up with sane Consitution by default in global settings.
+
+### Channels
+
+We must support whatsapp (scan via qr code), telegram and discord. This will allowl users to communicate with pm remotely even when they are not in front of computer, their inter-communication will end up in inbox as well as channel they are communicating on. For example human might ask pm `hey, work on xyz project's abc feature and inform me when it is done`. PM will receive this and once it is done, it will reply to human on all configured channels once task is done. human can also chat generally with pm which may not be related to projects, this will be like a always available ai model for any human queries. This means pm should be smart enough to understand wheather human's message is to work on something or just a normal chat. Humans can also instruct pm to just create new project and start working on it directly while human is on vacation (unless human has already turned on auto aproval features). PM should keep human updated with all progress, kanban tasks done, wip, done, etc.
+
+### Kanban
+
+We will have interal kanban with columns `Backlog`, 'Working' and `Done`. Task Planner and PM will have built-in skill to move tasks in diff swimlanes/columns. Other agents cant. Humans can also move tasks around by dragging, create/edit tasks, etc.
+
+If human moves a task from `backlog` to `working`, pm will automatically be noticed and create new conversation to work on that. Similarly, if human moves task from working back to backlog, pm stops working on that, same when human moves a task to done. You get the idea.
+
+Tasks should be searchable, sortable, draggable, all basic standard features. Each column has diff color indicators.
+
+It is crucial that other than description, all tasks must have checkbox `[ ]` of `Acceptance Criteria` as well as `Important Notes` agents can use for their decisions. This means agents should have special way of marking one or more of those checkboxes done as well as be able to add notes. These are separate from description.
+
+We must also have `blocked_by` feature, this is crucial so agents can easily decide which tasks to work on first and which ones they can't until other tasks are done.
+
+Must also have priority, date, etc other necessary stuff for tasks.
+
+### Prompts
+
+Users should be able to add their prompts with name and description. These then must show in top navbar somewhere in some searchable dropdown on chat page so users can quickly copy or inject into chat prompt.
+
+### Git
+
+We should have settings appropriate for commiting the work as done. But this should be configurable per project if humans would want to commit once a task is done.
+
+Of course we also have remote github repo stuff, PRs, branches, etc. Claude to decide all that stuff how to integrate. All must be configurable.
+
+### Deploy
+
+Humans can click Deploy button for various saved environments like staging, production and things will get deployed based on deployment scripts already saved in project settings.
+
+Should also show deploy history.
+
+### Cron Tasks
+
+We should have `internal` Cron Tasks system. Why? Humans can ask PM to perform certain tasks at specific times or in recurring manners. Examples of what human might say: `Create xyz project with these details on 10pm today` or `Hey, remind me to go to doctor at xyz time` or `Hey give me daily news brifing in moring at 10am` or `hey, remind me to drink water every three hours` or `hey remind me to check my emails every 5 minutes` and so on. But other than that, maybe agents can also use this internally for working on projects.
+
+These cron tasks should be re-start safe, meaning even if app is not running and when it is re-started, it should pick it up correctly. Maybe create watcher job in system, etc. I dont know how this will work. Claude must come up with solution. Must work on Windows or any other OS. If we can achieve this internally within app, probably it will be better, not sure.
+
+### Plugins
+
+If we can achieve plugin architechure, it will be great so in future we can extend functionality of the app. Maybe you can decide based on requiremtns what things can come as built-in plugins. Claude to decide how this works.
+
+### Agent Callstack Trace
+
+We should implement agent prompt logging as well as callstack trance so we can see what prompts are being used and how the whole chain works. Not too complicated, just basics with addtiional flow diagram if possible. UI/UX or functionality to be decided by claude.
+
