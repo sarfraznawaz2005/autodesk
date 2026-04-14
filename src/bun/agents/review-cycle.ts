@@ -74,10 +74,13 @@ async function getMaxReviewRounds(projectId: string): Promise<number> {
 // ---------------------------------------------------------------------------
 
 /**
- * Read the structured verdict from the most recent submit_review tool call.
- * Returns "approved", "changes_requested", or null if submit_review wasn't called.
+ * Read the structured verdict + detailed feedback from the most recent
+ * submit_review tool call for the given task.
  */
-async function getSubmitReviewVerdict(taskId: string): Promise<"approved" | "changes_requested" | null> {
+async function getSubmitReviewDetails(taskId: string): Promise<{
+	verdict: "approved" | "changes_requested";
+	feedback: string;
+} | null> {
 	try {
 		const rows = await db
 			.select({ toolInput: messageParts.toolInput })
@@ -95,7 +98,11 @@ async function getSubmitReviewVerdict(taskId: string): Promise<"approved" | "cha
 				const input = JSON.parse(row.toolInput);
 				if (input.task_id === taskId) {
 					if (input.verdict === "approved" || input.verdict === "changes_requested") {
-						return input.verdict;
+						return {
+							verdict: input.verdict,
+							// `summary` is the reviewer's detailed per-issue feedback
+							feedback: typeof input.summary === "string" ? input.summary : "",
+						};
 					}
 				}
 			} catch { /* invalid JSON */ }
@@ -477,18 +484,33 @@ export function notifyTaskInReview(projectId: string, taskId: string): void {
 				projectId,
 				"code-reviewer",
 				[
-					`Review kanban task for correctness, quality, and acceptance criteria: ${task.title}`,
-					`\nTask ID: ${taskId}`,
-					`Project ID: ${projectId}`,
-					`\nFIRST ACTION: Call get_task(id="${taskId}") to get the authoritative task description and acceptance criteria before reviewing. Use those criteria — not any listed below — as the source of truth.`,
+					`## Code Review: ${task.title}`,
+					``,
+					`**Task ID:** ${taskId}`,
+					`**Project ID:** ${projectId}`,
+					``,
+					`FIRST ACTION: Call get_task(id="${taskId}") to get the authoritative task description and acceptance criteria. Review against those — not any assumption.`,
 					gitInstructions,
-					"\nIMPORTANT: You MUST call submit_review with your verdict (approved or changes_requested) before finishing.",
+					``,
+					`## Review Checklist`,
+					`- Correctness: does the implementation do what the task requires?`,
+					`- Acceptance criteria: is every criterion fully met?`,
+					`- Edge cases: null/undefined, empty inputs, error paths`,
+					`- No regressions in existing functionality`,
+					``,
+					`## When calling submit_review`,
+					`- verdict "approved": brief confirmation of what was verified`,
+					`- verdict "changes_requested": list EVERY issue with exact file path, line number(s), what is wrong, and what to change. Be specific — the fix agent will use this list directly without reading the full codebase again.`,
+					`  Example: "1. src/auth.ts:87 — token is never invalidated on logout, add db.tokens.delete(token) 2. src/api.ts:34 — missing await on async call, will silently swallow errors"`,
+					``,
+					`IMPORTANT: You MUST call submit_review before finishing.`,
 				].filter(Boolean).join("\n"),
 				taskId,
 			);
 
-			// Determine verdict
+			// Determine verdict + capture detailed feedback for the fix agent
 			let hasIssues: boolean;
+			let reviewerFeedback = reviewResult.summary; // fallback: inline agent summary
 			if (reviewResult.status !== "completed") {
 				hasIssues = !isAgentCancelled(reviewResult); // Cancelled = don't treat as failure
 				if (isAgentCancelled(reviewResult)) {
@@ -496,11 +518,13 @@ export function notifyTaskInReview(projectId: string, taskId: string): void {
 					return; // Don't move task, leave in review for next dispatch
 				}
 			} else {
-				const verdict = await getSubmitReviewVerdict(taskId);
-				if (verdict === "approved") {
+				const details = await getSubmitReviewDetails(taskId);
+				if (details?.verdict === "approved") {
 					hasIssues = false;
-				} else if (verdict === "changes_requested") {
+				} else if (details?.verdict === "changes_requested") {
 					hasIssues = true;
+					// Prefer the reviewer's structured feedback over the inline summary
+					if (details.feedback) reviewerFeedback = details.feedback;
 				} else {
 					hasIssues = reviewSummaryHasIssues(reviewResult.summary);
 				}
@@ -542,15 +566,24 @@ export function notifyTaskInReview(projectId: string, taskId: string): void {
 						projectId,
 						fixAgent,
 						[
-							`Fix issues found during code review (round ${currentRounds + 1}): ${reviewResult.summary}`,
-							`\nKanban task ID: ${taskId}`,
-							`Task title: ${task.title}`,
-							`Project ID: ${projectId}`,
-							`Review feedback: ${reviewResult.summary}`,
-							"Address only the issues above — do not redo unrelated work.",
-							"STEP 1: Fix the issues described in the review feedback.",
-							"STEP 2: Use check_criteria to mark each acceptance criterion complete.",
-							"STEP 3 (mandatory): Call verify_implementation — it will auto-move to review on pass. Do NOT call move_task to review yourself.",
+							`## Fix Code Review Issues (round ${currentRounds + 1}/${maxRounds})`,
+							``,
+							`**Task:** ${task.title}`,
+							`**Kanban task ID:** ${taskId}`,
+							`**Project ID:** ${projectId}`,
+							``,
+							`## Issues to Fix`,
+							``,
+							reviewerFeedback,
+							``,
+							`## Instructions`,
+							``,
+							`- Fix ONLY the issues listed above. Do not refactor unrelated code.`,
+							`- Each issue includes the file path and line number(s) — go directly to those locations.`,
+							`- Read each affected file before editing to understand the surrounding context.`,
+							`- After all fixes are applied, call check_criteria for each acceptance criterion.`,
+							`- Finally, call verify_implementation — it will auto-move the task to review on pass.`,
+							`- Do NOT call move_task yourself.`,
 						].join("\n"),
 						taskId,
 					);

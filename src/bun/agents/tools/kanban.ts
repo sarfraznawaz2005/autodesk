@@ -610,7 +610,13 @@ function createKanbanToolsImpl(actorId: string): Record<string, ToolRegistryEntr
 			inputSchema: z.object({
 				task_id: z.string().describe("The kanban task ID being reviewed"),
 				verdict: z.enum(["approved", "changes_requested"]).describe("The review verdict"),
-				summary: z.string().describe("A concise summary of the review findings. If changes_requested, describe what needs to be fixed."),
+				summary: z.string().describe(
+					"Detailed review findings. For 'approved': brief confirmation of what was verified. " +
+					"For 'changes_requested': a structured list of every issue that MUST be fixed, each with: " +
+					"(1) file path and line number(s), (2) what is wrong, (3) exactly what to change. " +
+					"Example format: '1. src/foo.ts:42 — null check missing on user.id before calling .trim(). Add: if (!user.id) return; 2. src/bar.ts:17-23 — loop allocates new array on every iteration, move outside loop.' " +
+					"Be specific enough that a fix agent can resolve each issue without re-reading the full codebase."
+				),
 			}),
 			execute: async (args) => {
 				try {
