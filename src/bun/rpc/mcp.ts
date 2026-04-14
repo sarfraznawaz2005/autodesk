@@ -1,4 +1,4 @@
-import { getSettings, saveSetting } from "./settings";
+import { getRawSetting, getSettings, saveSetting } from "./settings";
 import { reloadMcpClients, getMcpStatus, reconnectMcpServer, disconnectMcpServer } from "../mcp/client";
 
 export interface McpServerConfig {
@@ -13,8 +13,22 @@ export async function getMcpConfig(): Promise<{
 	raw: string;
 	servers: Record<string, McpServerConfig>;
 }> {
-	const s = await getSettings("mcp");
-	const raw = (s["mcp_config"] as string | undefined) ?? "{}";
+	// Use getRawSetting to avoid getSettings double-parsing the stored JSON string
+	// into an object — mcp_config is intentionally a serialised JSON string.
+	const stored = await getRawSetting("mcp_config", "mcp");
+	// stored is the literal DB value e.g. `"\"{ ... }\""` (double-encoded) or
+	// `"{}"` / null when never set. JSON.parse unwraps one level.
+	let raw = "{}";
+	if (stored !== null) {
+		try {
+			const unwrapped = JSON.parse(stored);
+			// If saveSetting double-encoded it, unwrapped is the inner string.
+			// If it was stored as a raw JSON object (legacy), stringify it back.
+			raw = typeof unwrapped === "string" ? unwrapped : JSON.stringify(unwrapped, null, 2);
+		} catch {
+			raw = stored; // treat as literal if unparseable
+		}
+	}
 
 	let servers: Record<string, McpServerConfig> = {};
 	try {

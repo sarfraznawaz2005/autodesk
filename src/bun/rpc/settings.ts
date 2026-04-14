@@ -28,6 +28,29 @@ export async function getSettings(
 }
 
 /**
+ * Retrieve the raw (unparsed) string value for a single setting.
+ * Unlike getSetting / getSettings, this never JSON-parses the stored value —
+ * useful for settings that intentionally store a serialised JSON string and
+ * must come back as a string, not an object.
+ * Returns null if the setting does not exist.
+ */
+export async function getRawSetting(
+	key: string,
+	category?: string,
+): Promise<string | null> {
+	const rows = category
+		? await db
+				.select()
+				.from(settings)
+				.where(and(eq(settings.key, key), eq(settings.category, category)))
+				.limit(1)
+		: await db.select().from(settings).where(eq(settings.key, key)).limit(1);
+
+	if (rows.length === 0) return null;
+	return rows[0].value; // raw string — no JSON.parse
+}
+
+/**
  * Retrieve a single setting by key (optionally filtered by category).
  * Returns null if the setting does not exist.
  */

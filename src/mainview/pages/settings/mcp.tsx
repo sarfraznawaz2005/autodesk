@@ -130,7 +130,7 @@ export function McpSettings() {
   useEffect(() => {
     Promise.all([rpc.getMcpConfig(), rpc.getMcpStatus()]).then(([result, status]) => {
       const text = result.raw === "{}" ? "" : result.raw;
-      setRaw(text);
+      setRaw(typeof text === "string" ? text : "");
       setServers(result.servers);
       setLiveStatus(status);
       setLoading(false);

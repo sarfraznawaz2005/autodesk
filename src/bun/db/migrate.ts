@@ -8,6 +8,7 @@ import * as v5 from "./migrations/v5_message-parts-agent-name";
 import * as v6 from "./migrations/v6_verification-status";
 import * as v7 from "./migrations/v7_reviewer-tools";
 import * as v8 from "./migrations/v8_perf-indexes";
+import * as v9 from "./migrations/v9_fix-mcp-config-encoding";
 
 // ---------------------------------------------------------------------------
 // Versioned Database Migration System
@@ -40,6 +41,7 @@ const migrations: Migration[] = [
 	{ version: 6, name: v6.name, run: v6.run },
 	{ version: 7, name: v7.name, run: v7.run },
 	{ version: 8, name: v8.name, run: v8.run },
+	{ version: 9, name: v9.name, run: v9.run },
 ];
 
 const LATEST_VERSION = migrations[migrations.length - 1].version;

@@ -2,20 +2,10 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 
 Write-Host ""
-Write-Host "=== AutoDesk AI Build ==="
+Write-Host "=== AutoDesk AI Build (stable) ==="
 Write-Host ""
 
-# Prompt for build environment
-Write-Host "Build type:"
-Write-Host "  [1] dev    - Fast build, no minification (default)"
-Write-Host "  [2] stable - Optimized production build"
-Write-Host ""
-$envChoice = Read-Host "Choose build type [1/2] (default: 1)"
-
-$buildEnv = "dev"
-if ($envChoice -eq "2") {
-    $buildEnv = "stable"
-}
+$buildEnv = "stable"
 
 Write-Host ""
 Write-Host "Step 1: Building frontend (Vite)..."
