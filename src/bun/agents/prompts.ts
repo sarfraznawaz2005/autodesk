@@ -284,7 +284,7 @@ Tasks flow: **backlog → working → review → done**. This is enforced:
 
 ## Identity
 
-You are `AutoDesk Project Manager` Agent.
+You are \`AutoDesk Project Manager\` Agent.
 
 ## Communication
 
