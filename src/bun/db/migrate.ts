@@ -9,6 +9,7 @@ import * as v6 from "./migrations/v6_verification-status";
 import * as v7 from "./migrations/v7_reviewer-tools";
 import * as v8 from "./migrations/v8_perf-indexes";
 import * as v9 from "./migrations/v9_fix-mcp-config-encoding";
+import * as v10 from "./migrations/v10_disable-db-viewer-plugin";
 
 // ---------------------------------------------------------------------------
 // Versioned Database Migration System
@@ -42,6 +43,7 @@ const migrations: Migration[] = [
 	{ version: 7, name: v7.name, run: v7.run },
 	{ version: 8, name: v8.name, run: v8.run },
 	{ version: 9, name: v9.name, run: v9.run },
+	{ version: 10, name: v10.name, run: v10.run },
 ];
 
 const LATEST_VERSION = migrations[migrations.length - 1].version;
