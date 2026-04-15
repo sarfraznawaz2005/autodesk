@@ -78,9 +78,11 @@ export function DashboardPage() {
 	}, [loadProjects, loadTaskStats]);
 
 	// Load initial active-agent counts and keep them up to date via events.
-	// Re-fetch from backend whenever any agent starts or completes — this covers
-	// both in-app and channel-dispatched agents without needing projectId in
-	// the event payload.
+	// Re-fetch on agent start/complete and stream-complete (catches PM finishing
+	// its summary after sub-agents are done). A 10s polling interval acts as a
+	// safety net for channel-dispatched agents whose events fire before the
+	// dashboard mounts, or for the PM planning/summary phases where no
+	// agentInlineStart event fires.
 	useEffect(() => {
 		const fetchCounts = () => {
 			rpc.getActiveProjectAgents().then((list) => {
@@ -94,11 +96,16 @@ export function DashboardPage() {
 
 		fetchCounts();
 
+		const interval = setInterval(fetchCounts, 10_000);
+
 		window.addEventListener("autodesk:agent-inline-start", fetchCounts);
 		window.addEventListener("autodesk:agent-inline-complete", fetchCounts);
+		window.addEventListener("autodesk:stream-complete", fetchCounts);
 		return () => {
+			clearInterval(interval);
 			window.removeEventListener("autodesk:agent-inline-start", fetchCounts);
 			window.removeEventListener("autodesk:agent-inline-complete", fetchCounts);
+			window.removeEventListener("autodesk:stream-complete", fetchCounts);
 		};
 	}, []);
 

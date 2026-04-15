@@ -748,9 +748,13 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 
 			getActiveProjectAgents: () => {
 				const result: Array<{ projectId: string; agentCount: number }> = [];
-				for (const [projectId] of engines) {
-					const count = getRunningAgentCount(projectId);
-					if (count > 0) result.push({ projectId, agentCount: count });
+				for (const [projectId, engine] of engines) {
+					const subAgentCount = getRunningAgentCount(projectId);
+					// If sub-agents are running, show their count.
+					// If only the PM itself is processing (planning phase or writing summary),
+					// count it as 1 so the dashboard reflects any active work.
+					const total = subAgentCount > 0 ? subAgentCount : (engine.isProcessing() ? 1 : 0);
+					if (total > 0) result.push({ projectId, agentCount: total });
 				}
 				return result;
 			},
