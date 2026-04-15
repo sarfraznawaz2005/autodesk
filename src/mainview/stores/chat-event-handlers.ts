@@ -521,7 +521,10 @@ function onAgentInlineComplete(e: Event): void {
 
   useChatStore.setState((prev) => {
     const newCount = Math.max(0, prev.runningAgentCount - 1);
-    const clearAgent = prev.activeInlineAgent?.messageId === messageId;
+    // Clear the badge when the matching messageId ends OR when count drops to
+    // zero (handles the case where activeInlineAgent was restored on page
+    // re-entry with a synthetic messageId that won't match the real end event).
+    const clearAgent = newCount === 0 || prev.activeInlineAgent?.messageId === messageId;
     return {
       runningAgentCount: newCount,
       ...(clearAgent ? { activeInlineAgent: null } : {}),

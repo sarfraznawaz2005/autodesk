@@ -359,8 +359,19 @@ export const useChatStore = create<ChatState>((set) => ({
       for (const a of agents) {
         activeAgents[a.id] = (a.status as AgentStatusValue) ?? "running";
       }
-      // Restore PM streaming indicator if PM is mid-response
       const updates: Partial<ChatState> = { activeAgents, runningAgentCount: agents.length };
+      // Restore the agent name badge if an agent is running.
+      // Use a synthetic messageId so the agentEnded handler (which clears by
+      // messageId match) falls back to the count-drops-to-zero path instead.
+      if (agents.length > 0) {
+        const first = agents[0];
+        updates.activeInlineAgent = {
+          agentName: first.name,           // internal name — used for badge colour lookup
+          agentDisplayName: first.displayName, // real display name from DB e.g. "Task Planner"
+          messageId: `sync-${first.name}`,
+        };
+      }
+      // Restore PM streaming indicator if PM is mid-response
       if (pmStatus.isStreaming) {
         updates.isStreaming = true;
       }

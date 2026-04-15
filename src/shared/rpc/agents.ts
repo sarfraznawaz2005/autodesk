@@ -68,7 +68,7 @@ export type AgentsRequests = {
   };
   getRunningAgents: {
     params: { projectId: string };
-    response: Array<{ id: string; displayName: string; taskDescription: string; status: string }>;
+    response: Array<{ id: string; name: string; displayName: string; taskDescription: string; status: string }>;
   };
   getActiveProjectAgents: {
     params: Record<string, never>;

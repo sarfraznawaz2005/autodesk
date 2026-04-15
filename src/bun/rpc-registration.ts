@@ -1,6 +1,7 @@
 import { BrowserView } from "electrobun/bun";
 import type { AutoDeskRPC } from "../shared/rpc";
 import { db } from "./db";
+import { sqlite } from "./db/connection";
 import { aiProviders, projects, settings } from "./db/schema";
 import { eq } from "drizzle-orm";
 import { Utils } from "electrobun/bun";
@@ -731,9 +732,17 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 
 			getRunningAgents: (params) => {
 				const names = getRunningAgentNames(params.projectId);
+				if (names.length === 0) return [];
+				// Look up display names from the agents table in one query
+				const placeholders = names.map(() => "?").join(", ");
+				const rows = sqlite
+					.prepare(`SELECT name, display_name FROM agents WHERE name IN (${placeholders})`)
+					.all(...names) as Array<{ name: string; display_name: string }>;
+				const displayNameMap = new Map(rows.map((r) => [r.name, r.display_name]));
 				return names.map((name, i) => ({
 					id: `agent-${i}-${name}`,
-					displayName: name,
+					name,
+					displayName: displayNameMap.get(name) ?? name,
 					taskDescription: "",
 					status: "running" as const,
 				}));
