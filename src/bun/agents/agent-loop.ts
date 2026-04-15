@@ -1163,8 +1163,14 @@ export async function runInlineAgent(opts: InlineAgentOptions): Promise<InlineAg
 						const resultStr = typeof trOutput === "string" ? trOutput : JSON.stringify(trOutput);
 						const isError = isToolError || resultStr.startsWith("Error:") || resultStr.startsWith("ERROR:")
 							|| resultStr.includes('"success":false');
+						// Image tools return large base64 payloads — give them a much higher limit
+						// so the frontend can render the actual image instead of truncated JSON.
+						const isImageTool = tc.toolName === "read_image"
+							|| tc.toolName === "take_screenshot"
+							|| tc.toolName.includes("screenshot");
+						const toolOutputLimit = isImageTool ? 500_000 : 10_000;
 						const updates: Partial<MessagePart> = {
-							toolOutput: resultStr.length > 10000 ? resultStr.slice(0, 10000) + "\n... (truncated)" : resultStr,
+							toolOutput: resultStr.length > toolOutputLimit ? resultStr.slice(0, toolOutputLimit) + "\n... (truncated)" : resultStr,
 							toolState: isError ? "error" : "success",
 							timeEnd: endTime,
 						};

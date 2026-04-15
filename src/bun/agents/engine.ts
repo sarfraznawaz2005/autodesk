@@ -1,4 +1,57 @@
 import { streamText, stepCountIs } from "ai";
+
+// ---------------------------------------------------------------------------
+// /preview slash-command — full instructions passed silently to the PM
+// ---------------------------------------------------------------------------
+const PREVIEW_PROMPT = `The user ran /preview. Detect what type of project this is, start it if needed, then capture a screenshot and show it to the user.
+
+**Step 1 — Detect project type**
+Explore the workspace root to identify the stack:
+- Any .html file with no package.json or build config → STATIC: open via file:// protocol — no server needed
+- HTML/CSS/JS files only (no package.json) → STATIC: file:// protocol
+- vite.config.* or "vite" in package.json deps → Vite (bun run dev / npm run dev, port 5173)
+- next.config.* → Next.js (npm run dev, port 3000)
+- "react-scripts" in package.json deps → CRA (npm start, port 3000)
+- package.json with a "dev" or "start" script → run it, port is usually 3000 or 5173
+- artisan → Laravel (php artisan serve, port 8000)
+- composer.json without artisan → PHP built-in server (php -S localhost:8080 -t ., port 8080)
+- manage.py → Django (python manage.py runserver, port 8000)
+- Gemfile + config/ dir → Rails (bundle exec rails s, port 3000)
+- app.py or main.py → read the file to find Flask/FastAPI port (usually 5000 or 8000)
+- go.mod → Go (go run ., port 8080)
+- pubspec.yaml → Flutter web (flutter run -d chrome)
+
+**Step 2 — Determine the preview URL**
+STATIC: construct the file URL from the workspace path in your project context.
+  Format: file:///WORKSPACE_PATH/index.html (use the actual HTML filename)
+  Use forward slashes even on Windows: file:///C:/path/to/project/index.html
+SERVER: http://localhost:PORT
+
+**Step 3 — For server-based projects: check if already running**
+Run: curl -s -o /dev/null -w "%{http_code}" http://localhost:PORT
+200 or 3xx → already up, skip Step 4.
+
+**Step 4 — Start the server in the background**
+Use run_background with the detected start command and the workspace path as cwd.
+Poll every 2 seconds up to 15 seconds until the port responds.
+If it never comes up, show the process output and stop.
+
+**Step 5 — Capture the screenshot (the main deliverable)**
+Use the chrome-devtools MCP tools:
+1. list_pages — reuse an existing tab or call new_page
+2. navigate_page to the preview URL
+3. Wait 2 seconds for rendering
+4. take_screenshot — IMPORTANT: pass fullPage: false and format: "jpeg" with quality: 80 to keep the image small enough for the AI to process. Do NOT use fullPage: true.
+5. Include the screenshot image directly in your response — this is the preview the user wants to see
+
+**Step 6 — Open in the system browser for interactive use**
+After screenshotting, open the URL in the default browser:
+- Windows: run_shell → cmd /c start "" "URL"
+- macOS: run_shell → open "URL"
+- Linux: run_shell → xdg-open "URL"
+
+**Step 7 — Respond**
+One brief line: project type detected and URL. The screenshot is the main output — keep text minimal.`;
 import { eq, desc } from "drizzle-orm";
 import { db } from "../db";
 import { messages, conversations, settings, aiProviders, projects, agents, kanbanTasks } from "../db/schema";
@@ -153,7 +206,7 @@ export class AgentEngine {
 		// The lock is resolved when the real promise settles so any caller
 		// awaiting pmProcessingPromise unblocks at the right time.
 		void prevPromise; // already awaited above if it existed
-		const realPromise = this._runPMProcessing(assistantMessageId, conversationId, content)
+		const realPromise = this._runPMProcessing(assistantMessageId, conversationId, content, userMessageId)
 			.catch(() => {})
 			.finally(() => {
 				lockResolve();
@@ -170,6 +223,7 @@ export class AgentEngine {
 		assistantMessageId: string,
 		conversationId: string,
 		content: string,
+		userMessageId?: string,
 	): Promise<void> {
 		const abortController = this.pmAbort;
 		try {
@@ -186,6 +240,15 @@ export class AgentEngine {
 				this._touchConversation(conversationId);
 				this.callbacks.onStreamComplete(conversationId, assistantMessageId, { content: response, promptTokens: 0, completionTokens: 0 });
 				return;
+			}
+
+			// /preview — silently replace the user message in DB with the full preview
+			// instructions before the PM reads context, so the chat bubble stays clean
+			// ("/preview") but the PM receives the complete prompt.
+			if (rawUserContent.toLowerCase() === "/preview" && userMessageId) {
+				await db.update(messages)
+					.set({ content: PREVIEW_PROMPT, tokenCount: Math.ceil(PREVIEW_PROMPT.length / 4) })
+					.where(eq(messages.id, userMessageId));
 			}
 
 			// 3. Load Project Manager system prompt and resolve provider / model

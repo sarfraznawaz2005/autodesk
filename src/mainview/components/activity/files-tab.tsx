@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { rpc } from "../../lib/rpc";
+import { ImageLightbox } from "@/components/chat/image-lightbox";
 import {
   Dialog,
   DialogContent,
@@ -46,6 +47,8 @@ interface FilesTabProps {
 // Helpers
 // ---------------------------------------------------------------------------
 
+const IMAGE_EXTENSIONS = new Set(["png", "jpg", "jpeg", "gif", "bmp", "ico", "webp", "svg"]);
+
 const BINARY_EXTENSIONS = new Set([
   "png", "jpg", "jpeg", "gif", "bmp", "ico", "webp", "svg",
   "mp3", "mp4", "wav", "ogg", "webm", "avi", "mov",
@@ -59,6 +62,11 @@ const BINARY_EXTENSIONS = new Set([
 function isBinaryFile(name: string): boolean {
   const ext = name.split(".").pop()?.toLowerCase() ?? "";
   return BINARY_EXTENSIONS.has(ext);
+}
+
+function isImageFile(name: string): boolean {
+  const ext = name.split(".").pop()?.toLowerCase() ?? "";
+  return IMAGE_EXTENSIONS.has(ext);
 }
 
 /** Derive a shiki language identifier from a filename extension. */
@@ -232,6 +240,7 @@ export function FilesTab({ projectId }: FilesTabProps) {
   const [isLoadingRoot, setIsLoadingRoot] = useState(false);
   const [rootError, setRootError] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<{ node: TreeNode; content: string | null } | null>(null);
+  const [imagePreview, setImagePreview] = useState<{ data: string; mimeType: string } | null>(null);
   const [isLoadingFile, setIsLoadingFile] = useState(false);
   const [fileError, setFileError] = useState<string | null>(null);
 
@@ -346,6 +355,26 @@ export function FilesTab({ projectId }: FilesTabProps) {
       if (!projectId) return;
       setSelectedFile(null);
       setFileError(null);
+      setImagePreview(null);
+
+      if (isImageFile(node.name)) {
+        setIsLoadingFile(true);
+        try {
+          const result = await rpc.readWorkspaceImageFile(projectId, node.path);
+          if (result.error) {
+            setFileError(result.error);
+            setSelectedFile({ node, content: null });
+          } else {
+            setImagePreview({ data: result.data, mimeType: result.mimeType });
+          }
+        } catch {
+          setFileError("Could not load image");
+          setSelectedFile({ node, content: null });
+        } finally {
+          setIsLoadingFile(false);
+        }
+        return;
+      }
 
       if (isBinaryFile(node.name)) {
         setSelectedFile({ node, content: null });
@@ -532,6 +561,14 @@ export function FilesTab({ projectId }: FilesTabProps) {
           </div>
         </DialogContent>
       </Dialog>
+
+      {imagePreview && (
+        <ImageLightbox
+          src={`data:${imagePreview.mimeType};base64,${imagePreview.data}`}
+          alt="Image preview"
+          onClose={() => setImagePreview(null)}
+        />
+      )}
     </div>
   );
 }

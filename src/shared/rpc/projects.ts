@@ -75,4 +75,8 @@ export type ProjectsRequests = {
     params: { projectId: string; filePath: string };
     response: { content: string; error?: string };
   };
+  readWorkspaceImageFile: {
+    params: { projectId: string; filePath: string };
+    response: { data: string; mimeType: string; error?: string };
+  };
 };

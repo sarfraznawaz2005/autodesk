@@ -392,6 +392,9 @@ export const ChatInput = forwardRef<ChatInputHandle, ChatInputProps>(function Ch
       case "new":
         onNew?.();
         break;
+      case "preview":
+        onSend("/preview");
+        break;
     }
     requestAnimationFrame(() => textareaRef.current?.focus());
   }

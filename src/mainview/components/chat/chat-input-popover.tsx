@@ -1,5 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
-import { File, Trash2, GitFork, Sparkles, Plus, Server, Zap, Check } from "lucide-react";
+import { File, Trash2, GitFork, Sparkles, Plus, Server, Zap, Check, Monitor } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ---------------------------------------------------------------------------
@@ -26,6 +26,7 @@ export const SLASH_COMMANDS: PopoverItem[] = [
   { id: "init", label: "/init", description: "Analyze project & create AGENTS.md", icon: <Sparkles className="w-3.5 h-3.5" /> },
   { id: "mcp", label: "/mcp", description: "Show MCP server status", icon: <Server className="w-3.5 h-3.5" /> },
   { id: "new", label: "/new", description: "New conversation", icon: <Plus className="w-3.5 h-3.5" /> },
+  { id: "preview", label: "/preview", description: "Launch a live preview of this project", icon: <Monitor className="w-3.5 h-3.5" /> },
 ];
 
 // ---------------------------------------------------------------------------

@@ -144,6 +144,8 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 				projectsRpc.listWorkspaceFiles(params.projectId, params.subPath),
 			readWorkspaceFile: (params) =>
 				projectsRpc.readWorkspaceFile(params.projectId, params.filePath),
+			readWorkspaceImageFile: (params) =>
+				projectsRpc.readWorkspaceImageFile(params.projectId, params.filePath),
 
 			// Conversations
 			getConversations: (params) =>

@@ -1,4 +1,5 @@
-import { useState, memo, lazy, Suspense, useRef, useCallback } from "react";
+import { useState, memo, lazy, Suspense, useRef, useCallback, useEffect } from "react";
+import { ImageLightbox } from "./image-lightbox";
 import {
 	ChevronRight,
 	ChevronDown,
@@ -22,6 +23,28 @@ import {
 import { cn } from "@/lib/utils";
 
 const LazyCodeBlock = lazy(() => import("./code-block").then((m) => ({ default: m.CodeBlock })));
+
+// ---------------------------------------------------------------------------
+// Inline image with click-to-lightbox
+// ---------------------------------------------------------------------------
+
+function InlineImage({ src, caption }: { src: string; caption?: string }) {
+	const [lightboxOpen, setLightboxOpen] = useState(false);
+	return (
+		<div className="flex flex-col gap-1.5">
+			<img
+				src={src}
+				alt="Screenshot"
+				className="rounded-lg border border-gray-200 shadow-sm max-w-full object-contain cursor-zoom-in"
+				style={{ maxHeight: 400 }}
+				onClick={() => setLightboxOpen(true)}
+				title="Click to enlarge"
+			/>
+			{caption && <p className="text-[11px] text-gray-400 font-mono truncate">{caption}</p>}
+			{lightboxOpen && <ImageLightbox src={src} alt="Screenshot" onClose={() => setLightboxOpen(false)} />}
+		</div>
+	);
+}
 
 export interface ToolCallPartData {
 	id: string;
@@ -148,10 +171,16 @@ function StateIcon({ state }: { state: string | null }) {
 	}
 }
 
+const IMAGE_TOOL_NAMES = new Set(["take_screenshot", "read_image"]);
+function isImageTool(name: string) {
+	return IMAGE_TOOL_NAMES.has(name) || name.includes("screenshot");
+}
+
 export const ToolCallCard = memo(function ToolCallCard({ part }: { part: ToolCallPartData }) {
-	const [expanded, setExpanded] = useState(false);
-	const cardRef = useRef<HTMLDivElement>(null);
 	const toolName = part.toolName ?? "unknown";
+	// Auto-expand image tools so the screenshot is visible without clicking
+	const [expanded, setExpanded] = useState(() => isImageTool(toolName) && part.toolState === "success");
+	const cardRef = useRef<HTMLDivElement>(null);
 	const meta = TOOL_META[toolName];
 	const Icon = meta?.Icon ?? Wrench;
 	const input = parseInput(part.toolInput);
@@ -159,6 +188,13 @@ export const ToolCallCard = memo(function ToolCallCard({ part }: { part: ToolCal
 
 	const isError = part.toolState === "error";
 	const isDone = part.toolState === "success" || part.toolState === "error";
+
+	// Auto-expand when image tool finishes (card may have mounted while still running)
+	useEffect(() => {
+		if (isImageTool(toolName) && part.toolState === "success") {
+			setExpanded(true);
+		}
+	}, [toolName, part.toolState]);
 
 	const toggle = useCallback(() => {
 		setExpanded((v) => !v);
@@ -340,6 +376,36 @@ function ToolOutputDisplay({ toolName, rawOutput, rawInput, isError }: { toolNam
 			/>
 			</div>
 		);
+	}
+
+	// Image tools: render inline image for screenshot and read_image tools.
+	// Handles two formats:
+	//   1. MCP content envelope: {"content":[{"type":"image","data":"base64...","mimeType":"..."}]}
+	//   2. Built-in tool format: {"success":true,"image":{"type":"image","mimeType":"...","base64":"..."},"url":"...","path":"..."}
+	if (!isError && (toolName.includes("take_screenshot") || toolName.includes("screenshot") || toolName === "read_image")) {
+		try {
+			const parsed = JSON.parse(rawOutput) as {
+				content?: Array<{ type: string; data?: string; mimeType?: string; text?: string }>;
+				image?: { type?: string; mimeType?: string; base64?: string };
+				url?: string;
+				path?: string;
+			};
+
+			// Format 1: MCP content envelope (chrome-devtools MCP server)
+			const mcpImageItem = parsed.content?.find((c) => c.type === "image" && c.data);
+			if (mcpImageItem?.data) {
+				const mime = mcpImageItem.mimeType ?? "image/jpeg";
+				const caption = parsed.content?.find((c) => c.type === "text")?.text;
+				return <InlineImage src={`data:${mime};base64,${mcpImageItem.data}`} caption={caption} />;
+			}
+
+			// Format 2: built-in tool format (take_screenshot / read_image)
+			if (parsed.image?.base64) {
+				const mime = parsed.image.mimeType ?? "image/jpeg";
+				const caption = parsed.url ?? parsed.path;
+				return <InlineImage src={`data:${mime};base64,${parsed.image.base64}`} caption={caption} />;
+			}
+		} catch { /* fall through to default */ }
 	}
 
 	// Error output

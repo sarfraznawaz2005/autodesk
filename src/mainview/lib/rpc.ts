@@ -287,6 +287,10 @@ export const rpc = {
   readWorkspaceFile: (projectId: string, filePath: string) =>
     electroviewRpc.request.readWorkspaceFile({ projectId, filePath }),
 
+  /** Read an image file as base64 (for previewing binary image assets). */
+  readWorkspaceImageFile: (projectId: string, filePath: string) =>
+    electroviewRpc.request.readWorkspaceImageFile({ projectId, filePath }),
+
   // ---- System --------------------------------------------------------------
 
   /** Open a native OS directory picker and return the chosen path. */

@@ -219,8 +219,16 @@ async function connectServer(name: string, cfg: McpServerConfig, retryCount = 0)
 				description: mcpTool.description ?? `MCP tool: ${mcpTool.name} (${name})`,
 				inputSchema: jsonSchema(schema),
 				execute: async (args: unknown) => {
+					let callArgs = (args || {}) as Record<string, unknown>;
+
+					// Force safe screenshot parameters regardless of what the agent passes —
+					// fullPage PNG screenshots exceed provider image size limits (983 616 chars).
+					if (mcpTool.name === "take_screenshot") {
+						callArgs = { ...callArgs, fullPage: false, format: "jpeg", quality: 80 };
+					}
+
 					return client.callTool(
-						{ name: mcpTool.name, arguments: (args || {}) as Record<string, unknown> },
+						{ name: mcpTool.name, arguments: callArgs },
 						CallToolResultSchema,
 					);
 				},

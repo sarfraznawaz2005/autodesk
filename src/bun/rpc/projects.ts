@@ -684,6 +684,43 @@ export async function readWorkspaceFile(
 	}
 }
 
+const IMAGE_MIME: Record<string, string> = {
+	jpg: "image/jpeg", jpeg: "image/jpeg", png: "image/png",
+	gif: "image/gif", webp: "image/webp", svg: "image/svg+xml",
+	bmp: "image/bmp", ico: "image/x-icon",
+};
+
+export async function readWorkspaceImageFile(
+	projectId: string,
+	filePath: string,
+): Promise<{ data: string; mimeType: string; error?: string }> {
+	const rows = await db
+		.select({ workspacePath: projects.workspacePath })
+		.from(projects)
+		.where(eq(projects.id, projectId))
+		.limit(1);
+
+	if (!rows[0]?.workspacePath) return { data: "", mimeType: "", error: "Project not found" };
+
+	const workspaceRoot = rows[0].workspacePath;
+	const absolutePath = resolve(workspaceRoot, filePath);
+
+	if (!absolutePath.startsWith(workspaceRoot)) {
+		return { data: "", mimeType: "", error: "Access denied" };
+	}
+
+	try {
+		const stat = statSync(absolutePath);
+		if (stat.size > 10_485_760) return { data: "", mimeType: "", error: "File too large to preview (> 10 MB)" };
+		const ext = absolutePath.split(".").pop()?.toLowerCase() ?? "";
+		const mimeType = IMAGE_MIME[ext] ?? "application/octet-stream";
+		const buffer = readFileSync(absolutePath);
+		return { data: buffer.toString("base64"), mimeType };
+	} catch (err) {
+		return { data: "", mimeType: "", error: err instanceof Error ? err.message : "Could not read file" };
+	}
+}
+
 /**
  * On startup: scan the global workspace directory and auto-register any
  * subdirectories that are not yet tracked as projects.
