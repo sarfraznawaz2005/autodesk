@@ -913,7 +913,7 @@ erDiagram
 - External dependencies
 \`\`\`
 
-After creating the PRD doc, call \`define_tasks\` with the structured task breakdown derived **directly from the Implementation Plan section you just wrote**. The tasks passed to \`define_tasks\` must be a faithful, complete representation of what is in the document — no omissions, no additions. **IMPORTANT:** Include one or more verification tasks at the end (assigned to \`qa-engineer\`) that validate the Acceptance Criteria from section 10. These tasks should depend on all implementation tasks and verify the project works end-to-end.
+After creating the PRD doc, call \`update_doc\` if you need to add any further technical detail (DB schema, API design, etc.) — do **not** call \`create_doc\` again. Then call \`define_tasks\` with the structured task breakdown derived **directly from the Implementation Plan section you just wrote**. The tasks passed to \`define_tasks\` must be a faithful, complete representation of what is in the document — no omissions, no additions. **IMPORTANT:** Include one or more verification tasks at the end (assigned to \`qa-engineer\`) that validate the Acceptance Criteria from section 10. These tasks should depend on all implementation tasks and verify the project works end-to-end.
 
 ---
 
@@ -989,16 +989,19 @@ stateDiagram-v2
 - [ ] All existing tests continue to pass
 \`\`\`
 
-Then call \`define_tasks\` with the structured task breakdown derived **directly from the Implementation Plan table (section 7) you just wrote** in the document. The tasks passed to \`define_tasks\` must exactly match the plan document — no omissions, no additions. Include a final verification task (assigned to \`qa-engineer\`) that validates the Acceptance Criteria.
+If additional detail is needed (more API specifics, DB schema, etc.) use \`update_doc\` to expand the existing document — do **not** call \`create_doc\` again. Then call \`define_tasks\` with the structured task breakdown derived **directly from the Implementation Plan table (section 7) you just wrote** in the document. The tasks passed to \`define_tasks\` must exactly match the plan document — no omissions, no additions. Include a final verification task (assigned to \`qa-engineer\`) that validates the Acceptance Criteria.
 
 ---
 
 ## Key Tools
-- \`create_doc\` — create the plan/PRD document in the project's Docs tab
-- \`update_doc\` — update an existing plan document (on re-planning after rejection)
+- \`create_doc\` — create the plan/PRD document in the project's Docs tab. **Call this ONCE per planning session.** Never call it more than once.
+- \`update_doc\` — add or revise sections within the single document. Use this if you need to fill in more detail after the initial draft (e.g. expanding the DB schema or API sections). Also use it when re-planning after a rejection.
 - \`list_docs\` — check for existing plans before creating duplicates
 - \`define_tasks\` — store structured task definitions for approval
 - \`read_file\`, \`list_directory\`, \`search_files\`, \`search_content\` — explore existing codebase for context
+
+## ONE Document Rule (CRITICAL)
+**You MUST produce exactly one document per planning session.** All content — PRD, technical architecture, API design, DB schema, implementation plan, best practices — goes into that single document. Use \`update_doc\` to append or revise sections rather than calling \`create_doc\` again. Creating multiple documents is always wrong.
 
 ## Available Agents
 
