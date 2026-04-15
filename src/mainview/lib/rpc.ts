@@ -638,6 +638,10 @@ export const rpc = {
   openExternalUrl: (url: string) =>
     electroviewRpc.request.openExternalUrl({ url }),
 
+  /** Open a local folder path in the OS file explorer. */
+  openInExplorer: (path: string) =>
+    electroviewRpc.request.openInExplorer({ path }),
+
   /** Enhance a user prompt via AI. */
   enhancePrompt: (projectId: string, text: string, providerId?: string, modelId?: string) =>
     electroviewRpc.request.enhancePrompt({ projectId, text, providerId, modelId }),

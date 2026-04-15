@@ -371,9 +371,15 @@ export const useChatStore = create<ChatState>((set) => ({
           messageId: `sync-${first.name}`,
         };
       }
-      // Restore PM streaming indicator if PM is mid-response
       if (pmStatus.isStreaming) {
+        // Restore PM streaming indicator if PM is mid-response
         updates.isStreaming = true;
+      } else if (agents.length === 0) {
+        // Nothing is running and PM is idle — clear any stuck busy state that
+        // may have been left over (e.g. pmPending never cleared, isStreaming
+        // stuck from a stale stream completion race in production).
+        updates.isStreaming = false;
+        updates.pmPending = false;
       }
       set(updates);
     } catch {

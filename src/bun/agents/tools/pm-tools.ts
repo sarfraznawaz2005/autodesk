@@ -219,6 +219,20 @@ export async function getActiveTodoStatus(conversationId: string): Promise<strin
 }
 
 // ---------------------------------------------------------------------------
+// Module-level pre-registration dispatch guard
+// ---------------------------------------------------------------------------
+
+/**
+ * Tracks agents that are in the process of being dispatched (after the
+ * getRunningAgentNames check but before registerAbort completes).
+ * Vercel AI SDK executes multiple tool calls from a single LLM step
+ * concurrently via Promise.all, so two run_agent("same-agent") calls can
+ * both pass the getRunningAgentNames check before either one registers.
+ * This Set closes that gap atomically (JS is single-threaded).
+ */
+const dispatchingAgents = new Set<string>();
+
+// ---------------------------------------------------------------------------
 // Factory — creates PM-specific tools that close over the engine
 // ---------------------------------------------------------------------------
 
@@ -306,8 +320,29 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 					// Use effectiveProjectId so cross-project dispatches check the right project.
 					const isReadOnly = READ_ONLY_AGENTS.has(args.agent);
 
+					// Prevent duplicate dispatch: block if this exact agent is already running
+					// OR currently being dispatched by a concurrent tool call in this step.
+					// Vercel AI SDK runs parallel tool calls via Promise.all, so two
+					// run_agent("same-agent") calls from one LLM step can both pass the
+					// getRunningAgentNames check before either one registers the abort controller.
+					// dispatchingAgents is checked and populated atomically (JS single-threaded).
+					const dispatchKey = `${effectiveProjectId}:${args.agent}`;
+					{
+						const { getRunningAgentNames } = await import("../../engine-manager");
+						const alreadyRunning = getRunningAgentNames(effectiveProjectId);
+						if (alreadyRunning.includes(args.agent) || dispatchingAgents.has(dispatchKey)) {
+							deps.stopPMStream?.();
+							return JSON.stringify({
+								success: false,
+								error: `${args.agent} is already running for this project. Only one instance of each agent can run at a time. Wait for it to complete.`,
+							});
+						}
+					}
+					dispatchingAgents.add(dispatchKey);
+
 					// Plan mode: only read-only agents are allowed.
 					if (deps.planMode && !isReadOnly) {
+						dispatchingAgents.delete(dispatchKey);
 						return JSON.stringify({
 							success: false,
 							error: `Plan Mode is active — only read-only agents (${[...READ_ONLY_AGENTS].join(", ")}) can be dispatched. Ask the user to switch to Build Mode to run ${args.agent}.`,
@@ -317,6 +352,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 					if (!isReadOnly) {
 						if (writeAgentRunning) {
 							// Stop PM stream so it does not keep retrying in the same session
+							dispatchingAgents.delete(dispatchKey);
 							deps.stopPMStream?.();
 							return JSON.stringify({
 								success: false,
@@ -327,6 +363,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						const { getRunningAgentCount } = await import("../../engine-manager");
 						if (getRunningAgentCount(effectiveProjectId) > 0) {
 							// Stop PM stream so it does not keep retrying in the same session
+							dispatchingAgents.delete(dispatchKey);
 							deps.stopPMStream?.();
 							return JSON.stringify({
 								success: false,
@@ -341,6 +378,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 								.from(kanbanTasks)
 								.where(and(eq(kanbanTasks.projectId, effectiveProjectId), eq(kanbanTasks.column, "review")));
 							if (reviewTasks.length > 0) {
+								dispatchingAgents.delete(dispatchKey);
 								return JSON.stringify({
 									success: false,
 									error: `Cannot dispatch new agent: ${reviewTasks.length} task(s) in review column (${reviewTasks.map(t => t.title).join(", ")}). Wait for code review to complete or spawn review agent if it is not running. Use get_next_task to check the correct next action.`,
@@ -365,6 +403,8 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 							const { moveKanbanTask, getKanbanTask } = await import("../../rpc/kanban");
 							const existingTask = await getKanbanTask(args.kanban_task_id);
 							if (!existingTask) {
+								dispatchingAgents.delete(dispatchKey);
+								if (!isReadOnly) writeAgentRunning = false;
 								return JSON.stringify({
 									success: false,
 									error: `Task ID "${args.kanban_task_id}" not found. Use get_next_task or list_tasks to get valid task IDs.`,
@@ -435,7 +475,14 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						: (c: AbortController) => deps.unregisterAgentAbort?.(c);
 
 					const agentAbort = new AbortController();
-					registerAbort(agentAbort, args.agent);
+					try {
+						registerAbort(agentAbort, args.agent);
+					} catch (err) {
+						// Registration failed — clear dispatch guard and bail
+						dispatchingAgents.delete(dispatchKey);
+						if (!isReadOnly) writeAgentRunning = false;
+						throw err;
+					}
 
 					// Dispatch agent asynchronously — PM stops and agent runs independently.
 					// When agent completes, onAgentDone restarts PM with the result.
@@ -457,6 +504,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 
 					// Fire-and-forget: agent runs in background
 					runInlineAgent(agentOpts).then(async (result) => {
+						dispatchingAgents.delete(dispatchKey);
 						if (!isReadOnly) writeAgentRunning = false;
 						unregisterAbort(agentAbort);
 
@@ -593,17 +641,29 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 											plan: { title: planTitle, content: planContent },
 										});
 
-										// Restart PM with context about the approval card so it knows
-										// to wait and pass note_id when user approves.
-										// Do NOT return early — PM needs this context or it will
-										// re-run task-planner when the user says "approve".
-										result.summary =
-											`Plan document created and approval card has already been shown to the user (plan_note_id: ${planDoc.id}). ` +
-											`DO NOT call request_plan_approval — the card is already displayed. ` +
-											`DO NOT run task-planner again. ` +
-											`Simply acknowledge that the plan is ready for review and wait. ` +
-											`When the user says "approve": call create_tasks_from_plan with note_id="${planDoc.id}". ` +
-											`When the user says "reject": ask for feedback and re-run task-planner with that feedback.`;
+										// Save a context message to the DB so PM has the note_id
+										// available when it restarts on the user's "approve" reply.
+										// We do NOT call onAgentDone here — that would immediately
+										// restart PM which (especially in production) causes a second
+										// task-planner dispatch before the user can even see the card.
+										// PM restarts naturally when the user sends "approve"/"reject",
+										// at which point this message is already in its history.
+										await db.insert(messages).values({
+											id: crypto.randomUUID(),
+											conversationId: deps.conversationId,
+											role: "assistant",
+											agentId: "project-manager",
+											content:
+												`[Task Planner Report] Plan document created. ` +
+												`Approval card shown to user (plan_note_id: ${planDoc.id}). ` +
+												`When user says "approve": call create_tasks_from_plan (no note_id needed). ` +
+												`When user says "reject": re-run task-planner with their feedback.`,
+											metadata: JSON.stringify({ type: "agent_report" }),
+											tokenCount: 0,
+											createdAt: new Date().toISOString(),
+										});
+
+										return; // do NOT call onAgentDone — PM waits for user input
 									}
 								}
 							} catch { /* non-fatal — fall through to normal onAgentDone */ }
@@ -618,6 +678,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 							});
 						}
 					}).catch((err) => {
+						dispatchingAgents.delete(dispatchKey);
 						if (!isReadOnly) writeAgentRunning = false;
 						unregisterAbort(agentAbort);
 
@@ -1465,6 +1526,25 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						});
 					}
 
+					// In-app: guard against the PM calling this concurrently with run_agent("task-planner").
+					// In production, Vercel AI SDK executes parallel tool calls from a single LLM step
+					// via Promise.all, so request_plan_approval can fire while task-planner is still
+					// running. The code-level enforcement in run_agent's .then() already shows the
+					// card reliably once task-planner completes — block the early/duplicate call here.
+					const taskPlannerKey = `${deps.projectId}:task-planner`;
+					{
+						const { getRunningAgentNames } = await import("../../engine-manager");
+						const isRunning = getRunningAgentNames(deps.projectId).includes("task-planner");
+						const isDispatching = dispatchingAgents.has(taskPlannerKey);
+						if (isRunning || isDispatching) {
+							// Don't show the card yet — the .then() handler will do it once task-planner finishes.
+							return JSON.stringify({
+								success: false,
+								message: "task-planner is still running. The approval card will appear automatically when it completes. Do not call request_plan_approval again — wait for the task-planner result.",
+							});
+						}
+					}
+
 					// In-app: show approval card in the UI
 					const { broadcastToWebview } = await import("../../engine-manager");
 					const planMessageId = crypto.randomUUID();
@@ -1498,7 +1578,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 					return JSON.stringify({
 						success: true,
 						noteId: planDoc?.id ?? null,
-						message: `Plan presented to user for approval. Waiting for response. When the user approves, call create_tasks_from_plan with note_id="${planDoc?.id ?? ""}" so tasks are created directly from the approved document.`,
+						message: `Plan presented to user for approval. Waiting for response. When the user approves, call create_tasks_from_plan (no arguments needed for in-app conversations).`,
 					});
 				} catch (err) {
 					return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) });
@@ -1508,18 +1588,14 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 
 		create_tasks_from_plan: tool({
 			description:
-				"Create kanban tasks from an approved plan document. " +
-				"Pass note_id (returned by request_plan_approval) so the task-planner re-reads the approved document and calls define_tasks fresh — this ensures kanban tasks are a faithful representation of what the user approved. " +
-				"Falls back to any pending define_tasks output if note_id is not available.",
+				"Create kanban tasks from an approved plan. Uses the task definitions already stored by the " +
+				"task-planner's define_tasks calls during planning. Call this immediately after the user approves the plan.",
 			inputSchema: z.object({
 				project_id: z.string().optional().describe(
 					"Target project ID. Required when working from a channel (WhatsApp/Discord/Email). Omit for in-app conversations.",
 				),
-				note_id: z.string().optional().describe(
-					"ID of the approved plan note (returned by request_plan_approval). Pass this so tasks are generated directly from the approved document.",
-				),
 			}),
-			execute: async ({ project_id, note_id }) => {
+			execute: async ({ project_id }) => {
 				try {
 					const isChannelConv = deps.conversationId.startsWith("channel:");
 					if (isChannelConv && !project_id) {
@@ -1532,37 +1608,10 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 					const effectiveProjId = project_id ?? deps.projectId;
 					const { drainTaskDefinitions } = await import("./planning");
 
-					// If a note_id is provided, re-run task-planner against the approved document
-					// so define_tasks reflects exactly what the user approved.
-					if (note_id) {
-						const { getNote } = await import("../../rpc/notes");
-						const note = await getNote(note_id);
-						if (note?.content) {
-							// Clear any stale pending definitions before the fresh run
-							drainTaskDefinitions(effectiveProjId);
-
-							const agentAbort = new AbortController();
-							deps.registerAgentAbort?.(agentAbort, "task-planner");
-							try {
-								await runInlineAgent({
-									conversationId: deps.conversationId,
-									agentName: "task-planner",
-									agentDisplayName: "Task Planner",
-									task: `The user has approved the following plan document. Your ONLY job is to call \`define_tasks\` with structured task definitions that are a complete and faithful representation of every task described in this document. Do NOT call \`create_doc\` or \`update_doc\` — the document already exists. Do NOT modify the plan. Just read it carefully and call \`define_tasks\` once.\n\nProject ID: ${effectiveProjId}\n\n---\n\n${note.content}`,
-									projectContext: "",
-									providerConfig: deps.providerConfig,
-									abortSignal: agentAbort.signal,
-									callbacks: deps.inlineAgentCallbacks,
-									workspacePath: deps.workspacePath,
-									projectId: effectiveProjId,
-									readOnly: false,
-								});
-							} finally {
-								deps.unregisterAgentAbort?.(agentAbort);
-							}
-						}
-					}
-
+					// Use the task definitions already stored by the task-planner's define_tasks
+					// calls during the planning phase. Do NOT re-run task-planner here — a second
+					// inline run is unreliable (LLM truncates the list, only returns partial tasks)
+					// and duplicates work that was already done correctly during planning.
 					const defs = drainTaskDefinitions(effectiveProjId);
 					if (!defs || defs.length === 0) {
 						return JSON.stringify({ success: false, error: `No task definitions found for project ${effectiveProjId}. The task-planner must call define_tasks before tasks can be created.` });

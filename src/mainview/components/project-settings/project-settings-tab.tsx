@@ -1,4 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
+import { useChatStore } from "@/stores/chat-store";
+import { useKanbanStore } from "@/stores/kanban-store";
 import { useNavigate } from "@tanstack/react-router";
 import { rpc } from "@/lib/rpc";
 import { toast } from "@/components/ui/toast";
@@ -382,10 +384,23 @@ function GeneralTab({ project, onProjectUpdated }: GeneralTabProps) {
 
   const handleReset = useCallback(async () => {
     await rpc.resetProjectData(project.id);
+
+    // Clear both Zustand stores immediately — ProjectPage stays mounted for the
+    // same projectId so navigate() alone won't trigger their reload effects.
+    useChatStore.getState().reset();
+    useKanbanStore.getState().reset();
+
+    // Create a fresh empty conversation so the chat tab has something to show.
+    // loadConversations is insufficient here because conversationsLoaded in
+    // ProjectPage won't toggle (projectId didn't change), so its auto-create
+    // useEffect won't re-run.
+    const newConvId = await useChatStore.getState().createConversation(project.id);
+    useChatStore.getState().setActiveConversation(newConvId);
+
     toast("success", "Project data reset. All conversations and tasks have been cleared.");
-    // Reload the page to reflect the cleared state
-    window.location.reload();
-  }, [project.id]);
+    navigate({ to: "/project/$projectId", params: { projectId: project.id } });
+    window.dispatchEvent(new CustomEvent("autodesk:switch-tab", { detail: { tab: "chat" } }));
+  }, [project.id, navigate]);
 
   return (
     <div className="space-y-6">

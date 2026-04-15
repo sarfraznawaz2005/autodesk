@@ -16,6 +16,7 @@ export function AppShell() {
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [checkingFirstLaunch, setCheckingFirstLaunch] = useState(true);
   const [pageTitle, setPageTitle] = useState("AutoDesk AI");
+  const [projectWorkspacePath, setProjectWorkspacePath] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId } = useParams({ strict: false }) as { projectId?: string };
@@ -52,15 +53,17 @@ export function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update the top-nav title when navigating to/from a project
+  // Update the top-nav title + workspace path when navigating to/from a project
   useEffect(() => {
     if (!projectId) {
       setPageTitle("AutoDesk AI");
+      setProjectWorkspacePath(null);
       return;
     }
     rpc.getProject(projectId).then((p) => {
-      const project = p as { name?: string } | null;
+      const project = p as { name?: string; workspacePath?: string } | null;
       setPageTitle(project?.name ?? "AutoDesk AI");
+      setProjectWorkspacePath(project?.workspacePath ?? null);
     }).catch(() => {});
   }, [projectId]);
 
@@ -134,7 +137,7 @@ export function AppShell() {
       />
       <main className="flex-1 flex flex-col min-w-0">
         <ConnectionStatus />
-        <TopNav title={pageTitle}>
+        <TopNav title={pageTitle} workspacePath={projectWorkspacePath ?? undefined}>
           {/* action buttons go here */}
         </TopNav>
         <div className="flex-1 overflow-auto">

@@ -610,6 +610,19 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 				return { success: true };
 			},
 
+			// ── Open local folder in OS file explorer ──
+			openInExplorer: async (params) => {
+				const { path } = params;
+				if (process.platform === "win32") {
+					Bun.spawn(["explorer", path]);
+				} else if (process.platform === "darwin") {
+					Bun.spawn(["open", path]);
+				} else {
+					Bun.spawn(["xdg-open", path]);
+				}
+				return { success: true };
+			},
+
 			// ── Shell Approval ──
 			respondShellApproval: (params) => ({
 				success: resolveShellApproval(params.requestId, params.decision),

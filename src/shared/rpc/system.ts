@@ -193,6 +193,12 @@ export type SystemRequests = {
     response: { success: boolean };
   };
 
+  // Open a local folder path in the OS file explorer
+  openInExplorer: {
+    params: { path: string };
+    response: { success: boolean };
+  };
+
   // Search workspace files (recursive, for @ mentions)
   searchWorkspaceFiles: {
     params: { projectId: string; query?: string };

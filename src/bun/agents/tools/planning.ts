@@ -135,11 +135,12 @@ export const planningTools: Record<string, ToolRegistryEntry> = {
 					definitions.unshift(contractTask);
 				}
 
-				// Append to existing definitions
-				const existing = pendingTaskDefinitions.get(projectKey) ?? [];
-				pendingTaskDefinitions.set(projectKey, [...existing, ...definitions]);
+				// Replace any existing definitions — each define_tasks call is the
+				// authoritative complete list for this project. Appending caused duplicates
+				// when the task-planner called define_tasks multiple times in one session.
+				pendingTaskDefinitions.set(projectKey, definitions);
 
-				const totalCount = existing.length + definitions.length;
+				const totalCount = definitions.length;
 				const contractNote = hasFrontend && hasBackend
 					? " A contracts task was auto-added as Task 0 — all implementation tasks depend on it."
 					: "";
@@ -148,7 +149,7 @@ export const planningTools: Record<string, ToolRegistryEntry> = {
 					count: definitions.length,
 					totalCount,
 					contractTaskAdded: hasFrontend && hasBackend,
-					message: `Stored ${definitions.length} task definitions (${totalCount} total) for project.${contractNote}`,
+					message: `Stored ${totalCount} task definitions for project (previous definitions replaced).${contractNote}`,
 				});
 			},
 		}),

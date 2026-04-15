@@ -381,6 +381,11 @@ export async function resetProjectData(id: string): Promise<{ success: boolean }
 	});
 	txn(id);
 
+	// Clear in-memory planning state so stale define_tasks results from the
+	// previous session don't trigger a premature approval card on the next plan.
+	const { drainTaskDefinitions } = await import("../agents/tools/planning");
+	drainTaskDefinitions(id);
+
 	logAudit({ action: "project.reset", entityType: "project", entityId: id });
 	return { success: true };
 }

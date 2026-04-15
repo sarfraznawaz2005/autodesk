@@ -324,12 +324,15 @@ function onPlanPresented(e: Event): void {
   if (state.activeConversationId !== conversationId) return;
 
   // The plan message is persisted to DB and delivered via the newMessage event
-  // (which fires just before planPresented). Here we only clear streaming state
-  // so the input becomes active while the user reviews the plan.
+  // (which fires just before planPresented). Clear all busy state so the input
+  // becomes active while the user reviews the plan.
+  // pmPending must also be cleared: when we auto-show the card and skip
+  // onAgentDone, PM never restarts, so no stream token ever clears it.
   useChatStore.setState({
     isStreaming: false,
     streamingMessageId: null,
     streamingContent: "",
+    pmPending: false,
   });
 }
 
@@ -532,6 +535,18 @@ function onAgentInlineComplete(e: Event): void {
       ...(tokensUsed?.prompt ? { liveContextTokens: tokensUsed.prompt, liveContextLimit: tokensUsed.contextLimit ?? 0 } : {}),
     };
   });
+
+  // Safety net: if PM is supposed to restart (pmPending=true) but its first
+  // stream token never arrives (crash, error, or early-return path), the stop
+  // button stays stuck. Clear pmPending after 8s if nothing has changed.
+  if (willPMRestart) {
+    setTimeout(() => {
+      const s = useChatStore.getState();
+      if (s.pmPending && s.runningAgentCount === 0 && !s.isStreaming) {
+        useChatStore.setState({ pmPending: false });
+      }
+    }, 8000);
+  }
 }
 
 function onCompactionStarted(e: Event): void {
@@ -582,11 +597,17 @@ function onPmThinking(e: Event): void {
 // Registration
 // ---------------------------------------------------------------------------
 
+// Guard against double-registration from HMR re-evaluating chat-store.ts
+let handlersInitialized = false;
+
 /**
  * Register all DOM event listeners for the chat store.
- * Call once at module load time from chat-store.ts.
+ * Called at module load time from chat-store.ts. Safe to call multiple times
+ * (idempotent) — subsequent calls are no-ops, preventing HMR listener duplication.
  */
 export function initChatEventHandlers(): void {
+  if (handlersInitialized) return;
+  handlersInitialized = true;
   window.addEventListener("autodesk:stream-token", onStreamToken);
   window.addEventListener("autodesk:stream-reset", onStreamReset);
   window.addEventListener("autodesk:stream-complete", onStreamComplete);
