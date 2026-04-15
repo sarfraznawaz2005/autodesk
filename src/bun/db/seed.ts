@@ -26,9 +26,7 @@ const defaultSettings = [
 	},
 	{
 		key: "constitution",
-		value: JSON.stringify(`## This is the Constitution all agents MUST follow:
-
-### Think Before Coding
+		value: JSON.stringify(`### Think Before Coding
 
 **Don't assume. Don't hide confusion. Surface tradeoffs.**
 

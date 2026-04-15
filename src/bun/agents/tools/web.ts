@@ -49,11 +49,11 @@ const webSearchTool = tool({
 			.number()
 			.int()
 			.min(1)
-			.max(10)
+			.max(25)
 			.optional()
-			.describe("Maximum number of results to return (default: 5)"),
+			.describe("Maximum number of results to return (default: 10)"),
 	}),
-	execute: async ({ query, maxResults = 5 }, { abortSignal }): Promise<string> => {
+	execute: async ({ query, maxResults = 10 }, { abortSignal }): Promise<string> => {
 		try {
 			const response = await fetch("https://html.duckduckgo.com/html/", {
 				method: "POST",
@@ -107,12 +107,12 @@ const webSearchTool = tool({
 // web_fetch — Fetch a URL and return its text content
 // ---------------------------------------------------------------------------
 
-const MAX_FETCH_CHARS = 5_000; // 5 000 characters per page
+const MAX_FETCH_CHARS = 15_000; // 15 000 characters of plain text per page
 
 const webFetchTool = tool({
 	description:
-		"Fetch the text content of a URL. Returns the response body as a string (HTML, JSON, plain text, etc.). " +
-		"Useful for reading documentation, API specs, or any public URL. Response is truncated at 5 000 characters.",
+		"Fetch the text content of a URL. Returns the response body as a string (HTML stripped to plain text, JSON, etc.). " +
+		"Useful for reading documentation, API specs, or any public URL. Response is truncated at 15 000 characters.",
 	inputSchema: z.object({
 		url: z.string().url().describe("The URL to fetch"),
 		headers: z
@@ -157,9 +157,12 @@ const webFetchTool = tool({
 				});
 			}
 
-			const text = await response.text();
+			const raw = await response.text();
+			const text = contentType.includes("html") ? stripHtml(raw) : raw;
 			const truncated = text.length > MAX_FETCH_CHARS;
-			const body = truncated ? text.slice(0, MAX_FETCH_CHARS) : text;
+			const body = truncated
+				? text.slice(0, MAX_FETCH_CHARS) + `\n... (truncated at ${MAX_FETCH_CHARS} chars)`
+				: text;
 
 			return JSON.stringify({
 				url,

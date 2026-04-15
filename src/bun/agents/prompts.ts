@@ -740,9 +740,9 @@ export async function getPMSystemPrompt(
 		prompt = `${PLAN_MODE_SECTION}\n\n---\n\n${prompt}`;
 	}
 
-	prompt += `\n\n## App Context\n\n- **App**: AutoDesk AI v${appVersion}\n- **Current time**: ${currentTime} (${userTimezone})\n- **Today's date**: ${today}\n- **Timezone**: When creating cron jobs or reminders, always pass \`timezone: "${userTimezone}"\` unless the user specifies otherwise.`;
+	prompt += `\n\n---\n\n## App Context\n\n- **App**: AutoDesk AI v${appVersion}\n- **Current time**: ${currentTime} (${userTimezone})\n- **Today's date**: ${today}\n- **Timezone**: When creating cron jobs or reminders, always pass \`timezone: "${userTimezone}"\` unless the user specifies otherwise.`;
 	if (userSection) {
-		prompt += `\n${userSection}`;
+		prompt += `\n\n---\n\n${userSection}`;
 	}
 
 	prompt += `\n\n---\n\n${projectContextSection}`;
@@ -966,7 +966,7 @@ export async function getAgentSystemPrompt(agentName: string, workspacePath?: st
 	return [
 		basePrompt,
 		projectContext,
-		filteredConstitution ? `\n## Constitution\n${filteredConstitution}` : "",
+		filteredConstitution ? `## Constitution\n\n${filteredConstitution}` : "",
 		userSection,
 		knowledgeSection,
 		pluginPrompts,
@@ -974,10 +974,12 @@ export async function getAgentSystemPrompt(agentName: string, workspacePath?: st
 		skillsSection,
 		mcpSection,
 		featureBranchInstruction,
-		workspaceInstructions ? `\n## Project-Specific Context\n\nThe following instructions were loaded from the project workspace and MUST be followed:\n\n${workspaceInstructions}` : "",
-		decisionsContent ? `\n## Architectural Decisions\n\nThe following decisions were logged by previous agents in DECISIONS.md. **Read before making any design choice.**\n\n${decisionsContent}` : "",
-		gitContext ? `\n${gitContext}` : "",
+		workspaceInstructions ? `## Project-Specific Context\n\nThe following instructions were loaded from the project workspace and MUST be followed:\n\n${workspaceInstructions}` : "",
+		decisionsContent ? `## Architectural Decisions\n\nThe following decisions were logged by previous agents in DECISIONS.md. **Read before making any design choice.**\n\n${decisionsContent}` : "",
+		gitContext,
 	]
 		.filter(Boolean)
-		.join("\n");
+		.map((s) => s.trim())
+		.filter(Boolean)
+		.join("\n\n---\n\n");
 }
