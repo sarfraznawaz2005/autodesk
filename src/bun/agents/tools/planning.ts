@@ -63,6 +63,11 @@ async function resolveProjectId(projectIdOrName: string): Promise<string | null>
 
 const pendingTaskDefinitions = new Map<string, TaskDefinition[]>();
 
+/** Read pending task definitions without clearing them. */
+export function peekTaskDefinitions(projectId: string): TaskDefinition[] | undefined {
+	return pendingTaskDefinitions.get(projectId);
+}
+
 /** Read and clear pending task definitions for a project. */
 export function drainTaskDefinitions(projectId: string): TaskDefinition[] | undefined {
 	const defs = pendingTaskDefinitions.get(projectId);

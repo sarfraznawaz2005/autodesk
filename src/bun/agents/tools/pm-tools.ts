@@ -107,6 +107,7 @@ const AGENT_NAMES = [
 
 type TodoItem = { id: string; title: string; status: string };
 
+
 async function getTodoItems(conversationId: string, listId: string): Promise<TodoItem[] | null> {
 	const rows = await db
 		.select({ value: settings.value })
@@ -537,6 +538,76 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 								await summarizeConversation({ conversationId: deps.conversationId, providerConfig: deps.providerConfig, modelId });
 							}
 						} catch { /* non-fatal */ }
+
+						// Code-level plan approval enforcement:
+						// If task-planner just completed for an in-app conversation and
+						// has pending task definitions, auto-show the approval card here
+						// regardless of whether the PM LLM calls request_plan_approval.
+						// This prevents the PM from presenting approval as plain text.
+						if (
+							args.agent === "task-planner" &&
+							result.status === "completed" &&
+							!isChannelConversation
+						) {
+							try {
+								const { peekTaskDefinitions } = await import("./planning");
+								const pendingDefs = peekTaskDefinitions(effectiveProjectId);
+								if (pendingDefs && pendingDefs.length > 0) {
+									const recentNotes = await getProjectNotes(effectiveProjectId);
+									const planDoc = recentNotes[0];
+									if (planDoc?.content?.trim()) {
+										const { broadcastToWebview } = await import("../../engine-manager");
+										const planTitle = planDoc.title ?? "Implementation Plan";
+										const planContent = planDoc.content;
+										const planMessageId = crypto.randomUUID();
+										const planMetadata = JSON.stringify({
+											type: "plan",
+											title: planTitle,
+											projectId: effectiveProjectId,
+											conversationId: deps.conversationId,
+										});
+
+										// Persist plan message so it survives page refresh
+										await db.insert(messages).values({
+											id: planMessageId,
+											conversationId: deps.conversationId,
+											role: "assistant",
+											agentId: "task-planner",
+											content: planContent,
+											metadata: planMetadata,
+											tokenCount: 0,
+											createdAt: new Date().toISOString(),
+										});
+
+										deps.emitNewMessage({
+											messageId: planMessageId,
+											agentId: "task-planner",
+											agentName: "Task Planner",
+											content: planContent,
+											metadata: planMetadata,
+										});
+
+										broadcastToWebview("planPresented", {
+											projectId: effectiveProjectId,
+											conversationId: deps.conversationId,
+											plan: { title: planTitle, content: planContent },
+										});
+
+										// Restart PM with context about the approval card so it knows
+										// to wait and pass note_id when user approves.
+										// Do NOT return early — PM needs this context or it will
+										// re-run task-planner when the user says "approve".
+										result.summary =
+											`Plan document created and approval card has already been shown to the user (plan_note_id: ${planDoc.id}). ` +
+											`DO NOT call request_plan_approval — the card is already displayed. ` +
+											`DO NOT run task-planner again. ` +
+											`Simply acknowledge that the plan is ready for review and wait. ` +
+											`When the user says "approve": call create_tasks_from_plan with note_id="${planDoc.id}". ` +
+											`When the user says "reject": ask for feedback and re-run task-planner with that feedback.`;
+									}
+								}
+							} catch { /* non-fatal — fall through to normal onAgentDone */ }
+						}
 
 						// Restart PM with agent result (skip if agent was cancelled by user)
 						if (result.status !== "cancelled") {
@@ -1356,6 +1427,15 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 			}),
 			execute: async ({ title, summary }) => {
 				try {
+					// Use the plan document that the task-planner just saved to the Docs tab
+					// (via create_doc) as the approval card content. This is the full markdown
+					// plan the user expects to see — not a PM-written summary.
+					// Fall back to the PM's summary if no doc was created (e.g. simple plans
+					// where the task-planner skipped document creation).
+					const recentNotes = await getProjectNotes(deps.projectId);
+					const planDoc = recentNotes[0]; // most recently created/updated note
+					const planContent = planDoc?.content?.trim() ? planDoc.content : summary;
+
 					const isChannelConversation = deps.conversationId.startsWith("channel:");
 
 					if (isChannelConversation) {
@@ -1370,7 +1450,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						if (channelId) {
 							const { sendChannelMessage } = await import("../../channels/manager");
 							const { chunkMessage } = await import("../../channels/chunker");
-							const planText = `📋 *${title}*\n\n${summary}\n\nReply *approve* to start implementation, or *reject* to cancel.`;
+							const planText = `📋 *${title}*\n\n${planContent}\n\nReply *approve* to start implementation, or *reject* to cancel.`;
 							for (const chunk of chunkMessage(planText)) {
 								await sendChannelMessage(channelId, chunk).catch(() => {});
 							}
@@ -1396,20 +1476,20 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						conversationId: deps.conversationId,
 						role: "assistant",
 						agentId: "task-planner",
-						content: summary,
+						content: planContent,
 						metadata,
 						tokenCount: 0,
 						createdAt: new Date().toISOString(),
 					});
 
 					// Notify frontend via newMessage (gives it the real UUID + persisted data)
-					deps.emitNewMessage({ messageId: planMessageId, agentId: "task-planner", agentName: "Task Planner", content: summary, metadata });
+					deps.emitNewMessage({ messageId: planMessageId, agentId: "task-planner", agentName: "Task Planner", content: planContent, metadata });
 
 					// Broadcast planPresented so the frontend shows the approval card
 					broadcastToWebview("planPresented", {
 						projectId: deps.projectId,
 						conversationId: deps.conversationId,
-						plan: { title, content: summary },
+						plan: { title, content: planContent },
 					});
 
 					// Stop PM stream — wait for user's approve/reject
@@ -1417,7 +1497,8 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 
 					return JSON.stringify({
 						success: true,
-						message: "Plan presented to user for approval. Waiting for response. When the user approves, call create_tasks_from_plan to create kanban tasks.",
+						noteId: planDoc?.id ?? null,
+						message: `Plan presented to user for approval. Waiting for response. When the user approves, call create_tasks_from_plan with note_id="${planDoc?.id ?? ""}" so tasks are created directly from the approved document.`,
 					});
 				} catch (err) {
 					return JSON.stringify({ success: false, error: err instanceof Error ? err.message : String(err) });
@@ -1427,30 +1508,64 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 
 		create_tasks_from_plan: tool({
 			description:
-				"Create kanban tasks from the pending task definitions stored by the task-planner's define_tasks tool. " +
-				"Call this AFTER the user approves the plan. Each task definition is converted to a kanban task " +
-				"in the 'backlog' column with correct priority, assigned agent, acceptance criteria, and dependencies.",
+				"Create kanban tasks from an approved plan document. " +
+				"Pass note_id (returned by request_plan_approval) so the task-planner re-reads the approved document and calls define_tasks fresh — this ensures kanban tasks are a faithful representation of what the user approved. " +
+				"Falls back to any pending define_tasks output if note_id is not available.",
 			inputSchema: z.object({
 				project_id: z.string().optional().describe(
-					"Target project ID. Required when working from a channel (WhatsApp/Discord/Email) — must match the project_id used when task-planner ran. Omit only for in-app conversations.",
+					"Target project ID. Required when working from a channel (WhatsApp/Discord/Email). Omit for in-app conversations.",
+				),
+				note_id: z.string().optional().describe(
+					"ID of the approved plan note (returned by request_plan_approval). Pass this so tasks are generated directly from the approved document.",
 				),
 			}),
-			execute: async ({ project_id }) => {
+			execute: async ({ project_id, note_id }) => {
 				try {
 					const isChannelConv = deps.conversationId.startsWith("channel:");
 					if (isChannelConv && !project_id) {
 						return JSON.stringify({
 							success: false,
-							error: "project_id is required when creating tasks from a channel conversation. Pass the same project_id that was used when task-planner ran.",
+							error: "project_id is required when creating tasks from a channel conversation.",
 						});
 					}
 
 					const effectiveProjId = project_id ?? deps.projectId;
-
 					const { drainTaskDefinitions } = await import("./planning");
+
+					// If a note_id is provided, re-run task-planner against the approved document
+					// so define_tasks reflects exactly what the user approved.
+					if (note_id) {
+						const { getNote } = await import("../../rpc/notes");
+						const note = await getNote(note_id);
+						if (note?.content) {
+							// Clear any stale pending definitions before the fresh run
+							drainTaskDefinitions(effectiveProjId);
+
+							const agentAbort = new AbortController();
+							deps.registerAgentAbort?.(agentAbort, "task-planner");
+							try {
+								await runInlineAgent({
+									conversationId: deps.conversationId,
+									agentName: "task-planner",
+									agentDisplayName: "Task Planner",
+									task: `The user has approved the following plan document. Your ONLY job is to call \`define_tasks\` with structured task definitions that are a complete and faithful representation of every task described in this document. Do NOT call \`create_doc\` or \`update_doc\` — the document already exists. Do NOT modify the plan. Just read it carefully and call \`define_tasks\` once.\n\nProject ID: ${effectiveProjId}\n\n---\n\n${note.content}`,
+									projectContext: "",
+									providerConfig: deps.providerConfig,
+									abortSignal: agentAbort.signal,
+									callbacks: deps.inlineAgentCallbacks,
+									workspacePath: deps.workspacePath,
+									projectId: effectiveProjId,
+									readOnly: false,
+								});
+							} finally {
+								deps.unregisterAgentAbort?.(agentAbort);
+							}
+						}
+					}
+
 					const defs = drainTaskDefinitions(effectiveProjId);
 					if (!defs || defs.length === 0) {
-						return JSON.stringify({ success: false, error: `No pending task definitions found for project ${effectiveProjId}. Run task-planner with define_tasks first.` });
+						return JSON.stringify({ success: false, error: `No task definitions found for project ${effectiveProjId}. The task-planner must call define_tasks before tasks can be created.` });
 					}
 
 					const { createKanbanTask } = await import("../../rpc/kanban");
