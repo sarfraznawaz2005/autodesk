@@ -206,20 +206,22 @@ async function runParallelRound(
       try {
         await Promise.race([streamPromise, timeoutPromise]);
       } catch (err) {
-        const msg = err instanceof Error ? err.message : String(err);
-        if (msg === "agent-timeout") {
-          // Skip this agent — emit complete with whatever we have so far
-          emit(sessionId, {
-            type: "agent-response-complete",
-            agentName: agent.name,
-            round,
-          });
-          return agentResponse.trim()
-            ? { agentName: agent.name, displayName: agent.displayName, content: agentResponse.trim() }
-            : null;
-        }
-        // Propagate abort or other errors
-        throw err;
+        // Re-throw user aborts so the session stops cleanly
+        const isAbort =
+          (err instanceof DOMException && err.name === "AbortError") ||
+          (err instanceof Error && err.name === "AbortError");
+        if (isAbort) throw err;
+
+        // Timeout or any other agent-level error — skip this agent gracefully
+        const isTimeout = err instanceof Error && err.message === "agent-timeout";
+        console.warn(
+          `[Council] agent ${agent.name} ${isTimeout ? "timed out" : "errored"} in round ${round}:`,
+          isTimeout ? "(60s)" : err,
+        );
+        emit(sessionId, { type: "agent-response-complete", agentName: agent.name, round });
+        return agentResponse.trim()
+          ? { agentName: agent.name, displayName: agent.displayName, content: agentResponse.trim() }
+          : null;
       }
 
       emit(sessionId, { type: "agent-response-complete", agentName: agent.name, round });
@@ -471,6 +473,16 @@ async function runSession(session: CouncilSession, query: string, context?: stri
   }
 
   if (signal.aborted) return;
+
+  // Guard: need at least 2 responses to run Borda ranking and produce a meaningful synthesis
+  if (finalResponses.length < 2) {
+    const got = finalResponses.length;
+    const msg = got === 1
+      ? "Only 1 agent responded — need at least 2 for a meaningful council decision. Please try again."
+      : "No agents responded successfully. Please check your AI provider and try again.";
+    emit(sessionId, { type: "error", message: msg });
+    return;
+  }
 
   // ── Phase 6: Borda ranking ─────────────────────────────────────────────
   emit(sessionId, { type: "pm-status", message: "Agents are peer-ranking responses..." });

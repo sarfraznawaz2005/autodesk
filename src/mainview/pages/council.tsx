@@ -311,19 +311,19 @@ function MessageBubble({
   if (message.type === "round-divider") {
     return (
       <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 12px" }}>
-        <div style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }} />
+        <div style={{ flex: 1, height: 1, backgroundColor: "#fed7aa" }} />
         <span
           style={{
             fontSize: 11,
-            fontWeight: 600,
-            color: "#9ca3af",
+            fontWeight: 700,
+            color: "#ea580c",
             textTransform: "uppercase",
             letterSpacing: 1,
           }}
         >
           {message.content}
         </span>
-        <div style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }} />
+        <div style={{ flex: 1, height: 1, backgroundColor: "#fed7aa" }} />
       </div>
     );
   }
@@ -967,23 +967,19 @@ export function CouncilPage() {
           backgroundColor: "#f9fafb",
         }}
       >
-        {/* Header — 3-column: title | avatars (centered) | stop */}
+        {/* Header — title | stop */}
         <div
           style={{
             padding: "0 16px",
-            height: 88,
+            height: 52,
             borderBottom: "1px solid #e5e7eb",
             backgroundColor: "#fff",
-            display: "grid",
-            gridTemplateColumns: "1fr auto 1fr",
+            display: "flex",
             alignItems: "center",
+            justifyContent: "space-between",
             flexShrink: 0,
-            overflow: "visible",
-            position: "relative",
-            zIndex: 10,
           }}
         >
-          {/* Left: title + status */}
           <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
             <Users size={17} color="#22c55e" />
             <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>Council</span>
@@ -994,150 +990,27 @@ export function CouncilPage() {
               </span>
             )}
           </div>
-
-          {/* Center: agent avatars */}
-          {(() => {
-            const anyoneSpeaking = Array.from(agentStates.values()).some((s) => s === "speaking");
-            return (
-              <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-                {agents.map((agent) => {
-                  const state = agentStates.get(agent.name) ?? "idle";
-                  const score = bordaScores[agent.name];
-                  const initials = agent.displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
-                  const isSpeaking = state === "speaking";
-                  const isThinking = state === "thinking";
-                  const isDimmed = anyoneSpeaking && !isSpeaking;
-
-                  return (
-                    <Tip key={agent.name} content={agent.displayName} side="bottom">
-                      {/*
-                        Flex column: score (when present) sits above the avatar in
-                        normal flow. The row's align-items:center aligns all columns
-                        by their midpoint, so the avatar circle is always visually
-                        centred regardless of whether a score badge is present.
-                        The bubble is position:absolute so it never grows the column.
-                      */}
-                      <div style={{
-                        display: "flex",
-                        flexDirection: "column",
-                        alignItems: "center",
-                        gap: 5,
-                        cursor: "default",
-                      }}>
-
-                        {/* Score badge — in normal flow, only rendered when present */}
-                        {score !== undefined && (
-                          <span style={{
-                            backgroundColor: agent.color,
-                            color: "#fff",
-                            borderRadius: 6,
-                            padding: "1px 6px",
-                            fontSize: 10,
-                            fontWeight: 700,
-                            lineHeight: 1.4,
-                            whiteSpace: "nowrap",
-                          }}>
-                            {score}
-                          </span>
-                        )}
-
-                        {/* Avatar — bubble is absolute so it never affects column height */}
-                        <div style={{ position: "relative", flexShrink: 0 }}>
-                          {isSpeaking && (
-                            <div style={{
-                              position: "absolute",
-                              bottom: "calc(100% + 5px)",
-                              left: "50%",
-                              transform: "translateX(-50%)",
-                              backgroundColor: agent.color,
-                              borderRadius: 10,
-                              padding: "4px 8px",
-                              display: "flex",
-                              gap: 4,
-                              alignItems: "center",
-                              whiteSpace: "nowrap",
-                              zIndex: 20,
-                              boxShadow: `0 2px 8px ${agent.color}55`,
-                            }}>
-                              {[0, 1, 2].map((i) => (
-                                <span key={i} style={{
-                                  display: "inline-block",
-                                  width: 4,
-                                  height: 4,
-                                  borderRadius: "50%",
-                                  backgroundColor: "#fff",
-                                  animation: `council-dot-bounce 1.1s ease-in-out ${i * 0.18}s infinite`,
-                                }} />
-                              ))}
-                              <span style={{
-                                position: "absolute",
-                                bottom: -4,
-                                left: "50%",
-                                transform: "translateX(-50%)",
-                                width: 0,
-                                height: 0,
-                                borderLeft: "4px solid transparent",
-                                borderRight: "4px solid transparent",
-                                borderTop: `4px solid ${agent.color}`,
-                              }} />
-                            </div>
-                          )}
-
-                          <div style={{
-                            width: 34,
-                            height: 34,
-                            borderRadius: "50%",
-                            backgroundColor: agent.color,
-                            display: "flex",
-                            alignItems: "center",
-                            justifyContent: "center",
-                            color: "#fff",
-                            fontWeight: 700,
-                            fontSize: 11,
-                            transition: "transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease",
-                            transform: isSpeaking ? "scale(1.18)" : "scale(1.0)",
-                            opacity: isDimmed ? 0.3 : 1,
-                            boxShadow: isSpeaking
-                              ? `0 0 14px 5px ${agent.color}66`
-                              : state === "done"
-                                ? `0 0 5px 1px ${agent.color}44`
-                                : "none",
-                            outline: isSpeaking ? `2px solid ${agent.color}` : "none",
-                            outlineOffset: 2,
-                            animation: isThinking
-                              ? "council-breathe 1.6s ease-in-out infinite alternate"
-                              : "none",
-                          }}>
-                            {initials}
-                          </div>
-                        </div>
-
-                      </div>
-                    </Tip>
-                  );
-                })}
-              </div>
-            );
-          })()}
-
-          {/* Right: stop button */}
-          <div style={{ display: "flex", justifyContent: "flex-end" }}>
-            {(isRunning || isWaiting) && (
-              <button
-                onClick={handleStop}
-                style={{ fontSize: 12, color: "#ef4444", background: "none", border: "1px solid #ef4444", borderRadius: 5, padding: "3px 10px", cursor: "pointer", fontWeight: 500 }}
-              >
-                Stop
-              </button>
-            )}
-          </div>
+          {(isRunning || isWaiting) && (
+            <button
+              onClick={handleStop}
+              style={{ fontSize: 12, color: "#ef4444", background: "none", border: "1px solid #ef4444", borderRadius: 5, padding: "3px 10px", cursor: "pointer", fontWeight: 500 }}
+            >
+              Stop
+            </button>
+          )}
         </div>
 
-        {/* Body */}
-        <div
-          ref={feedRef}
-          style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}
-        >
+        {/* Body: main column (feed + input) + right sidebar */}
+        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
+
+          {/* Main column */}
+          <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+          {/* Feed */}
+          <div
+            ref={feedRef}
+            style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}
+          >
           {messages.length === 0 && !isRunning && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, color: "#9ca3af" }}>
               <Users size={40} color="#d1fae5" />
@@ -1166,19 +1039,19 @@ export function CouncilPage() {
               </div>
             );
           })}
-        </div>
+          </div>{/* end feed */}
 
-        {/* Input area */}
-        <div
-          style={{
-            padding: "12px 16px",
-            borderTop: "1px solid #e5e7eb",
-            backgroundColor: "#fff",
-            flexShrink: 0,
-            display: "flex",
-            gap: 8,
-          }}
-        >
+          {/* Input area */}
+          <div
+            style={{
+              borderTop: "1px solid #e5e7eb",
+              backgroundColor: "#fff",
+              flexShrink: 0,
+              padding: "12px 16px",
+              display: "flex",
+              gap: 8,
+            }}
+          >
           <input
             ref={inputRef}
             type="text"
@@ -1233,7 +1106,155 @@ export function CouncilPage() {
             )}
             Send
           </button>
-        </div>
+          </div>{/* end input area */}
+
+          </div>{/* end main column */}
+
+        {/* Right sidebar — avatar-only participants */}
+        {agents.length > 0 && (
+          <aside style={{
+            width: 140,
+            borderLeft: "1px solid #e5e7eb",
+            backgroundColor: "#fff",
+            flexShrink: 0,
+            display: "flex",
+            flexDirection: "column",
+          }}>
+            {/* Header */}
+            <div style={{
+              padding: "10px 0 6px",
+              fontSize: 10,
+              fontWeight: 700,
+              color: "#6b7280",
+              textTransform: "uppercase",
+              letterSpacing: 0.8,
+              borderBottom: "1px solid #f3f4f6",
+              flexShrink: 0,
+              textAlign: "center",
+            }}>
+              Participants
+            </div>
+
+            {/* Avatars vertically centered as a group */}
+            <div style={{
+              flex: 1,
+              display: "flex",
+              flexDirection: "column",
+              alignItems: "stretch",
+              justifyContent: "center",
+              gap: 32,
+            }}>
+              {(() => {
+                const anyoneSpeaking = Array.from(agentStates.values()).some((s) => s === "speaking");
+                return agents.map((agent) => {
+                  const state = agentStates.get(agent.name) ?? "idle";
+                  const score = bordaScores[agent.name];
+                  const initials = agent.displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+                  const isSpeaking = state === "speaking";
+                  const isThinking = state === "thinking";
+                  const isDimmed = anyoneSpeaking && !isSpeaking;
+                  const showBubble = isThinking || isSpeaking;
+
+                  return (
+                    // Full-width row — centers avatar+badge as a combined unit
+                    <div key={agent.name} style={{ display: "flex", justifyContent: "center" }}>
+                      <Tip content={agent.displayName} side="left">
+                        {/* Flex row: avatar + optional badge in-flow so they center together */}
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 7,
+                          opacity: isDimmed ? 0.35 : 1,
+                          transition: "opacity 0.25s",
+                          cursor: "default",
+                        }}>
+                          {/* Avatar circle */}
+                          <div style={{
+                            width: 48,
+                            height: 48,
+                            borderRadius: "50%",
+                            backgroundColor: agent.color,
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            color: "#fff",
+                            fontWeight: 700,
+                            fontSize: 15,
+                            flexShrink: 0,
+                            transition: "transform 0.25s ease, box-shadow 0.25s ease",
+                            transform: isSpeaking ? "scale(1.12)" : "scale(1)",
+                            boxShadow: isSpeaking
+                              ? `0 0 10px 3px ${agent.color}66`
+                              : state === "done" ? `0 0 4px 1px ${agent.color}44` : "none",
+                            outline: isSpeaking ? `2px solid ${agent.color}` : "none",
+                            outlineOffset: 2,
+                            animation: isThinking ? "council-breathe 1.6s ease-in-out infinite alternate" : "none",
+                          }}>
+                            {initials}
+                          </div>
+
+                          {/* Typing bubble — in-flow to the right, tail points left */}
+                          {showBubble && (
+                            <div style={{
+                              position: "relative",
+                              backgroundColor: agent.color,
+                              borderRadius: 999,
+                              padding: "9px 12px",
+                              display: "flex",
+                              alignItems: "center",
+                              gap: 5,
+                            }}>
+                              {/* Triangle tail pointing left toward the avatar */}
+                              <div style={{
+                                position: "absolute",
+                                right: "100%",
+                                top: "50%",
+                                transform: "translateY(-50%)",
+                                width: 0,
+                                height: 0,
+                                borderTop: "5px solid transparent",
+                                borderBottom: "5px solid transparent",
+                                borderRight: `6px solid ${agent.color}`,
+                              }} />
+                              {[0, 1, 2].map((i) => (
+                                <span key={i} style={{
+                                  display: "inline-block",
+                                  width: 6,
+                                  height: 6,
+                                  borderRadius: "50%",
+                                  backgroundColor: "#fff",
+                                  animation: `council-dot-bounce 1.1s ease-in-out ${i * 0.18}s infinite`,
+                                }} />
+                              ))}
+                            </div>
+                          )}
+
+                          {/* Score badge — in-flow to the right */}
+                          {score !== undefined && !showBubble && (
+                            <div style={{
+                              backgroundColor: agent.color,
+                              color: "#fff",
+                              borderRadius: 10,
+                              padding: "2px 7px",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              whiteSpace: "nowrap",
+                            }}>
+                              ★{score}
+                            </div>
+                          )}
+                        </div>
+                      </Tip>
+                    </div>
+                  );
+                });
+              })()}
+            </div>
+          </aside>
+        )}
+
+        </div>{/* end body: flex row */}
+
       </div>
     </>
   );
