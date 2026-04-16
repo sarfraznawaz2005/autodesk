@@ -840,14 +840,15 @@ File write/edit tools automatically return LSP diagnostics (type errors, lint is
 
 If your task context includes a kanban task ID:
 1. **Call \`get_task\` with your task ID as the very first action** — before any other work. This returns the authoritative description, exact acceptance criteria list, and current state from the kanban board. The criteria listed in your prompt may be a summary or out of sync; the kanban board is the source of truth. You MUST know the real criteria count before calling \`check_criteria\`.
-2. Use \`move_task\` to move the task to "working" when you start.
-3. Work through all acceptance criteria returned by \`get_task\` (not the ones in your prompt).
-4. Use \`check_criteria\` with **all indices in a single call** once you have verified them — e.g. \`criteria_index=[0,1,2]\` for a 3-criterion task. Never call \`check_criteria\` one index at a time. Use the exact count from \`get_task\`, not from your prompt.
-5. Verify there are no LSP errors in files you modified (fix any that remain).
-6. **Call \`verify_implementation\`** — this is MANDATORY. The task cannot move to review without passing this check. Pass your honest self-assessment via the structured checklist. If it fails, fix the gaps and call it again. On pass, the task automatically moves to review.
+2. **Call \`list_docs\` and read the project plan or PRD document** — this is MANDATORY before starting any implementation. Call \`list_docs\` with your project ID to get all project documents, then scan the returned titles and call \`get_doc\` on any document whose title contains "Plan:", "Product Requirements Document", or "PRD". This gives you the overall picture of the project and how your task fits into it. If no matching document is found in the list, continue with your assigned task — do not block on it.
+3. Use \`move_task\` to move the task to "working" when you start.
+4. Work through all acceptance criteria returned by \`get_task\` (not the ones in your prompt).
+5. Use \`check_criteria\` with **all indices in a single call** once you have verified them — e.g. \`criteria_index=[0,1,2]\` for a 3-criterion task. Never call \`check_criteria\` one index at a time. Use the exact count from \`get_task\`, not from your prompt.
+6. Verify there are no LSP errors in files you modified (fix any that remain).
+7. **Call \`verify_implementation\`** — this is MANDATORY. The task cannot move to review without passing this check. Pass your honest self-assessment via the structured checklist. If it fails, fix the gaps and call it again. On pass, the task automatically moves to review.
    - Do NOT call \`move_task\` to review — \`verify_implementation\` handles that on pass.
    - Moving to "done" is **reserved for the automated review system** — never move tasks to "done" yourself.
-7. If you cannot complete the task, leave it in "working" and explain in your report.
+8. If you cannot complete the task, leave it in "working" and explain in your report.
 `;
 
 /** Read-only variant: no file writes, no kanban lifecycle. */
@@ -879,12 +880,13 @@ You have access to project docs via \`list_docs\`, \`get_doc\`, and \`create_doc
 
 If your task context includes a kanban task ID:
 1. **Call \`get_task\` with your task ID as the very first action** — before any other work. This returns the authoritative acceptance criteria list. Never infer the criteria count from your prompt.
-2. Use \`move_task\` to move the task to "working" when you start.
-3. Work through all acceptance criteria returned by \`get_task\` (not the ones in your prompt).
-4. Use \`check_criteria\` with **all indices in a single call** — e.g. \`criteria_index=[0,1,2]\`. Never call it one index at a time.
-5. When ALL criteria are checked, use \`move_task\` to move the task to **"review"** — NEVER to "done".
+2. **Call \`list_docs\` and read the project plan or PRD document** — this is MANDATORY before starting any work. Call \`list_docs\` with your project ID, then scan the returned titles and call \`get_doc\` on any document whose title contains "Plan:", "Product Requirements Document", or "PRD". This gives you the overall picture of the project and how your task fits into it. If no matching document is found in the list, continue with your assigned task — do not block on it.
+3. Use \`move_task\` to move the task to "working" when you start.
+4. Work through all acceptance criteria returned by \`get_task\` (not the ones in your prompt).
+5. Use \`check_criteria\` with **all indices in a single call** — e.g. \`criteria_index=[0,1,2]\`. Never call it one index at a time.
+6. When ALL criteria are checked, use \`move_task\` to move the task to **"review"** — NEVER to "done".
    - Moving to "done" is **reserved for the Project Manager only** via the per-task review cycle.
-6. If you cannot complete the task, leave it in "working" and explain in your report.
+7. If you cannot complete the task, leave it in "working" and explain in your report.
 `;
 
 const READ_ONLY_AGENTS = new Set(["code-explorer", "explore", "research-expert"]);
