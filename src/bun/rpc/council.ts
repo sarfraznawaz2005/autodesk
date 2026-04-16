@@ -21,6 +21,7 @@ import { aiProviders } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { createProviderAdapter, getDefaultModel } from "../providers";
 import { broadcastToWebview } from "../engine-manager";
+import { sendDesktopNotification } from "../notifications/desktop";
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -543,6 +544,13 @@ async function runSession(session: CouncilSession, query: string, context?: stri
   }
 
   emit(sessionId, { type: "final-answer-complete" });
+
+  // OS-level desktop notification so the user knows the council has reached a decision
+  sendDesktopNotification(
+    "Council Decision Ready",
+    "The council has reached a final decision.",
+  ).catch(() => {});
+
   emit(sessionId, { type: "session-ended" });
 
   activeSessions.delete(sessionId);
