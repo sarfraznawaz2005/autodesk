@@ -31,6 +31,8 @@ export function GitTab({ projectId }: GitTabProps) {
   const [loading, setLoading] = useState(false);
   const [pulling, setPulling] = useState(false);
   const [pullDialog, setPullDialog] = useState<{ output: string; ok: boolean } | null>(null);
+  const [pullBranchDialog, setPullBranchDialog] = useState<{ currentBranch: string } | null>(null);
+  const [pullBranchInput, setPullBranchInput] = useState("");
   const [subTab, setSubTab] = useState<GitSubTab>("overview");
 
   // Auto-commit settings state
@@ -78,10 +80,17 @@ export function GitTab({ projectId }: GitTabProps) {
     setSavingSettings(false);
   };
 
-  const handlePull = async () => {
+  const handlePull = async (remoteBranch?: string) => {
     setPulling(true);
     try {
-      const res = await rpc.gitPull(projectId);
+      const res = await rpc.gitPull(projectId, remoteBranch);
+      if (res.noTracking) {
+        // No upstream set — ask user which remote branch to pull from
+        const current = branches.find((b) => b.isCurrent)?.name ?? "";
+        setPullBranchInput(current);
+        setPullBranchDialog({ currentBranch: current });
+        return;
+      }
       const raw = res.output ?? res.error ?? (res.success ? "Already up to date." : "Pull failed.");
       setPullDialog({ output: raw, ok: res.success });
       if (res.success) await refresh();
@@ -90,6 +99,13 @@ export function GitTab({ projectId }: GitTabProps) {
     } finally {
       setPulling(false);
     }
+  };
+
+  const handlePullWithBranch = async () => {
+    const branch = pullBranchInput.trim();
+    if (!branch) return;
+    setPullBranchDialog(null);
+    await handlePull(branch);
   };
 
   return (
@@ -112,7 +128,7 @@ export function GitTab({ projectId }: GitTabProps) {
         {subTab === "overview" && (
           <div className="ml-auto flex items-center gap-1">
             <Tip content="Pull from remote">
-              <button onClick={handlePull} disabled={pulling || loading} className="p-1 rounded hover:bg-muted disabled:opacity-50">
+              <button onClick={() => handlePull()} disabled={pulling || loading} className="p-1 rounded hover:bg-muted disabled:opacity-50">
                 <Download className={`w-3.5 h-3.5 ${pulling ? "animate-pulse" : ""}`} />
               </button>
             </Tip>
@@ -224,6 +240,43 @@ export function GitTab({ projectId }: GitTabProps) {
         )}
 
       </div>
+
+      {/* Pull branch prompt — shown when current branch has no upstream tracking */}
+      {pullBranchDialog && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40" onClick={() => setPullBranchDialog(null)}>
+          <div className="bg-background border rounded-lg shadow-lg w-full max-w-md mx-4 p-5" onClick={(e) => e.stopPropagation()}>
+            <h3 className="text-sm font-semibold mb-1">Specify remote branch</h3>
+            <p className="text-xs text-muted-foreground mb-3">
+              <span className="font-mono text-foreground">{pullBranchDialog.currentBranch}</span> has no upstream tracking branch.
+              Enter the remote branch name to pull from:
+            </p>
+            <input
+              autoFocus
+              type="text"
+              value={pullBranchInput}
+              onChange={(e) => setPullBranchInput(e.target.value)}
+              onKeyDown={(e) => { if (e.key === "Enter") handlePullWithBranch(); if (e.key === "Escape") setPullBranchDialog(null); }}
+              placeholder="e.g. main or feature/my-branch"
+              className="w-full text-sm px-3 py-1.5 rounded border bg-background mb-4 focus:outline-none focus:ring-2 focus:ring-ring"
+            />
+            <div className="flex gap-2">
+              <button
+                onClick={handlePullWithBranch}
+                disabled={!pullBranchInput.trim()}
+                className="flex-1 px-3 py-1.5 rounded bg-primary text-primary-foreground text-sm disabled:opacity-50"
+              >
+                Pull
+              </button>
+              <button
+                onClick={() => setPullBranchDialog(null)}
+                className="px-3 py-1.5 rounded border text-sm"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Pull result dialog */}
       {pullDialog && (

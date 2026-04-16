@@ -45,8 +45,8 @@ export type GitRequests = {
     response: { success: boolean; output?: string; error?: string };
   };
   gitPull: {
-    params: { projectId: string };
-    response: { success: boolean; output?: string; error?: string };
+    params: { projectId: string; remoteBranch?: string };
+    response: { success: boolean; output?: string; error?: string; noTracking?: boolean };
   };
   gitMergeBranch: {
     params: { projectId: string; branch: string; strategy?: string };

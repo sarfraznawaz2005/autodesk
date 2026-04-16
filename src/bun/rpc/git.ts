@@ -105,11 +105,29 @@ export async function gitPush(projectId: string) {
 	return { success: exitCode === 0, output: exitCode === 0 ? output : undefined, error: exitCode !== 0 ? output : undefined };
 }
 
-export async function gitPull(projectId: string) {
+export async function gitPull(projectId: string, remoteBranch?: string) {
 	const cwd = await getWorkspacePath(projectId);
 	const remoteErr = await ensureRemote(projectId, cwd);
 	if (remoteErr) return { success: false, error: remoteErr };
+
+	// Explicit remote branch supplied (user answered the branch prompt)
+	if (remoteBranch) {
+		const { exitCode, stdout, stderr } = await runGit(["pull", "origin", remoteBranch], cwd);
+		if (exitCode === 0) {
+			// Persist the tracking relationship so future pulls work without prompting
+			await runGit(["branch", `--set-upstream-to=origin/${remoteBranch}`], cwd);
+		}
+		const output = [stdout, stderr].filter(Boolean).join("\n").trim() || "Already up to date.";
+		return { success: exitCode === 0, output: exitCode === 0 ? output : undefined, error: exitCode !== 0 ? output : undefined };
+	}
+
 	const { exitCode, stdout, stderr } = await runGit(["pull"], cwd);
+
+	// No upstream tracking — ask the user which remote branch to pull from
+	if (exitCode !== 0 && stderr.includes("no tracking information")) {
+		return { success: false, noTracking: true };
+	}
+
 	const output = [stdout, stderr].filter(Boolean).join("\n").trim() || "Already up to date.";
 	return { success: exitCode === 0, output: exitCode === 0 ? output : undefined, error: exitCode !== 0 ? output : undefined };
 }

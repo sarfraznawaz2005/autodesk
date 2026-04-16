@@ -509,7 +509,7 @@ export const rpc = {
   gitStageFiles: (projectId: string, files: string[]) => electroviewRpc.request.gitStageFiles({ projectId, files }),
   gitCommit: (projectId: string, message: string) => electroviewRpc.request.gitCommit({ projectId, message }),
   gitPush: (projectId: string) => electroviewRpc.request.gitPush({ projectId }),
-  gitPull: (projectId: string) => electroviewRpc.request.gitPull({ projectId }),
+  gitPull: (projectId: string, remoteBranch?: string) => electroviewRpc.request.gitPull({ projectId, remoteBranch }),
 
   // ---- Plugins --------------------------------------------------------------
 
