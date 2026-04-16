@@ -1,4 +1,4 @@
-# AutoDesk AI
+# AutoDesk
 
 A cross-platform desktop application where autonomous AI agent teams handle the full software development lifecycle — planning, coding, reviewing, and testing — while humans approve plans and deployments only.
 
@@ -28,7 +28,7 @@ A cross-platform desktop application where autonomous AI agent teams handle the 
 
 ## Overview
 
-AutoDesk AI manages software development projects through a team of specialized AI agents orchestrated by a Project Manager (PM) agent. The PM talks to the user, creates plans, spawns sub-agents, and manages a kanban board. Write agents (backend engineer, frontend engineer, etc.) execute one at a time; read-only agents can run in parallel.
+AutoDesk manages software development projects through a team of specialized AI agents orchestrated by a Project Manager (PM) agent. The PM talks to the user, creates plans, spawns sub-agents, and manages a kanban board. Write agents (backend engineer, frontend engineer, etc.) execute one at a time; read-only agents can run in parallel.
 
 **Core workflow:**
 

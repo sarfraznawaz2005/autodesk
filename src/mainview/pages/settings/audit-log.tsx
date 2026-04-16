@@ -104,7 +104,7 @@ export function AuditLogSettings() {
       <div>
         <h3 className="text-lg font-semibold text-foreground">Audit Log</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Track all actions performed in AutoDesk AI.
+          Track all actions performed in AutoDesk.
         </p>
       </div>
 

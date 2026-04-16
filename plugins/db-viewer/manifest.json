@@ -2,7 +2,7 @@
 	"name": "db-viewer",
 	"displayName": "Database Viewer",
 	"version": "1.0.0",
-	"description": "Browse and manage AutoDesk AI database tables. Adds a sidebar link when enabled.",
+	"description": "Browse and manage AutoDesk database tables. Adds a sidebar link when enabled.",
 	"author": "AutoDesk",
 	"permissions": [],
 	"tools": [],

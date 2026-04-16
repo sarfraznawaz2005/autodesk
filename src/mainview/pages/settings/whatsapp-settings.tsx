@@ -331,7 +331,7 @@ export function WhatsAppSettings() {
         <h3 className="text-lg font-semibold">WhatsApp Integration</h3>
         <p className="text-sm text-muted-foreground mt-1">
           Link a WhatsApp account via QR code to receive notifications and
-          interact with AutoDesk AI from WhatsApp.
+          interact with AutoDesk from WhatsApp.
         </p>
       </div>
 

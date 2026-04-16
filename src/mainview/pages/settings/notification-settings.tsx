@@ -435,7 +435,7 @@ export function NotificationSettings() {
           Notification Preferences
         </h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Control how and when AutoDesk AI notifies you across each connected
+          Control how and when AutoDesk notifies you across each connected
           platform. Changes apply per platform and take effect immediately after
           saving.
         </p>

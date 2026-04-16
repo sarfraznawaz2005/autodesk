@@ -195,7 +195,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
           <Zap className="h-5 w-5 text-indigo-600 shrink-0" aria-hidden="true" />
           {!collapsed && (
             <span className="font-semibold text-lg text-gray-900 truncate flex-1">
-              AutoDesk AI
+              AutoDesk
             </span>
           )}
         </Link>

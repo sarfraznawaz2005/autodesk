@@ -1,7 +1,7 @@
 /**
  * Webhook configuration and event log management.
  *
- * Since AutoDesk AI is a desktop app without a public URL, we implement
+ * Since AutoDesk is a desktop app without a public URL, we implement
  * GitHub event polling instead of real webhook reception. The UI lets
  * users configure which events to watch, and pollGithubEvents() fetches
  * recent events from the GitHub API and stores them in webhook_events.

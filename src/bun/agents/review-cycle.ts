@@ -337,7 +337,7 @@ async function ensureGitInit(workspacePath: string): Promise<void> {
 		Bun.spawnSync(["git", "add", "-A"], { cwd: workspacePath, stderr: "pipe" });
 		Bun.spawnSync(
 			["git", "commit", "-m", "chore: initial commit"],
-			{ cwd: workspacePath, stderr: "pipe", env: { ...process.env, GIT_AUTHOR_NAME: "AutoDesk AI", GIT_AUTHOR_EMAIL: "ai@autodesk", GIT_COMMITTER_NAME: "AutoDesk AI", GIT_COMMITTER_EMAIL: "ai@autodesk" } },
+			{ cwd: workspacePath, stderr: "pipe", env: { ...process.env, GIT_AUTHOR_NAME: "AutoDesk", GIT_AUTHOR_EMAIL: "ai@autodesk", GIT_COMMITTER_NAME: "AutoDesk", GIT_COMMITTER_EMAIL: "ai@autodesk" } },
 		);
 	}
 }
@@ -422,7 +422,7 @@ export async function autoCommitTask(projectId: string, taskId: string, taskTitl
 			{
 				cwd: workspacePath,
 				stderr: "pipe",
-				env: { ...process.env, GIT_AUTHOR_NAME: "AutoDesk AI", GIT_AUTHOR_EMAIL: "ai@autodesk", GIT_COMMITTER_NAME: "AutoDesk AI", GIT_COMMITTER_EMAIL: "ai@autodesk" },
+				env: { ...process.env, GIT_AUTHOR_NAME: "AutoDesk", GIT_AUTHOR_EMAIL: "ai@autodesk", GIT_COMMITTER_NAME: "AutoDesk", GIT_COMMITTER_EMAIL: "ai@autodesk" },
 			},
 		);
 		if (commitResult.exitCode === 0) {

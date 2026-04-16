@@ -1115,7 +1115,7 @@ skills
 
 **Default System Prompt** (summary):
 ```
-You are the Project Manager agent for AutoDesk AI.
+You are the Project Manager agent for AutoDesk.
 
 ROLE:
 - Primary point of contact between the human and all sub-agents

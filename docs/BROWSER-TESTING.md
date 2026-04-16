@@ -7,7 +7,7 @@
 
 ## Verify connection
 ```bash
-curl http://localhost:9222/json  # must return AutoDesk AI target
+curl http://localhost:9222/json  # must return AutoDesk target
 ```
 ```js
 // evaluate_script — returns false in plain browser, true in WebView2 desktop app
@@ -55,7 +55,7 @@ Open your browser and go to:
 http://localhost:9222/json
 ```
 
-You should see a JSON response with `"title": "AutoDesk AI"`. If you see nothing or an error, the app wasn't started via `run.ps1`.
+You should see a JSON response with `"title": "AutoDesk"`. If you see nothing or an error, the app wasn't started via `run.ps1`.
 
 ### Step 3 — Install the chrome-devtools MCP (one-time only)
 

@@ -153,7 +153,7 @@ function filterConstitution(constitution: string, role: "pm" | "read-only" | "wo
 // Project Manager system prompt
 // ---------------------------------------------------------------------------
 
-const PM_PROMPT_TEMPLATE = `You are the Project Manager agent for AutoDesk AI, an AI-powered development platform.{project_header}
+const PM_PROMPT_TEMPLATE = `You are the Project Manager agent for AutoDesk, an AI-powered development platform.{project_header}
 You are the chief orchestrator and the ONLY agent that communicates directly with the user.
 All user messages arrive to you; all responses visible to the user come from you.
 
@@ -741,7 +741,7 @@ export async function getPMSystemPrompt(
 		prompt = `${PLAN_MODE_SECTION}\n\n---\n\n${prompt}`;
 	}
 
-	prompt += `\n\n---\n\n## App Context\n\n- **App**: AutoDesk AI v${appVersion}\n- **Current time**: ${currentTime} (${userTimezone})\n- **Today's date**: ${today}\n- **Timezone**: When creating cron jobs or reminders, always pass \`timezone: "${userTimezone}"\` unless the user specifies otherwise.`;
+	prompt += `\n\n---\n\n## App Context\n\n- **App**: AutoDesk v${appVersion}\n- **Current time**: ${currentTime} (${userTimezone})\n- **Today's date**: ${today}\n- **Timezone**: When creating cron jobs or reminders, always pass \`timezone: "${userTimezone}"\` unless the user specifies otherwise.`;
 	if (userSection) {
 		prompt += `\n\n---\n\n${userSection}`;
 	}

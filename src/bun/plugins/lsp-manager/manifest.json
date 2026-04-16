@@ -3,7 +3,7 @@
 	"displayName": "LSP Manager",
 	"version": "1.0.0",
 	"description": "Manages language servers for TypeScript, Python, Go, Rust, and PHP — provides diagnostics, hover, definition, references, and document symbols to AI agents.",
-	"author": "AutoDesk AI",
+	"author": "AutoDesk",
 	"permissions": ["shell"],
 	"tools": ["lsp_diagnostics", "lsp_hover", "lsp_definition", "lsp_references", "lsp_document_symbols"],
 	"defaultEnabled": true,

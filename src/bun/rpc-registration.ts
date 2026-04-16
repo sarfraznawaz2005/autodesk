@@ -636,7 +636,7 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 			// ── Test OS Notification ──
 			testOsNotification: async () => {
 				try {
-					await sendDesktopNotification("AutoDesk AI — Test Notification", "OS-level desktop notifications are working correctly.");
+					await sendDesktopNotification("AutoDesk — Test Notification", "OS-level desktop notifications are working correctly.");
 					return { success: true };
 				} catch {
 					return { success: false };

@@ -106,12 +106,12 @@ const getEnvTool = tool({
 });
 
 // ---------------------------------------------------------------------------
-// get_autodesk_paths — AutoDesk AI app data and storage paths
+// get_autodesk_paths — AutoDesk app data and storage paths
 // ---------------------------------------------------------------------------
 
 const getAutoDesKPathsTool = tool({
 	description:
-		"Get AutoDesk AI application paths: where the database, logs, LSP servers, plugins, " +
+		"Get AutoDesk application paths: where the database, logs, LSP servers, plugins, " +
 		"and other app data are stored. Paths vary between dev and production builds.",
 	inputSchema: z.object({}),
 	execute: async (): Promise<string> => {

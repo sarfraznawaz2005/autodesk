@@ -185,7 +185,7 @@ const isDevMode = url.startsWith("http://localhost");
 
 // Create the main application window using saved frame
 let mainWindow = new BrowserWindow({
-	title: "AutoDesk AI",
+	title: "AutoDesk",
 	url,
 	frame: {
 		width: savedFrame.width,
@@ -205,7 +205,7 @@ setMainWindowRef(mainWindow);
 let backgroundServicesInitialised = false;
 mainWindow.webview.on("dom-ready", () => {
 	mainWindow.maximize();
-	setWindowTitlebarIcon("AutoDesk AI", titlebarIconPath);
+	setWindowTitlebarIcon("AutoDesk", titlebarIconPath);
 	if (!isDevMode) {
 		// Disable right-click context menu in production — removes Inspect Element
 		mainWindow.webview.executeJavascript(
@@ -369,7 +369,7 @@ const trayIconPath = existsSync(titlebarIconPath)
 	: resolve(import.meta.dir, "../../assets/icon.ico");
 
 const tray = new Tray({
-	title: "AutoDesk AI",
+	title: "AutoDesk",
 	image: trayIconPath,
 	template: false,
 	width: 32,
@@ -377,7 +377,7 @@ const tray = new Tray({
 });
 
 tray.setMenu([
-	{ type: "normal", label: "Show AutoDesk AI", action: "show" },
+	{ type: "normal", label: "Show AutoDesk", action: "show" },
 	{ type: "divider" },
 	{ type: "normal", label: "Quit", action: "quit" },
 ]);
@@ -400,7 +400,7 @@ function showOrRestoreWindow(): void {
 	}
 
 	mainWindow = new BrowserWindow({
-		title: "AutoDesk AI",
+		title: "AutoDesk",
 		url: restoreUrl,
 		frame: {
 			width: currentState.width,
@@ -415,7 +415,7 @@ function showOrRestoreWindow(): void {
 
 	mainWindow.webview.on("dom-ready", () => {
 		mainWindow.maximize();
-		setWindowTitlebarIcon("AutoDesk AI", titlebarIconPath);
+		setWindowTitlebarIcon("AutoDesk", titlebarIconPath);
 		if (!isDevMode) {
 			mainWindow.webview.executeJavascript(
 				"document.addEventListener('contextmenu', e => e.preventDefault(), true)",
@@ -462,4 +462,4 @@ tray.on("tray-clicked", (e: unknown) => {
 	}
 });
 
-console.log("AutoDesk AI started!");
+console.log("AutoDesk started!");

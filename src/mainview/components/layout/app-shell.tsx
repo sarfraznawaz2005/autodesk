@@ -15,7 +15,7 @@ export function AppShell() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [checkingFirstLaunch, setCheckingFirstLaunch] = useState(true);
-  const [pageTitle, setPageTitle] = useState("AutoDesk AI");
+  const [pageTitle, setPageTitle] = useState("AutoDesk");
   const [projectWorkspacePath, setProjectWorkspacePath] = useState<string | null>(null);
   const navigate = useNavigate();
   const location = useLocation();
@@ -56,13 +56,13 @@ export function AppShell() {
   // Update the top-nav title + workspace path when navigating to/from a project
   useEffect(() => {
     if (!projectId) {
-      setPageTitle("AutoDesk AI");
+      setPageTitle("AutoDesk");
       setProjectWorkspacePath(null);
       return;
     }
     rpc.getProject(projectId).then((p) => {
       const project = p as { name?: string; workspacePath?: string } | null;
-      setPageTitle(project?.name ?? "AutoDesk AI");
+      setPageTitle(project?.name ?? "AutoDesk");
       setProjectWorkspacePath(project?.workspacePath ?? null);
     }).catch(() => {});
   }, [projectId]);

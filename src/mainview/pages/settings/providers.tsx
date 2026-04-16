@@ -164,7 +164,7 @@ function EmptyProviders({ onAdd }: { onAdd: () => void }) {
       </div>
       <h3 className="text-lg font-semibold mb-1">No AI providers configured</h3>
       <p className="text-sm text-muted-foreground max-w-xs mb-6">
-        Add your first AI provider to start using AutoDesk AI. You can connect
+        Add your first AI provider to start using AutoDesk. You can connect
         Anthropic, OpenAI, or a custom endpoint.
       </p>
       <Button onClick={onAdd}>
@@ -481,7 +481,7 @@ function ProviderDialog({
           <DialogDescription>
             {isEditing
               ? `Update configuration for ${editingProvider.name}.`
-              : "Configure a new AI provider to use with AutoDesk AI."}
+              : "Configure a new AI provider to use with AutoDesk."}
           </DialogDescription>
         </DialogHeader>
 
@@ -777,7 +777,7 @@ export function ProvidersSettings() {
         <div>
           <h2 className="text-xl font-semibold">AI Providers</h2>
           <p className="text-sm text-muted-foreground mt-0.5">
-            Manage the AI providers AutoDesk AI uses to run agents.
+            Manage the AI providers AutoDesk uses to run agents.
           </p>
         </div>
 

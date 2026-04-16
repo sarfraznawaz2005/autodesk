@@ -1,4 +1,4 @@
-# Skills System — AutoDesk AI
+# Skills System — AutoDesk
 
 > Definitive spec for the skills system. Read this before touching any skills-related code.
 
@@ -6,7 +6,7 @@
 
 ## Overview
 
-Skills extend what AutoDesk AI agents can do. A skill is a directory containing a
+Skills extend what AutoDesk agents can do. A skill is a directory containing a
 `SKILL.md` file with YAML frontmatter (metadata) and markdown instructions.
 
 Skills use a **compact prompt injection** approach to save tokens: only skill
@@ -22,7 +22,7 @@ Skills page for browsing discovered skills and a button to open the skills folde
 in the OS file explorer.
 
 The skill format is **compatible with the Claude Code / Agent Skills open standard**.
-Skills created for Claude Code work in AutoDesk AI and vice versa.
+Skills created for Claude Code work in AutoDesk and vice versa.
 
 ---
 
@@ -427,7 +427,7 @@ When writing React components in this codebase:
 
 ## Compatibility with Claude Code
 
-| Feature | Claude Code | AutoDesk AI | Notes |
+| Feature | Claude Code | AutoDesk | Notes |
 |---------|-------------|-------------|-------|
 | SKILL.md with YAML frontmatter | Yes | Yes | Same format |
 | Supporting files | Yes | Yes | Same structure |

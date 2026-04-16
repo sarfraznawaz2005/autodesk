@@ -52,7 +52,7 @@ export function AppearanceSettings() {
       <div>
         <h3 className="text-lg font-semibold">Appearance</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Customise how AutoDesk AI looks and feels.
+          Customise how AutoDesk looks and feels.
         </p>
       </div>
 

@@ -1,11 +1,11 @@
 ---
 name: autodesk-guide
-description: AutoDesk AI codebase conventions, architecture patterns, and development guidelines. Use when working on or understanding the AutoDesk AI application itself.
+description: AutoDesk codebase conventions, architecture patterns, and development guidelines. Use when working on or understanding the AutoDesk application itself.
 agent: backend-engineer
 allowed-tools: read_file, search_files, search_content, directory_tree
 ---
 
-# AutoDesk AI Development Guide
+# AutoDesk Development Guide
 
 ## Tech Stack
 

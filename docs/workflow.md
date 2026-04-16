@@ -1,6 +1,6 @@
-# AutoDesk AI — Workflow Architecture
+# AutoDesk — Workflow Architecture
 
-This document describes the end-to-end workflow that governs how AutoDesk AI
+This document describes the end-to-end workflow that governs how AutoDesk
 processes human requests, plans work, obtains approval, dispatches agents, and
 delivers results. It is the single source of truth for both human contributors
 and AI agents working on this codebase.
@@ -28,7 +28,7 @@ and AI agents working on this codebase.
 
 ## Overview
 
-AutoDesk AI is an AI-powered development platform where a **Project Manager (PM)**
+AutoDesk is an AI-powered development platform where a **Project Manager (PM)**
 agent orchestrates a team of specialised sub-agents. The human interacts with the
 PM via the in-app chat or external channels (Discord, WhatsApp, Email). The PM
 plans work, presents it for approval, then autonomously drives execution through

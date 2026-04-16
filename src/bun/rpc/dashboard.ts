@@ -62,7 +62,7 @@ async function buildDashboardSystemPrompt(): Promise<string> {
 	const now = new Date();
 	const localTime = now.toLocaleString("en-US", { weekday: "short", year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit", hour12: false, timeZone: userTimezone });
 
-	let prompt = `You are the AutoDesk AI Project Manager assistant, available on the dashboard.
+	let prompt = `You are the AutoDesk Project Manager assistant, available on the dashboard.
 
 Current time: ${localTime} (${userTimezone})
 

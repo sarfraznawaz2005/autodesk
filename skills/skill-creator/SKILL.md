@@ -1,11 +1,11 @@
 ---
 name: skill-creator
-description: Create new skills or improve existing ones for AutoDesk AI agents. Use when the user wants to create a skill from scratch, edit an existing skill, or asks how to write a SKILL.md file.
+description: Create new skills or improve existing ones for AutoDesk agents. Use when the user wants to create a skill from scratch, edit an existing skill, or asks how to write a SKILL.md file.
 ---
 
 # Skill Creator
 
-Create and improve skills for AutoDesk AI. Skills are instruction sets that extend agent capabilities — they teach agents how to handle specific tasks like document creation, data processing, or specialized workflows.
+Create and improve skills for AutoDesk. Skills are instruction sets that extend agent capabilities — they teach agents how to handle specific tasks like document creation, data processing, or specialized workflows.
 
 ## Skill Format
 

@@ -2,7 +2,7 @@ import type { ElectrobunConfig } from "electrobun";
 
 export default {
 	app: {
-		name: "AutoDesk AI",
+		name: "AutoDesk",
 		identifier: "com.sarfrazai.autodesk",
 		version: "1.0.0",
 	},

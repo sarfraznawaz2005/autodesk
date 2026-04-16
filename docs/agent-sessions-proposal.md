@@ -16,7 +16,7 @@
 
 ## Purpose
 
-This document defines the **Agent Sessions** feature for AutoDesk AI. It describes the problem, the proposed solution, database changes, code changes, edge cases, and token economics.
+This document defines the **Agent Sessions** feature for AutoDesk. It describes the problem, the proposed solution, database changes, code changes, edge cases, and token economics.
 
 ---
 

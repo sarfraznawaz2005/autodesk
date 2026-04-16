@@ -1,4 +1,4 @@
-# AGENTS.md — AutoDesk AI
+# AGENTS.md — AutoDesk
 
 > This file is the **map**, not the manual. It orients AI agents quickly and
 > points to the deeper sources of truth. Keep it short and current.
@@ -7,7 +7,7 @@
 
 ## What Is This Project?
 
-**AutoDesk AI** is a cross-platform desktop application (Electrobun + Bun +
+**AutoDesk** is a cross-platform desktop application (Electrobun + Bun +
 React 19) where autonomous AI agent teams handle the full software development
 lifecycle — planning, coding, reviewing, testing — with humans approving plans
 and deployments only.

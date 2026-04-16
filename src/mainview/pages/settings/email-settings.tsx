@@ -697,7 +697,7 @@ export function EmailSettings() {
       <div>
         <h3 className="text-lg font-semibold">Email Integration</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Connect an email account via IMAP and SMTP to let AutoDesk AI receive
+          Connect an email account via IMAP and SMTP to let AutoDesk receive
           messages, convert them to tasks, and send replies on your behalf.
         </p>
       </div>

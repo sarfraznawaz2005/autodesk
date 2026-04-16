@@ -416,7 +416,7 @@ export function DiscordSettings() {
       <div>
         <h3 className="text-lg font-semibold">Discord Integration</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Connect a Discord bot to receive notifications and interact with AutoDesk AI
+          Connect a Discord bot to receive notifications and interact with AutoDesk
           from your Discord server.
         </p>
       </div>

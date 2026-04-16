@@ -177,7 +177,7 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
         <Zap className="h-8 w-8" aria-hidden="true" />
       </div>
       <div className="space-y-2">
-        <h1 className="text-3xl font-bold tracking-tight">Welcome to AutoDesk AI</h1>
+        <h1 className="text-3xl font-bold tracking-tight">Welcome to AutoDesk</h1>
         <p className="max-w-sm text-muted-foreground">
           Your AI-powered development workspace. Let's get you set up in just a
           few steps.
@@ -344,7 +344,7 @@ function StepSelectProvider({
       <div>
         <h2 className="text-xl font-semibold">Choose your AI provider</h2>
         <p className="mt-1 text-sm text-muted-foreground">
-          Select the AI service you'd like to use with AutoDesk AI.
+          Select the AI service you'd like to use with AutoDesk.
         </p>
       </div>
       <div

@@ -194,7 +194,7 @@ export function GithubSettings() {
       <div>
         <h3 className="text-lg font-semibold">GitHub Integration</h3>
         <p className="text-sm text-muted-foreground mt-1">
-          Connect AutoDesk AI to GitHub using a Personal Access Token. The token
+          Connect AutoDesk to GitHub using a Personal Access Token. The token
           is stored locally and never sent to any third-party service.
         </p>
       </div>

@@ -199,7 +199,7 @@ export class EmailAdapter implements ChannelAdapter {
         await this.smtpTransport.sendMail({
             from: this.emailConfig.smtpUser,
             to: channelId,
-            subject: options?.subject || "AutoDesk AI Notification",
+            subject: options?.subject || "AutoDesk Notification",
             text: content,
             ...(options?.replyToMessageId && { inReplyTo: options.replyToMessageId, references: options.replyToMessageId }),
         });

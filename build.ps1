@@ -2,7 +2,7 @@ $ScriptDir = Split-Path -Parent $MyInvocation.MyCommand.Path
 Set-Location $ScriptDir
 
 Write-Host ""
-Write-Host "=== AutoDesk AI Build (stable) ==="
+Write-Host "=== AutoDesk Build (stable) ==="
 Write-Host ""
 
 $buildEnv = "stable"
