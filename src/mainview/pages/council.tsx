@@ -1123,7 +1123,7 @@ export function CouncilPage() {
             {/* Header */}
             <div style={{
               padding: "10px 0 6px",
-              fontSize: 10,
+              fontSize: 12,
               fontWeight: 700,
               color: "#6b7280",
               textTransform: "uppercase",
@@ -1131,8 +1131,24 @@ export function CouncilPage() {
               borderBottom: "1px solid #f3f4f6",
               flexShrink: 0,
               textAlign: "center",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: 5,
             }}>
               Participants
+              <span style={{
+                backgroundColor: "#f3f4f6",
+                color: "#6b7280",
+                borderRadius: 999,
+                fontSize: 12,
+                fontWeight: 700,
+                padding: "1px 7px",
+                textTransform: "none",
+                letterSpacing: 0,
+              }}>
+                {agents.length}
+              </span>
             </div>
 
             {/* Avatars vertically centered as a group */}
