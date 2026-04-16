@@ -54,8 +54,10 @@ jobs:
         shell: pwsh
         run: |
           $dir = "build/stable-win-x64"
+          # update.json for Updater.checkForUpdate()
           Copy-Item "$dir/AutoDesk-Setup.metadata.json" "$dir/stable-win-x64-update.json"
-          Copy-Item "$dir/AutoDesk-Setup.tar.zst"       "$dir/stable-win-x64-AutoDesk.tar.zst"
+          # Renamed tarball for Updater.downloadUpdate()
+          Copy-Item "$dir/AutoDesk-Setup.tar.zst" "$dir/stable-win-x64-AutoDesk.tar.zst"
 
       - name: Upload Windows artifacts
         uses: softprops/action-gh-release@v2
@@ -63,6 +65,7 @@ jobs:
           tag_name: ${{ needs.create-release.outputs.tag }}
           files: |
             build/stable-win-x64/AutoDesk-Setup.exe
+            build/stable-win-x64/AutoDesk-Setup.tar.zst
             build/stable-win-x64/stable-win-x64-update.json
             build/stable-win-x64/stable-win-x64-AutoDesk.tar.zst
           fail_on_unmatched_files: true
