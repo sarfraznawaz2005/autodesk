@@ -157,6 +157,9 @@ const electroviewRpc = Electroview.defineRPC<AutoDeskRPC>({
       dashboardPMError: (payload) => {
         window.dispatchEvent(new CustomEvent("autodesk:dashboard-pm-error", { detail: payload }));
       },
+      councilEvent: (payload) => {
+        window.dispatchEvent(new CustomEvent("autodesk:council-event", { detail: payload }));
+      },
     },
   },
 });
@@ -962,4 +965,18 @@ export const rpc = {
 
   /** Delete a user-installed skill by name. */
   deleteSkill: (name: string) => electroviewRpc.request.deleteSkill({ name }),
+
+  // ---- Council -------------------------------------------------------------
+
+  /** Start a council session with a user query. Returns the session ID immediately. */
+  startCouncil: (query: string) =>
+    electroviewRpc.request.startCouncil({ query }),
+
+  /** Stop an in-flight council session. */
+  stopCouncil: (sessionId: string) =>
+    electroviewRpc.request.stopCouncil({ sessionId }),
+
+  /** Submit a user answer to a pending PM question in a council session. */
+  answerCouncilQuestion: (sessionId: string, questionId: string, answer: string) =>
+    electroviewRpc.request.answerCouncilQuestion({ sessionId, questionId, answer }),
 } as const;

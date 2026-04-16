@@ -206,5 +206,20 @@ export type WebviewSchema = RPCSchema<{
       sessionId: string;
       error: string;
     };
+
+    // Council multi-agent discussion events
+    councilEvent: {
+      sessionId: string;
+      type: string;
+      // Typed per event type — extras passed as optional fields
+      query?: string;
+      agents?: Array<{ name: string; displayName: string; color: string }>;
+      agentName?: string;
+      token?: string;
+      turnsLeft?: number;
+      questionId?: string;
+      question?: string;
+      message?: string;
+    };
   };
 }>;

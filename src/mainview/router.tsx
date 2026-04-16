@@ -16,6 +16,7 @@ import { OnboardingPage } from "./pages/onboarding";
 import { PromptsPage } from "./pages/prompts";
 import { SkillsPage } from "./pages/skills";
 import { DbViewerPage } from "./pages/plugin-db-viewer";
+import { CouncilPage } from "./pages/council";
 
 // Use hash-based history so Electrobun's webview doesn't need a server
 // for navigation. URLs look like: app://index.html#/settings
@@ -92,6 +93,12 @@ const dbViewerRoute = createRoute({
   component: DbViewerPage,
 });
 
+const councilRoute = createRoute({
+  getParentRoute: () => rootRoute,
+  path: "/council",
+  component: CouncilPage,
+});
+
 const routeTree = rootRoute.addChildren([
   onboardingRoute,
   indexRoute,
@@ -105,6 +112,7 @@ const routeTree = rootRoute.addChildren([
 
   analyticsRoute,
   dbViewerRoute,
+  councilRoute,
 ]);
 
 export const router = createRouter({

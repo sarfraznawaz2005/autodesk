@@ -13,10 +13,11 @@ import {
   BookOpen,
   Sparkles,
   BarChart2,
+  Users,
   type LucideIcon,
   icons,
 } from "lucide-react";
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useNavigate, useRouterState } from "@tanstack/react-router";
 import { cn } from "@/lib/utils";
 import { rpc } from "@/lib/rpc";
 import { Tip } from "@/components/ui/tooltip";
@@ -37,6 +38,7 @@ const BASE_NAV_ITEMS: NavItem[] = [
   { label: "Dashboard", icon: LayoutDashboard, href: "/" },
   { label: "Inbox", icon: Inbox, href: "/inbox" },
   { label: "Agents", icon: Bot, href: "/agents" },
+  { label: "Council", icon: Users, href: "/council" },
   { label: "Skills", icon: Sparkles, href: "/skills" },
   { label: "Prompts", icon: BookOpen, href: "/prompts" },
   { label: "Scheduler", icon: Clock, href: "/scheduler" },
@@ -113,6 +115,7 @@ function resolveIcon(name: string): LucideIcon {
 export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   // Derive active item from the router's current pathname (hash routing aware)
   const pathname = useRouterState({ select: (s) => s.location.pathname });
+  const navigate = useNavigate();
 
   // Poll for unread inbox count every 30 seconds
   const [inboxUnread, setInboxUnread] = useState(0);
@@ -171,10 +174,11 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
     ALL_NAV_ITEMS.find((item) => item.href !== "/" && pathname.startsWith(item.href))
       ?.href ?? (pathname === "/" ? "/" : null) ?? "/";
 
-  // Inject live badge into the Inbox item
-  const NAV_ITEMS: NavItem[] = ALL_NAV_ITEMS.map((item) =>
-    item.href === "/inbox" ? { ...item, badge: inboxUnread } : item
-  );
+  // Inject live badge into the Inbox item.
+  // Council is shown in the brand area when expanded — hide it from the nav list there.
+  const NAV_ITEMS: NavItem[] = ALL_NAV_ITEMS
+    .filter((item) => collapsed || item.href !== "/council")
+    .map((item) => (item.href === "/inbox" ? { ...item, badge: inboxUnread } : item));
 
   return (
     <aside
@@ -199,6 +203,19 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             </span>
           )}
         </Link>
+        {!collapsed && (
+          <Tip content="Council — ask a panel of AI experts" side="right">
+            <button
+              type="button"
+              onClick={() => navigate({ to: "/council" })}
+              aria-label="Open Council"
+              className="bg-green-500 hover:bg-green-600 text-white text-xs font-semibold px-2 py-1 rounded-md flex items-center gap-1 transition-colors shrink-0 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-green-500"
+            >
+              <Users className="h-3 w-3" aria-hidden="true" />
+              Council
+            </button>
+          </Tip>
+        )}
         <button
           type="button"
           onClick={onToggleCollapse}

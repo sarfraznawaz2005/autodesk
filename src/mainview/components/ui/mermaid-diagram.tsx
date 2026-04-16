@@ -45,7 +45,12 @@ export function MermaidDiagram({ code, fallbackClassName }: MermaidDiagramProps)
     setFailed(false);
 
     getMermaid()
-      .then((m) => m.render(id.current, code.trim()))
+      .then(async (m) => {
+        // Validate syntax before attempting render — avoids mermaid injecting
+        // its own error SVG into the page which shows "Syntax error in text".
+        await m.parse(code.trim());
+        return m.render(id.current, code.trim());
+      })
       .then(({ svg: rendered }: { svg: string }) => {
         if (!cancelled) setSvg(rendered);
       })
@@ -59,12 +64,10 @@ export function MermaidDiagram({ code, fallbackClassName }: MermaidDiagramProps)
   }, [code]);
 
   if (failed) {
-    // Graceful fallback: show raw code as-is
-    return (
-      <pre className={fallbackClassName ?? "my-3 rounded-lg bg-gray-900 text-gray-100 p-4 overflow-x-auto text-sm font-mono leading-relaxed"}>
-        <code>{code}</code>
-      </pre>
-    );
+    // Hide entirely — never show raw mermaid syntax or mermaid error messages
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    void fallbackClassName;
+    return null;
   }
 
   if (!svg) {

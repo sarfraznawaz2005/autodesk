@@ -817,6 +817,22 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 			sendDashboardMessage: (params) => dashboardRpc.sendDashboardMessage(params),
 			abortDashboardMessage: (params) => dashboardRpc.abortDashboardMessage(params),
 			clearDashboardSession: (params) => dashboardRpc.clearDashboardSession(params),
+
+			// ── Council ──
+			startCouncil: async (params) => {
+				const { startCouncilSession } = await import("./rpc/council");
+				return startCouncilSession(params.query);
+			},
+			stopCouncil: async (params) => {
+				const { stopCouncilSession } = await import("./rpc/council");
+				stopCouncilSession(params.sessionId);
+				return { success: true };
+			},
+			answerCouncilQuestion: async (params) => {
+				const { answerCouncilQuestion } = await import("./rpc/council");
+				answerCouncilQuestion(params.sessionId, params.questionId, params.answer);
+				return { success: true };
+			},
 		}),
 		messages: {
 			log: ({ level, message }) => {
