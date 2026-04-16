@@ -333,7 +333,7 @@ async function ensureGitInit(workspacePath: string): Promise<void> {
 	const gitDir = join(workspacePath, ".git");
 	const exists = await stat(gitDir).then(() => true).catch(() => false);
 	if (!exists) {
-		Bun.spawnSync(["git", "init"], { cwd: workspacePath, stderr: "pipe" });
+		Bun.spawnSync(["git", "init", "--initial-branch=main"], { cwd: workspacePath, stderr: "pipe" });
 		Bun.spawnSync(["git", "add", "-A"], { cwd: workspacePath, stderr: "pipe" });
 		Bun.spawnSync(
 			["git", "commit", "-m", "chore: initial commit"],
