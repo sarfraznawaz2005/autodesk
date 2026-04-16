@@ -220,6 +220,10 @@ export type WebviewSchema = RPCSchema<{
       questionId?: string;
       question?: string;
       message?: string;
+      round?: number;
+      scores?: Record<string, number>;
+      converged?: boolean;
+      summary?: string;
     };
   };
 }>;

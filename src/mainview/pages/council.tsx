@@ -3,9 +3,11 @@ import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { rpc } from "@/lib/rpc";
-import { Users, Send, Loader2 } from "lucide-react";
+import { Users, Send, Loader2, CheckCircle, Copy, Check, Download } from "lucide-react";
+import { toast } from "@/components/ui/toast";
 import { MermaidDiagram } from "@/components/ui/mermaid-diagram";
 import { CodeBlock } from "@/components/chat/code-block";
+import { Tip } from "@/components/ui/tooltip";
 
 // ---------------------------------------------------------------------------
 // Types
@@ -22,13 +24,23 @@ interface AgentInfo {
 
 interface Message {
   id: string;
-  type: "user-query" | "agent" | "final-answer" | "question" | "pm-thinking";
+  type:
+    | "user-query"
+    | "agent"
+    | "final-answer"
+    | "question"
+    | "pm-thinking"
+    | "round-divider"
+    | "convergence-notice"
+    | "session-error";
   agentName?: string;
   agentDisplayName?: string;
   agentColor?: string;
   content: string;
   streaming?: boolean;
   questionId?: string;
+  round?: number;
+  bordaScore?: number;
 }
 
 // ---------------------------------------------------------------------------
@@ -46,6 +58,10 @@ interface CouncilEvent {
   questionId?: string;
   question?: string;
   message?: string;
+  round?: number;
+  scores?: Record<string, number>;
+  converged?: boolean;
+  summary?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -53,21 +69,13 @@ interface CouncilEvent {
 // ---------------------------------------------------------------------------
 
 const KEYFRAME_CSS = `
-@keyframes council-float {
-  from { transform: translateY(-3px); }
-  to   { transform: translateY(3px); }
-}
-@keyframes council-pulse {
-  0%   { transform: scale(0.95); opacity: 0.7; }
-  100% { transform: scale(1.05); opacity: 1.0; }
-}
-@keyframes council-bounce {
-  0%, 100% { transform: translateY(0); }
-  50%       { transform: translateY(-6px); }
+@keyframes council-breathe {
+  from { opacity: 0.55; transform: scale(0.97); }
+  to   { opacity: 1.0;  transform: scale(1.03); }
 }
 @keyframes council-dot-bounce {
   0%, 80%, 100% { transform: translateY(0); opacity: 0.4; }
-  40%           { transform: translateY(-6px); opacity: 1; }
+  40%           { transform: translateY(-4px); opacity: 1; }
 }
 @keyframes council-live-blink {
   0%, 100% { opacity: 1; }
@@ -75,19 +83,6 @@ const KEYFRAME_CSS = `
 }
 `;
 
-// Positions for up to 10 agent avatars in the right panel (relative, %)
-const AVATAR_POSITIONS = [
-  { top: "15%", left: "50%" },
-  { top: "32%", left: "20%" },
-  { top: "32%", left: "80%" },
-  { top: "50%", left: "50%" },
-  { top: "68%", left: "20%" },
-  { top: "68%", left: "80%" },
-  { top: "85%", left: "35%" },
-  { top: "85%", left: "65%" },
-  { top: "50%", left: "10%" },
-  { top: "50%", left: "90%" },
-];
 
 // ---------------------------------------------------------------------------
 // Markdown components (shared, hoisted to avoid re-creation per render)
@@ -159,68 +154,6 @@ const MD_COMPONENTS = {
   ),
 };
 
-// ---------------------------------------------------------------------------
-// AgentAvatar component
-// ---------------------------------------------------------------------------
-
-function AgentAvatar({
-  agent,
-  state,
-}: {
-  agent: AgentInfo;
-  state: AgentState;
-}) {
-  const initials = agent.displayName
-    .split(" ")
-    .map((w) => w[0])
-    .join("")
-    .slice(0, 2)
-    .toUpperCase();
-
-  let animation = "";
-  let boxShadow = "none";
-  let outline = "none";
-
-  if (state === "idle") {
-    animation = "council-float 3s ease-in-out infinite alternate";
-  } else if (state === "thinking") {
-    animation = "council-pulse 1s ease-in-out infinite alternate";
-  } else if (state === "speaking") {
-    animation = "council-bounce 0.6s ease-in-out infinite";
-    boxShadow = `0 0 16px 4px ${agent.color}99`;
-    outline = `3px solid ${agent.color}`;
-  } else if (state === "done") {
-    animation = "council-float 3s ease-in-out infinite alternate";
-    boxShadow = `0 0 8px 2px ${agent.color}55`;
-  }
-
-  return (
-    <div
-      title={agent.displayName}
-      style={{
-        width: 60,
-        height: 60,
-        borderRadius: "50%",
-        backgroundColor: agent.color,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        color: "#fff",
-        fontWeight: 700,
-        fontSize: 14,
-        animation,
-        boxShadow,
-        outline,
-        outlineOffset: 2,
-        cursor: "default",
-        userSelect: "none",
-        transition: "box-shadow 0.3s, outline 0.3s",
-      }}
-    >
-      {initials}
-    </div>
-  );
-}
 
 // ---------------------------------------------------------------------------
 // ThinkingDots
@@ -338,6 +271,26 @@ function MessageBubble({
   onAnswer: (questionId: string, answer: string) => void;
   sessionState: SessionState;
 }) {
+  const [copied, setCopied] = useState(false);
+
+  function handleCopy() {
+    navigator.clipboard.writeText(message.content).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  }
+
+  function handleDownload() {
+    const blob = new Blob([message.content], { type: "text/markdown" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "council-decision.md";
+    a.click();
+    URL.revokeObjectURL(url);
+    toast("success", "Decision downloaded as council-decision.md");
+  }
+
   // Memoize markdown so it doesn't re-render on every parent state change
   const mdContent = useMemo(
     () =>
@@ -353,6 +306,50 @@ function MessageBubble({
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [message.content, message.streaming],
   );
+
+  // ── round divider ─────────────────────────────────────────────────────────
+  if (message.type === "round-divider") {
+    return (
+      <div style={{ display: "flex", alignItems: "center", gap: 8, margin: "16px 0 12px" }}>
+        <div style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }} />
+        <span
+          style={{
+            fontSize: 11,
+            fontWeight: 600,
+            color: "#9ca3af",
+            textTransform: "uppercase",
+            letterSpacing: 1,
+          }}
+        >
+          {message.content}
+        </span>
+        <div style={{ flex: 1, height: 1, backgroundColor: "#e5e7eb" }} />
+      </div>
+    );
+  }
+
+  // ── convergence notice ────────────────────────────────────────────────────
+  if (message.type === "convergence-notice") {
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 6,
+          padding: "6px 10px",
+          backgroundColor: "#f0fdf4",
+          border: "1px solid #bbf7d0",
+          borderRadius: 6,
+          fontSize: 12,
+          color: "#16a34a",
+          marginBottom: 12,
+        }}
+      >
+        <CheckCircle size={13} />
+        {message.content}
+      </div>
+    );
+  }
 
   // ── user query ────────────────────────────────────────────────────────────
   if (message.type === "user-query") {
@@ -416,48 +413,92 @@ function MessageBubble({
   // ── final answer ──────────────────────────────────────────────────────────
   if (message.type === "final-answer") {
     return (
+      <div style={{ marginBottom: 12 }}>
+        <div
+          style={{
+            border: "2px solid #22c55e",
+            borderRadius: 10,
+            padding: "14px 18px",
+            backgroundColor: "#f0fdf4",
+          }}
+        >
+          <div
+            style={{
+              fontWeight: 700,
+              color: "#16a34a",
+              marginBottom: 10,
+              fontSize: 14,
+              display: "flex",
+              alignItems: "center",
+              gap: 8,
+            }}
+          >
+            <Users size={15} />
+            Council Decision
+            {message.streaming && (
+              <span
+                style={{
+                  width: 8,
+                  height: 8,
+                  borderRadius: "50%",
+                  backgroundColor: "#22c55e",
+                  display: "inline-block",
+                  animation: "council-live-blink 1s ease-in-out infinite",
+                  marginLeft: 4,
+                }}
+              />
+            )}
+          </div>
+          <div style={{ fontSize: 14, color: "#1f2937", lineHeight: 1.6 }}>
+            {mdContent}
+            {message.streaming && !message.content && <ThinkingDots color="#22c55e" />}
+          </div>
+        </div>
+        {!message.streaming && message.content && (
+          <div className="flex items-center gap-1 mt-1 ml-1">
+            <Tip content={copied ? "Copied!" : "Copy"} side="top">
+              <button
+                onClick={handleCopy}
+                className="p-1 rounded text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+                aria-label={copied ? "Copied" : "Copy decision"}
+              >
+                {copied ? <Check className="w-3.5 h-3.5" /> : <Copy className="w-3.5 h-3.5" />}
+              </button>
+            </Tip>
+            <Tip content="Download as Markdown" side="top">
+              <button
+                onClick={handleDownload}
+                className="p-1 rounded text-gray-600 hover:text-gray-800 hover:bg-gray-100 transition-colors"
+                aria-label="Download decision as markdown"
+              >
+                <Download className="w-3.5 h-3.5" />
+              </button>
+            </Tip>
+          </div>
+        )}
+      </div>
+    );
+  }
+
+  // ── session error ─────────────────────────────────────────────────────────
+  if (message.type === "session-error") {
+    return (
       <div
         style={{
-          border: "2px solid #22c55e",
-          borderRadius: 10,
-          padding: "14px 18px",
-          backgroundColor: "#f0fdf4",
+          display: "flex",
+          alignItems: "flex-start",
+          gap: 8,
+          padding: "10px 14px",
+          backgroundColor: "#fef2f2",
+          border: "1px solid #fecaca",
+          borderRadius: 8,
+          fontSize: 13,
+          color: "#dc2626",
           marginBottom: 12,
         }}
       >
-        <div
-          style={{
-            fontWeight: 700,
-            color: "#16a34a",
-            marginBottom: 10,
-            fontSize: 14,
-            display: "flex",
-            alignItems: "center",
-            gap: 8,
-          }}
-        >
-          <Users size={15} />
-          Council Decision
-          {message.streaming && (
-            <span
-              style={{
-                width: 8,
-                height: 8,
-                borderRadius: "50%",
-                backgroundColor: "#22c55e",
-                display: "inline-block",
-                animation: "council-live-blink 1s ease-in-out infinite",
-                marginLeft: 4,
-              }}
-            />
-          )}
-        </div>
-        <div style={{ fontSize: 14, color: "#1f2937", lineHeight: 1.6 }}>
-          {mdContent}
-          {message.streaming && !message.content && (
-            <ThinkingDots color="#22c55e" />
-          )}
-        </div>
+        <span style={{ fontWeight: 700, flexShrink: 0 }}>Council error:</span>
+        <span style={{ wordBreak: "break-word" }}>{message.content}</span>
       </div>
     );
   }
@@ -484,10 +525,23 @@ function MessageBubble({
         <span style={{ fontWeight: 700, color, fontSize: 12 }}>
           {message.agentDisplayName ?? message.agentName}
         </span>
+        {message.bordaScore !== undefined && (
+          <span
+            style={{
+              fontSize: 10,
+              color: "#fff",
+              backgroundColor: color,
+              borderRadius: 10,
+              padding: "1px 6px",
+              fontWeight: 700,
+            }}
+          >
+            ★{message.bordaScore}
+          </span>
+        )}
         {message.streaming && (
           <>
             {message.content ? (
-              // Has content → show "live" blinking dot
               <span
                 style={{
                   display: "inline-flex",
@@ -538,6 +592,7 @@ export function CouncilPage() {
   const [messages, setMessages] = useState<Message[]>([]);
   const [agents, setAgents] = useState<AgentInfo[]>([]);
   const [agentStates, setAgentStates] = useState<Map<string, AgentState>>(new Map());
+  const [bordaScores, setBordaScores] = useState<Record<string, number>>({});
   const [query, setQuery] = useState("");
   const feedRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -561,10 +616,10 @@ export function CouncilPage() {
 
     switch (type) {
       case "session-started": {
-        // Keep user-query message at the top, clear everything else
         setMessages((prev) => prev.filter((m) => m.type === "user-query"));
         setAgents([]);
         setAgentStates(new Map());
+        setBordaScores({});
         break;
       }
 
@@ -592,8 +647,50 @@ export function CouncilPage() {
         break;
       }
 
+      case "round-start": {
+        const round = detail.round ?? 1;
+        const label =
+          round === 1 ? "Round 1 · Independent Positions" : "Round 2 · Revised Positions";
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: `round-divider-${round}`,
+            type: "round-divider" as const,
+            content: label,
+            round,
+          },
+        ]);
+        break;
+      }
+
+      case "convergence": {
+        setMessages((prev) => [
+          ...prev,
+          {
+            id: "convergence-notice",
+            type: "convergence-notice" as const,
+            content: "Council converged after Round 1 — skipping Round 2",
+          },
+        ]);
+        break;
+      }
+
+      case "borda-scores": {
+        const scores = detail.scores ?? {};
+        setBordaScores(scores);
+        setMessages((prev) =>
+          prev.map((m) =>
+            m.type === "agent" && m.agentName && scores[m.agentName] !== undefined
+              ? { ...m, bordaScore: scores[m.agentName] }
+              : m,
+          ),
+        );
+        break;
+      }
+
       case "agent-thinking": {
         const name = detail.agentName!;
+        const round = detail.round;
         // Remove pm-status once actual agent content starts
         setMessages((prev) => prev.filter((m) => m.id !== "pm-status"));
         // If this agent isn't in the known list, add them with a fallback color
@@ -617,18 +714,24 @@ export function CouncilPage() {
           return next;
         });
         setMessages((prev) => {
-          if (prev.some((m) => m.agentName === name && m.streaming)) return prev;
+          // Each round gets its own streaming message for the agent
+          // Identify existing streaming message for this agent in the same round
+          const existingIdx = prev.findIndex(
+            (m) => m.agentName === name && m.streaming && m.round === round,
+          );
+          if (existingIdx >= 0) return prev;
           const agentInfo = agentsRef.current.find((a) => a.name === name);
           return [
             ...prev,
             {
-              id: `${name}-${Date.now()}`,
-              type: "agent",
+              id: `${name}-r${round ?? 1}-${Date.now()}`,
+              type: "agent" as const,
               agentName: name,
               agentDisplayName: agentInfo?.displayName ?? name,
               agentColor: agentInfo?.color,
               content: "",
               streaming: true,
+              round,
             },
           ];
         });
@@ -638,6 +741,7 @@ export function CouncilPage() {
       case "agent-token": {
         const name = detail.agentName!;
         const token = detail.token ?? "";
+        const round = detail.round;
         setAgentStates((prev) => {
           const next = new Map(prev);
           next.set(name, "speaking");
@@ -645,7 +749,7 @@ export function CouncilPage() {
         });
         setMessages((prev) =>
           prev.map((m) =>
-            m.agentName === name && m.streaming
+            m.agentName === name && m.streaming && m.round === round
               ? { ...m, content: m.content + token }
               : m,
           ),
@@ -655,6 +759,7 @@ export function CouncilPage() {
 
       case "agent-response-complete": {
         const name = detail.agentName!;
+        const round = detail.round;
         setAgentStates((prev) => {
           const next = new Map(prev);
           next.set(name, "done");
@@ -662,7 +767,9 @@ export function CouncilPage() {
         });
         setMessages((prev) =>
           prev.map((m) =>
-            m.agentName === name && m.streaming ? { ...m, streaming: false } : m,
+            m.agentName === name && m.streaming && m.round === round
+              ? { ...m, streaming: false }
+              : m,
           ),
         );
         break;
@@ -674,7 +781,7 @@ export function CouncilPage() {
           ...prev,
           {
             id: `question-${detail.questionId}`,
-            type: "question",
+            type: "question" as const,
             content: detail.question ?? "",
             questionId: detail.questionId,
           },
@@ -687,7 +794,7 @@ export function CouncilPage() {
           ...prev,
           {
             id: `pm-synth-${Date.now()}`,
-            type: "pm-thinking",
+            type: "pm-thinking" as const,
             content: "PM is synthesizing the council's final decision...",
           },
         ]);
@@ -709,7 +816,7 @@ export function CouncilPage() {
             ...base,
             {
               id: `final-${Date.now()}`,
-              type: "final-answer",
+              type: "final-answer" as const,
               content: token,
               streaming: true,
             },
@@ -731,7 +838,6 @@ export function CouncilPage() {
 
       case "session-ended": {
         setSessionState("done");
-        // Clear any lingering status/thinking messages
         setMessages((prev) => prev.filter((m) => m.type !== "pm-thinking"));
         setAgentStates((prev) => {
           const next = new Map(prev);
@@ -747,8 +853,8 @@ export function CouncilPage() {
           ...prev,
           {
             id: `error-${Date.now()}`,
-            type: "pm-thinking",
-            content: `Error: ${detail.message ?? "Unknown error"}`,
+            type: "session-error" as const,
+            content: detail.message ?? "Unknown error",
           },
         ]);
         break;
@@ -805,7 +911,7 @@ export function CouncilPage() {
         },
         {
           id: "err-start",
-          type: "pm-thinking",
+          type: "session-error" as const,
           content: `Failed to start council: ${msg}`,
         },
       ]);
@@ -851,151 +957,206 @@ export function CouncilPage() {
           backgroundColor: "#f9fafb",
         }}
       >
-        {/* Header */}
+        {/* Header — 3-column: title | avatars (centered) | stop */}
         <div
           style={{
-            padding: "12px 20px",
+            padding: "0 16px",
+            height: 68,
             borderBottom: "1px solid #e5e7eb",
             backgroundColor: "#fff",
-            display: "flex",
+            display: "grid",
+            gridTemplateColumns: "1fr auto 1fr",
             alignItems: "center",
-            gap: 10,
             flexShrink: 0,
+            overflow: "visible",
+            position: "relative",
+            zIndex: 10,
           }}
         >
-          <Users size={18} color="#22c55e" />
-          <span style={{ fontWeight: 700, fontSize: 16, color: "#111827" }}>Council</span>
-          {isRunning && (
-            <span
-              style={{
-                fontSize: 12,
-                color: "#22c55e",
-                fontWeight: 500,
-                display: "flex",
-                alignItems: "center",
-                gap: 4,
-              }}
-            >
-              <span
-                style={{
-                  width: 7,
-                  height: 7,
-                  borderRadius: "50%",
-                  backgroundColor: "#22c55e",
-                  display: "inline-block",
-                  animation: "council-live-blink 1s ease-in-out infinite",
-                }}
-              />
-              In session
-            </span>
-          )}
-          {(isRunning || isWaiting) && (
-            <button
-              onClick={handleStop}
-              style={{
-                marginLeft: "auto",
-                fontSize: 12,
-                color: "#ef4444",
-                background: "none",
-                border: "1px solid #ef4444",
-                borderRadius: 5,
-                padding: "3px 10px",
-                cursor: "pointer",
-                fontWeight: 500,
-              }}
-            >
-              Stop
-            </button>
-          )}
-        </div>
-
-        {/* Body */}
-        <div style={{ display: "flex", flex: 1, overflow: "hidden" }}>
-          {/* Discussion feed */}
-          <div
-            ref={feedRef}
-            style={{
-              flex: 1,
-              overflowY: "auto",
-              padding: "16px 20px",
-            }}
-          >
-            {messages.length === 0 && !isRunning && (
-              <div
-                style={{
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  height: "100%",
-                  gap: 12,
-                  color: "#9ca3af",
-                }}
-              >
-                <Users size={40} color="#d1fae5" />
-                <p style={{ fontSize: 14, textAlign: "center", maxWidth: 320 }}>
-                  Ask a technical question and the council of AI experts will
-                  discuss it and present a unified answer.
-                </p>
-              </div>
+          {/* Left: title + status */}
+          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <Users size={17} color="#22c55e" />
+            <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>Council</span>
+            {isRunning && (
+              <span style={{ fontSize: 11, color: "#22c55e", fontWeight: 500, display: "flex", alignItems: "center", gap: 3 }}>
+                <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block", animation: "council-live-blink 1s ease-in-out infinite" }} />
+                In session
+              </span>
             )}
-
-            {messages.map((message) => (
-              <MessageBubble
-                key={message.id}
-                message={message}
-                onAnswer={handleAnswer}
-                sessionState={sessionState}
-              />
-            ))}
           </div>
 
-          {/* Agent avatar panel */}
-          {agents.length > 0 && (
-            <div
-              style={{
-                width: 200,
-                borderLeft: "1px solid #e5e7eb",
-                backgroundColor: "#fff",
-                flexShrink: 0,
-                position: "relative",
-                overflow: "hidden",
-              }}
-            >
-              <div
-                style={{
-                  fontSize: 11,
-                  fontWeight: 600,
-                  color: "#9ca3af",
-                  textTransform: "uppercase",
-                  letterSpacing: 1,
-                  padding: "10px 12px 4px",
-                  textAlign: "center",
-                }}
-              >
-                Participants
-              </div>
-              <div style={{ position: "relative", height: "calc(100% - 32px)" }}>
-                {agents.slice(0, AVATAR_POSITIONS.length).map((agent, idx) => {
-                  const pos = AVATAR_POSITIONS[idx];
+          {/* Center: agent avatars */}
+          {(() => {
+            const anyoneSpeaking = Array.from(agentStates.values()).some((s) => s === "speaking");
+            return (
+              <div style={{ display: "flex", alignItems: "center", gap: 14, overflow: "visible" }}>
+                {agents.map((agent) => {
                   const state = agentStates.get(agent.name) ?? "idle";
+                  const score = bordaScores[agent.name];
+                  const initials = agent.displayName.split(" ").map((w) => w[0]).join("").slice(0, 2).toUpperCase();
+                  const isSpeaking = state === "speaking";
+                  const isThinking = state === "thinking";
+                  const isDimmed = anyoneSpeaking && !isSpeaking;
+
                   return (
-                    <div
+                    <Tip
                       key={agent.name}
-                      style={{
-                        position: "absolute",
-                        top: pos.top,
-                        left: pos.left,
-                        transform: "translate(-50%, -50%)",
-                      }}
+                      content={agent.displayName}
+                      side="bottom"
                     >
-                      <AgentAvatar agent={agent} state={state} />
-                    </div>
+                      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, overflow: "visible", cursor: "default" }}>
+
+                        {/* Borda score — above avatar, consistent dark pill */}
+                        <div style={{
+                          height: 16,
+                          minWidth: 20,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}>
+                          {score !== undefined && (
+                            <span style={{
+                              backgroundColor: agent.color,
+                              color: "#fff",
+                              borderRadius: 6,
+                              padding: "1px 6px",
+                              fontSize: 10,
+                              fontWeight: 700,
+                              lineHeight: 1.4,
+                              letterSpacing: 0.2,
+                            }}>
+                              {score}
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Typing bubble — appears when streaming */}
+                        {isSpeaking && (
+                          <div style={{
+                            position: "absolute",
+                            top: -22,
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            backgroundColor: agent.color,
+                            borderRadius: 10,
+                            padding: "4px 8px",
+                            display: "flex",
+                            gap: 4,
+                            alignItems: "center",
+                            whiteSpace: "nowrap",
+                            zIndex: 20,
+                            boxShadow: `0 2px 8px ${agent.color}55`,
+                          }}>
+                            {[0, 1, 2].map((i) => (
+                              <span
+                                key={i}
+                                style={{
+                                  display: "inline-block",
+                                  width: 4,
+                                  height: 4,
+                                  borderRadius: "50%",
+                                  backgroundColor: "#fff",
+                                  animation: `council-dot-bounce 1.1s ease-in-out ${i * 0.18}s infinite`,
+                                }}
+                              />
+                            ))}
+                            <span style={{
+                              position: "absolute",
+                              bottom: -4,
+                              left: "50%",
+                              transform: "translateX(-50%)",
+                              width: 0,
+                              height: 0,
+                              borderLeft: "4px solid transparent",
+                              borderRight: "4px solid transparent",
+                              borderTop: `4px solid ${agent.color}`,
+                            }} />
+                          </div>
+                        )}
+
+                        {/* Avatar circle */}
+                        <div style={{
+                          width: 34,
+                          height: 34,
+                          borderRadius: "50%",
+                          backgroundColor: agent.color,
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#fff",
+                          fontWeight: 700,
+                          fontSize: 11,
+                          transition: "transform 0.25s ease, opacity 0.25s ease, box-shadow 0.25s ease",
+                          transform: isSpeaking ? "scale(1.18)" : "scale(1.0)",
+                          opacity: isDimmed ? 0.3 : 1,
+                          boxShadow: isSpeaking
+                            ? `0 0 14px 5px ${agent.color}66`
+                            : state === "done"
+                              ? `0 0 5px 1px ${agent.color}44`
+                              : "none",
+                          outline: isSpeaking ? `2px solid ${agent.color}` : "none",
+                          outlineOffset: 2,
+                          animation: isThinking
+                            ? "council-breathe 1.6s ease-in-out infinite alternate"
+                            : "none",
+                        }}>
+                          {initials}
+                        </div>
+
+                      </div>
+                    </Tip>
                   );
                 })}
               </div>
+            );
+          })()}
+
+          {/* Right: stop button */}
+          <div style={{ display: "flex", justifyContent: "flex-end" }}>
+            {(isRunning || isWaiting) && (
+              <button
+                onClick={handleStop}
+                style={{ fontSize: 12, color: "#ef4444", background: "none", border: "1px solid #ef4444", borderRadius: 5, padding: "3px 10px", cursor: "pointer", fontWeight: 500 }}
+              >
+                Stop
+              </button>
+            )}
+          </div>
+        </div>
+
+        {/* Body */}
+        <div
+          ref={feedRef}
+          style={{ flex: 1, overflowY: "auto", padding: "16px 20px" }}
+        >
+          {messages.length === 0 && !isRunning && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%", gap: 12, color: "#9ca3af" }}>
+              <Users size={40} color="#d1fae5" />
+              <p style={{ fontSize: 14, textAlign: "center", maxWidth: 320 }}>
+                Ask a technical question and the council of AI experts will discuss it and present a unified answer.
+              </p>
             </div>
           )}
+
+          {messages.map((message, idx) => {
+            const prev = messages[idx - 1];
+            const showSeparator =
+              message.type === "agent" &&
+              prev?.type === "agent" &&
+              !prev.streaming;
+            return (
+              <div key={message.id}>
+                {showSeparator && (
+                  <div style={{ height: 1, backgroundColor: "#e5e7eb", margin: "4px 0 14px" }} />
+                )}
+                <MessageBubble
+                  message={message}
+                  onAnswer={handleAnswer}
+                  sessionState={sessionState}
+                />
+              </div>
+            );
+          })}
         </div>
 
         {/* Input area */}

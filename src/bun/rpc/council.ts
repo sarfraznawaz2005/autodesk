@@ -1,9 +1,16 @@
 /**
- * Council RPC — runs a multi-agent discussion session where the PM picks
- * relevant agents, facilitates up to 4 discussion rounds, and synthesizes
- * a final answer for the user.
+ * Council RPC — Delphi + Borda multi-agent discussion system.
  *
- * Events are broadcast via broadcastToWebview("council-event", {...}).
+ * Flow:
+ *   Phase 1: PM selects 3–5 relevant agents
+ *   Phase 2: Optional PM clarification question to user
+ *   Phase 3: Round 1 — blind parallel responses (no peer context)
+ *   Phase 4: Convergence check — PM anonymises positions and checks agreement
+ *   Phase 5: Round 2 — informed parallel responses (only if not converged)
+ *   Phase 6: Borda ranking — each agent ranks peers in parallel via generateText
+ *   Phase 7: PM synthesises final answer weighted by Borda scores
+ *
+ * Events are broadcast via broadcastToWebview("councilEvent", {...}).
  * The frontend listens on the `autodesk:council-event` window event.
  */
 
@@ -19,9 +26,12 @@ import { broadcastToWebview } from "../engine-manager";
 // Constants
 // ---------------------------------------------------------------------------
 
-const MAX_TURNS_PER_AGENT = 10;
-const TURNS_WARNING_THRESHOLD = 3;
-const MAX_ROUNDS = 4;
+const MAX_ROUNDS = 2 as const; // Hard cap: Round 1 (blind) + Round 2 (informed) only
+void MAX_ROUNDS; // referenced in comments/docs — kept as documentation constant
+const MAX_AGENTS = 5;
+const AGENT_STREAM_TIMEOUT_MS = 60_000;
+// Truncate agent responses when building peer context to avoid token explosion
+const RESPONSE_TRUNCATE_CHARS = 1500;
 
 const COUNCIL_AGENTS = [
   { name: "software-architect", displayName: "Software Architect", color: "#8b5cf6" },
@@ -77,6 +87,13 @@ async function resolveProvider(): Promise<{
   return { model: adapter.createModel(modelId), modelId };
 }
 
+/** Truncate a response string for use as peer context. */
+function truncate(text: string): string {
+  if (text.length <= RESPONSE_TRUNCATE_CHARS) return text;
+  return text.slice(0, RESPONSE_TRUNCATE_CHARS) + "\n[...truncated]";
+}
+
+
 // ---------------------------------------------------------------------------
 // Public API
 // ---------------------------------------------------------------------------
@@ -93,8 +110,13 @@ export async function startCouncilSession(query: string): Promise<{ sessionId: s
 
   // Run the session asynchronously — return the sessionId immediately
   runSession(session, query).catch((err: unknown) => {
-    const message = err instanceof Error ? err.message : String(err);
-    if (message !== "AbortError" && !message.includes("aborted")) {
+    // Only suppress actual user-triggered aborts (DOMException name === "AbortError")
+    const isAbort =
+      (err instanceof DOMException && err.name === "AbortError") ||
+      (err instanceof Error && err.name === "AbortError");
+    if (!isAbort) {
+      const message = err instanceof Error ? err.message : String(err);
+      console.error("[Council] session error:", message, err);
       emit(sessionId, { type: "error", message });
     }
     emit(sessionId, { type: "session-ended" });
@@ -130,6 +152,151 @@ export function answerCouncilQuestion(
 // Core session logic
 // ---------------------------------------------------------------------------
 
+type AgentEntry = (typeof COUNCIL_AGENTS)[number];
+
+interface RoundResponse {
+  agentName: string;
+  displayName: string;
+  content: string;
+}
+
+/**
+ * Run one round of parallel agent responses.
+ * Each agent stream runs concurrently inside Promise.all.
+ * Per-agent timeout via Promise.race — timed-out agents are skipped gracefully.
+ */
+async function runParallelRound(
+  sessionId: string,
+  signal: AbortSignal,
+  model: LanguageModel,
+  round: number,
+  agents: AgentEntry[],
+  buildMessages: (agent: AgentEntry) => Array<{ role: "user"; content: string }>,
+  buildSystem: (agent: AgentEntry) => string,
+): Promise<RoundResponse[]> {
+  emit(sessionId, { type: "round-start", round });
+
+  const results = await Promise.all(
+    agents.map(async (agent): Promise<RoundResponse | null> => {
+      if (signal.aborted) return null;
+
+      emit(sessionId, { type: "agent-thinking", agentName: agent.name, round });
+
+      let agentResponse = "";
+
+      const streamPromise = (async () => {
+        const stream = streamText({
+          model,
+          abortSignal: signal,
+          system: buildSystem(agent),
+          messages: buildMessages(agent),
+        });
+
+        for await (const chunk of stream.textStream) {
+          if (signal.aborted) break;
+          agentResponse += chunk;
+          emit(sessionId, { type: "agent-token", agentName: agent.name, token: chunk, round });
+        }
+      })();
+
+      const timeoutPromise = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error("agent-timeout")), AGENT_STREAM_TIMEOUT_MS),
+      );
+
+      try {
+        await Promise.race([streamPromise, timeoutPromise]);
+      } catch (err) {
+        const msg = err instanceof Error ? err.message : String(err);
+        if (msg === "agent-timeout") {
+          // Skip this agent — emit complete with whatever we have so far
+          emit(sessionId, {
+            type: "agent-response-complete",
+            agentName: agent.name,
+            round,
+          });
+          return agentResponse.trim()
+            ? { agentName: agent.name, displayName: agent.displayName, content: agentResponse.trim() }
+            : null;
+        }
+        // Propagate abort or other errors
+        throw err;
+      }
+
+      emit(sessionId, { type: "agent-response-complete", agentName: agent.name, round });
+
+      if (!agentResponse.trim()) return null;
+      return { agentName: agent.name, displayName: agent.displayName, content: agentResponse.trim() };
+    }),
+  );
+
+  emit(sessionId, { type: "round-complete", round });
+
+  return results.filter((r): r is RoundResponse => r !== null);
+}
+
+/**
+ * Borda ranking phase.
+ * Each agent ranks all other agents' responses via parallel generateText calls.
+ * Returns a map of agentName → cumulative Borda score.
+ */
+async function runBordaRanking(
+  signal: AbortSignal,
+  model: LanguageModel,
+  responses: RoundResponse[],
+): Promise<Record<string, number>> {
+  const scores: Record<string, number> = {};
+  for (const r of responses) scores[r.agentName] = 0;
+
+  if (responses.length < 2) return scores;
+
+  await Promise.all(
+    responses.map(async (ranker) => {
+      // Build the numbered list of OTHER agents' responses (no names)
+      const others = responses.filter((r) => r.agentName !== ranker.agentName);
+      if (others.length === 0) return;
+
+      const numbered = others
+        .map((r, i) => `[${i + 1}] ${truncate(r.content)}`)
+        .join("\n\n---\n\n");
+
+      let rankingText = "";
+      try {
+        const rankResult = await generateText({
+          model,
+          abortSignal: signal,
+          system: `You are ${ranker.displayName}. Rank the following peer responses from best (most insightful and accurate) to worst. Reply with ONLY a JSON array of 1-indexed positions from best to worst. e.g. [2,1,3]`,
+          messages: [{ role: "user", content: `Peer responses to rank:\n\n${numbered}` }],
+        });
+        rankingText = rankResult.text.trim();
+      } catch {
+        // If ranking fails for this agent, skip — don't crash the whole phase
+        return;
+      }
+
+      // Parse the ranking array
+      let ranking: number[] = [];
+      try {
+        const match = rankingText.match(/\[[\s\S]*?\]/);
+        ranking = JSON.parse(match ? match[0] : rankingText) as number[];
+      } catch {
+        return; // Unparseable — skip
+      }
+
+      const numOthers = others.length;
+      ranking.forEach((pos, kIndex) => {
+        const idx = pos - 1; // convert 1-indexed to 0-indexed
+        if (idx >= 0 && idx < others.length) {
+          const agentName = others[idx].agentName;
+          // kIndex=0 means ranked best → gets (numOthers - 0 - 1) = numOthers-1 points
+          scores[agentName] = (scores[agentName] ?? 0) + (numOthers - 1 - kIndex);
+        }
+      });
+    }),
+  );
+
+  return scores;
+}
+
 async function runSession(session: CouncilSession, query: string): Promise<void> {
   const { sessionId, abortController } = session;
   const signal = abortController.signal;
@@ -139,38 +306,32 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
 
   const { model } = await resolveProvider();
 
-  // ── Step 1: PM selects 2–5 relevant agents ─────────────────────────────
+  // ── Phase 1: PM selects 3–5 relevant agents ────────────────────────────
   const agentListStr = COUNCIL_AGENTS.map((a) => a.name).join(", ");
 
   const selectionResult = await generateText({
     model,
     abortSignal: signal,
-    system: `You are the Project Manager for a council of AI experts. Your job is to select the most relevant experts from the available roster to answer the user's question. Always select between 2 and 5 agents. Respond with ONLY a valid JSON array of agent names, e.g.: ["backend-engineer","security-expert"]. No markdown, no explanation.`,
-    messages: [
-      {
-        role: "user",
-        content: `Available agents: ${agentListStr}\n\nUser question: ${query}\n\nWhich 2-5 agents should participate in this council?`,
-      },
-    ],
+    system: `You are the Project Manager for a council of AI experts. Select the most relevant experts to answer the user's question. Default target is 3 agents; select up to 5 for complex multi-domain questions. Respond with ONLY a valid JSON array of agent names, e.g.: ["backend-engineer","security-expert"]. No markdown, no explanation.`,
+    messages: [{ role: "user", content: `Available agents: ${agentListStr}\n\nUser question: ${query}\n\nWhich 3-5 agents should participate in this council?` }],
   });
 
   let selectedNames: string[] = [];
   try {
     const raw = selectionResult.text.trim();
-    // Extract JSON array even if wrapped in markdown
     const match = raw.match(/\[[\s\S]*\]/);
     selectedNames = JSON.parse(match ? match[0] : raw) as string[];
   } catch {
-    // Fallback: pick first 3
     selectedNames = [COUNCIL_AGENTS[0].name, COUNCIL_AGENTS[1].name, COUNCIL_AGENTS[2].name];
   }
 
-  // Validate names against roster
+  // Validate names and cap at MAX_AGENTS
   const selectedAgents = selectedNames
     .map((name) => COUNCIL_AGENTS.find((a) => a.name === name))
-    .filter((a): a is (typeof COUNCIL_AGENTS)[number] => a !== undefined)
-    .slice(0, 5);
+    .filter((a): a is AgentEntry => a !== undefined)
+    .slice(0, MAX_AGENTS);
 
+  // Ensure at least 2 agents
   if (selectedAgents.length < 2) {
     selectedAgents.push(...COUNCIL_AGENTS.slice(0, 2 - selectedAgents.length));
   }
@@ -181,16 +342,13 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
   });
   emit(sessionId, { type: "pm-status", message: "PM is reviewing your question..." });
 
-  // ── Step 2: PM checks if clarification is needed ───────────────────────
+  // ── Phase 2: Optional PM clarification ────────────────────────────────
   const clarificationResult = await generateText({
     model,
     abortSignal: signal,
     system: `You are the Project Manager facilitating an expert council discussion. Determine if the user's question needs clarification before proceeding. If yes, respond with "QUESTION: <your question>" (one concise question only). If the question is clear enough, respond with "PROCEED".`,
-    messages: [
-      { role: "user", content: `User question: ${query}` },
-    ],
+    messages: [{ role: "user", content: `User question: ${query}` }],
   });
-
   const clarificationText = clarificationResult.text.trim();
 
   if (clarificationText.startsWith("QUESTION:")) {
@@ -199,134 +357,154 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
 
     emit(sessionId, { type: "question", questionId, question: questionText });
 
-    // Await the user's answer via a Promise resolved by answerCouncilQuestion
     const userAnswer = await new Promise<string>((resolve, reject) => {
       session.questionResolvers.set(questionId, resolve);
-      signal.addEventListener("abort", () => reject(new Error("AbortError")), { once: true });
+      signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
     });
 
-    // Incorporate the answer into the query context
     query = `${query}\n\nAdditional context from user: ${userAnswer}`;
   }
 
-  // ── Step 3: Discussion rounds ──────────────────────────────────────────
-  emit(sessionId, { type: "pm-status", message: `Council assembled: ${selectedAgents.map((a) => a.displayName).join(", ")}. Starting discussion...` });
+  emit(sessionId, {
+    type: "pm-status",
+    message: `Council assembled: ${selectedAgents.map((a) => a.displayName).join(", ")}. Starting discussion...`,
+  });
 
-  const turnsUsed = new Map<string, number>(selectedAgents.map((a) => [a.name, 0]));
-  const discussionHistory: Array<{ agentName: string; displayName: string; content: string }> = [];
+  // ── Phase 3: Round 1 — Blind parallel responses ────────────────────────
+  const round1Responses = await runParallelRound(
+    sessionId,
+    signal,
+    model,
+    1,
+    selectedAgents,
+    (agent) => [
+      {
+        role: "user" as const,
+        content: `Question: ${query}\n\nPlease share your expert perspective as ${agent.displayName}.`,
+      },
+    ],
+    (agent) =>
+      `You are ${agent.displayName}. Answer this question with your genuine expert perspective. Do not hedge — give your clearest recommendation and the top 2–3 reasons for it. 3 paragraphs max.`,
+  );
 
-  for (let round = 0; round < MAX_ROUNDS; round++) {
-    if (signal.aborted) break;
+  if (signal.aborted) return;
 
-    for (const agent of selectedAgents) {
-      if (signal.aborted) break;
+  // ── Phase 4: Convergence check ─────────────────────────────────────────
+  emit(sessionId, { type: "pm-status", message: "PM is checking for convergence..." });
 
-      const used = turnsUsed.get(agent.name) ?? 0;
-      const turnsLeft = MAX_TURNS_PER_AGENT - used;
-      if (turnsLeft <= 0) continue;
+  // Build anonymised position labels: Position A, B, C …
+  const positionLabels = ["A", "B", "C", "D", "E"];
+  const anonymisedPositions = round1Responses
+    .map((r, i) => `Position ${positionLabels[i] ?? i + 1}: ${truncate(r.content)}`)
+    .join("\n\n---\n\n");
 
-      emit(sessionId, { type: "agent-thinking", agentName: agent.name });
+  const convergenceResult = await generateText({
+    model,
+    abortSignal: signal,
+    system: `You are the Project Manager reviewing anonymous expert positions. Determine whether these positions agree on the core recommendation. Reply with ONLY valid JSON: {"converged": true/false, "summary": "<brief anonymized summary of all positions for agents to review>"}`,
+    messages: [{ role: "user", content: `User question: ${query}\n\nAnonymous positions:\n${anonymisedPositions}` }],
+  });
 
-      // Build the system prompt for this agent
-      const warningNote =
-        turnsLeft <= TURNS_WARNING_THRESHOLD
-          ? `\n\n⚠️ You have only ${turnsLeft} turn(s) remaining. Be concise and focus on your most important points.`
-          : "";
+  let converged = false;
+  let anonymisedSummary = anonymisedPositions;
 
-      const systemPrompt = `You are the ${agent.displayName} in an expert council. You are discussing the following question with your peers: "${query}"
+  try {
+    const raw = convergenceResult.text.trim();
+    const match = raw.match(/\{[\s\S]*\}/);
+    const parsed = JSON.parse(match ? match[0] : raw) as {
+      converged: boolean;
+      summary: string;
+    };
+    converged = Boolean(parsed.converged);
+    if (parsed.summary) anonymisedSummary = parsed.summary;
+  } catch {
+    // Default to not converged on parse failure
+    converged = false;
+  }
 
-You have NO access to tools. Your role is to share expertise, provide technical insights, and engage with what the other experts have said.${warningNote}
+  emit(sessionId, {
+    type: "pm-status",
+    message: converged
+      ? "Positions converged after Round 1. Skipping Round 2."
+      : "Positions diverged. Starting Round 2 for revised positions...",
+    summary: anonymisedSummary,
+  });
 
-Keep your response focused and concise (2-4 paragraphs maximum). Engage with points made by other experts when relevant.`;
+  // ── Phase 4b: Emit convergence or proceed ─────────────────────────────
+  let finalResponses: RoundResponse[] = round1Responses;
 
-      // Build messages from discussion history
-      const priorDiscussion =
-        discussionHistory.length > 0
-          ? discussionHistory
-              .map((h) => `[${h.displayName}]: ${h.content}`)
-              .join("\n\n")
-          : "No prior discussion yet.";
+  if (converged) {
+    emit(sessionId, { type: "convergence", converged: true, summary: anonymisedSummary });
+  } else {
+    // ── Phase 5: Round 2 — Informed parallel responses ──────────────────
+    if (signal.aborted) return;
 
-      let agentResponse = "";
-
-      const stream = streamText({
-        model,
-        abortSignal: signal,
-        system: systemPrompt,
-        messages: [
-          {
-            role: "user",
-            content: `User question: ${query}\n\nDiscussion so far:\n${priorDiscussion}\n\nPlease share your perspective as ${agent.displayName}.`,
-          },
-        ],
-      });
-
-      for await (const chunk of stream.textStream) {
-        if (signal.aborted) break;
-        agentResponse += chunk;
-        emit(sessionId, { type: "agent-token", agentName: agent.name, token: chunk });
-      }
-
-      const newUsed = used + 1;
-      turnsUsed.set(agent.name, newUsed);
-      const newTurnsLeft = MAX_TURNS_PER_AGENT - newUsed;
-
-      emit(sessionId, {
-        type: "agent-response-complete",
-        agentName: agent.name,
-        turnsLeft: newTurnsLeft,
-      });
-
-      if (agentResponse.trim()) {
-        discussionHistory.push({
-          agentName: agent.name,
-          displayName: agent.displayName,
-          content: agentResponse.trim(),
-        });
-      }
-    }
-
-    if (signal.aborted) break;
-
-    // ── PM consensus check ───────────────────────────────────────────────
-    const discussionSummary = discussionHistory
-      .map((h) => `[${h.displayName}]: ${h.content}`)
-      .join("\n\n");
-
-    const consensusResult = await generateText({
+    const round2Responses = await runParallelRound(
+      sessionId,
+      signal,
       model,
-      abortSignal: signal,
-      system: `You are the Project Manager reviewing a council discussion. Determine if the experts have covered the topic sufficiently to provide a final answer. Respond with only "CONSENSUS" if enough ground has been covered, or "CONTINUE" if more discussion is needed.`,
-      messages: [
+      2,
+      selectedAgents,
+      (agent) => [
         {
-          role: "user",
-          content: `User question: ${query}\n\nDiscussion:\n${discussionSummary}`,
+          role: "user" as const,
+          content: `Original question: ${query}\n\nAnonymous peer positions from Round 1:\n${anonymisedSummary}\n\nPlease give your revised or maintained final position as ${agent.displayName}.`,
         },
       ],
-    });
+      (agent) =>
+        `You are ${agent.displayName}. You've seen the anonymous positions of your peers (above). Do you revise your position or maintain it? State your final position clearly and explain whether/why you changed your view. 2–3 paragraphs.`,
+    );
 
-    if (consensusResult.text.trim().toUpperCase().includes("CONSENSUS")) {
-      break;
+    if (round2Responses.length > 0) {
+      finalResponses = round2Responses;
     }
+    // If round 2 yielded no results (all timed out), fall back to round 1
   }
 
   if (signal.aborted) return;
 
-  // ── Step 4: PM synthesizes the final answer ────────────────────────────
+  // ── Phase 6: Borda ranking ─────────────────────────────────────────────
+  emit(sessionId, { type: "pm-status", message: "Agents are peer-ranking responses..." });
+
+  const bordaScores = await runBordaRanking(signal, model, finalResponses);
+
+  emit(sessionId, { type: "borda-scores", scores: bordaScores });
+
+  if (signal.aborted) return;
+
+  // ── Phase 7: PM synthesises final answer ──────────────────────────────
   emit(sessionId, { type: "pm-synthesizing" });
 
-  const discussionSummary = discussionHistory
-    .map((h) => `[${h.displayName}]: ${h.content}`)
-    .join("\n\n");
+  // Build the full discussion context for the PM (with agent names, unlike Borda phase)
+  const discussionContext = finalResponses
+    .map((r) => {
+      const scoreLabel =
+        bordaScores[r.agentName] !== undefined ? ` (Borda score: ${bordaScores[r.agentName]})` : "";
+      return `[${r.displayName}${scoreLabel}]: ${r.content}`;
+    })
+    .join("\n\n---\n\n");
+
+  const scoresStr = Object.entries(bordaScores)
+    .map(([name, score]) => {
+      const agent = COUNCIL_AGENTS.find((a) => a.name === name);
+      return `${agent?.displayName ?? name}: ${score}`;
+    })
+    .join(", ");
+
+  const didConverge = converged;
 
   const finalStream = streamText({
     model,
     abortSignal: signal,
-    system: `You are the Project Manager synthesizing the council's discussion into a clear, comprehensive final answer. Integrate the key insights from all experts. Be thorough but structured. Use markdown formatting where appropriate (headers, bullet points, code blocks).`,
+    system: `You are the Project Manager synthesizing a council discussion. The peer-ranked scores are: ${scoresStr}. The highest-scoring position should anchor your recommendation. ${
+      !didConverge
+        ? "If agents disagreed and did NOT converge, explicitly surface the disagreement: describe both positions and give a conditional recommendation."
+        : ""
+    } Use markdown with headers, bullet points, and code blocks where helpful.`,
     messages: [
       {
         role: "user",
-        content: `User question: ${query}\n\nExpert discussion:\n${discussionSummary}\n\nPlease provide the final council decision and recommendation.`,
+        content: `User question: ${query}\n\nExpert discussion${didConverge ? " (converged after Round 1)" : " (two rounds)"}:\n${discussionContext}\n\nPlease provide the final council decision and recommendation.`,
       },
     ],
   });
