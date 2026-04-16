@@ -122,7 +122,7 @@ export async function pollGithubEvents(projectId: string): Promise<{ fetched: nu
 		const id = crypto.randomUUID();
 
 		// O(1) dedup via unique index on github_event_id — onConflictDoNothing avoids raising a DB error
-		const result = await db
+		await db
 			.insert(webhookEvents)
 			.values({
 				id,
@@ -135,7 +135,7 @@ export async function pollGithubEvents(projectId: string): Promise<{ fetched: nu
 				createdAt: event.created_at,
 			})
 			.onConflictDoNothing();
-		if (result.changes > 0) fetched++;
+		fetched++;
 	}
 
 	// Update lastPollAt on all configs for this project

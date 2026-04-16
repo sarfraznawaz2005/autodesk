@@ -607,7 +607,17 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 							try {
 								const { peekTaskDefinitions } = await import("./planning");
 								const pendingDefs = peekTaskDefinitions(effectiveProjectId);
-								if (pendingDefs && pendingDefs.length > 0) {
+								// Guard: if active kanban tasks already exist (backlog/working/review),
+								// the plan was already approved — do NOT show the approval card again.
+								// This prevents a spurious re-plan (task-planner called by mistake)
+								// from interrupting an in-progress workflow.
+								const hasActiveTasks = effectiveProjectId
+									? (await db.select({ id: kanbanTasks.id, column: kanbanTasks.column })
+											.from(kanbanTasks)
+											.where(eq(kanbanTasks.projectId, effectiveProjectId)))
+										.some(t => t.column !== "done")
+									: false;
+								if (pendingDefs && pendingDefs.length > 0 && !hasActiveTasks) {
 									const recentNotes = await getProjectNotes(effectiveProjectId);
 									const planDoc = recentNotes[0];
 									if (planDoc?.content?.trim()) {

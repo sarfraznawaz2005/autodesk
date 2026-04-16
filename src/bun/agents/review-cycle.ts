@@ -183,14 +183,16 @@ async function triggerPMAutoContinue(projectId: string, completedTaskTitle: stri
 			const inWorking = allTasks.filter(t => t.column === "working");
 			if (inWorking.length > 0) {
 				const t = inWorking[0];
-				nextAction = `\n\n[Next Action] DISPATCH — task still in working column: "${t.title}" (${t.id}) with agent ${t.assignedAgentId ?? "backend-engineer"}. Call run_agent NOW.`;
+				const agent = t.assignedAgentId ?? "backend-engineer";
+				nextAction = `\n\n[Next Action] DISPATCH — the plan is already approved and kanban tasks already exist. DO NOT run task-planner or create a new plan. Call run_agent NOW with agent_name="${agent}" and kanban_task_id="${t.id}" to execute the existing task: "${t.title}".`;
 			} else {
 				const unblocked = inBacklog.find(t => {
 					if (!t.blockedBy) return true;
 					try { return (JSON.parse(t.blockedBy) as string[]).every(id => doneTasks.has(id)); } catch { return true; }
 				});
 				if (unblocked) {
-					nextAction = `\n\n[Next Action] DISPATCH — next backlog task: "${unblocked.title}" (${unblocked.id}) with agent ${unblocked.assignedAgentId ?? "backend-engineer"}. Call run_agent NOW.`;
+					const agent = unblocked.assignedAgentId ?? "backend-engineer";
+					nextAction = `\n\n[Next Action] DISPATCH — the plan is already approved and kanban tasks already exist. DO NOT run task-planner or create a new plan. Call run_agent NOW with agent_name="${agent}" and kanban_task_id="${unblocked.id}" to execute the existing task: "${unblocked.title}".`;
 				} else if (allTasks.every(t => t.column === "done")) {
 					nextAction = `\n\n[Next Action] ALL DONE — all ${allTasks.length} tasks completed. Summarize results to the user.`;
 				} else {

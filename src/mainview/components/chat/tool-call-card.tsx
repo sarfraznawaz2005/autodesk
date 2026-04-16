@@ -1,4 +1,4 @@
-import { useState, memo, lazy, Suspense, useRef, useCallback, useEffect } from "react";
+import { useState, memo, lazy, Suspense, useRef, useCallback } from "react";
 import { ImageLightbox } from "./image-lightbox";
 import {
 	ChevronRight,
@@ -179,7 +179,8 @@ function isImageTool(name: string) {
 export const ToolCallCard = memo(function ToolCallCard({ part }: { part: ToolCallPartData }) {
 	const toolName = part.toolName ?? "unknown";
 	// Auto-expand image tools so the screenshot is visible without clicking
-	const [expanded, setExpanded] = useState(() => isImageTool(toolName) && part.toolState === "success");
+	const [userExpanded, setUserExpanded] = useState<boolean | null>(null);
+	const expanded = userExpanded ?? (isImageTool(toolName) && part.toolState === "success");
 	const cardRef = useRef<HTMLDivElement>(null);
 	const meta = TOOL_META[toolName];
 	const Icon = meta?.Icon ?? Wrench;
@@ -189,21 +190,14 @@ export const ToolCallCard = memo(function ToolCallCard({ part }: { part: ToolCal
 	const isError = part.toolState === "error";
 	const isDone = part.toolState === "success" || part.toolState === "error";
 
-	// Auto-expand when image tool finishes (card may have mounted while still running)
-	useEffect(() => {
-		if (isImageTool(toolName) && part.toolState === "success") {
-			setExpanded(true);
-		}
-	}, [toolName, part.toolState]);
-
 	const toggle = useCallback(() => {
-		setExpanded((v) => !v);
+		setUserExpanded((prev) => !(prev ?? (isImageTool(toolName) && part.toolState === "success")));
 		requestAnimationFrame(() => {
 			requestAnimationFrame(() => {
 				cardRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
 			});
 		});
-	}, []);
+	}, [toolName, part.toolState]);
 
 	return (
 		<div ref={cardRef} className={cn(

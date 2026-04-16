@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef, useCallback, useMemo } from "react";
+import { useState, useEffect, useLayoutEffect, useRef, useCallback, useMemo } from "react";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
@@ -598,7 +598,9 @@ export function CouncilPage() {
   const inputRef = useRef<HTMLInputElement>(null);
   // Keep a ref to agents so event handler callbacks don't capture stale closure
   const agentsRef = useRef<AgentInfo[]>([]);
-  agentsRef.current = agents;
+  useLayoutEffect(() => {
+    agentsRef.current = agents;
+  });
 
   // Auto-scroll feed to bottom
   useEffect(() => {
@@ -690,7 +692,7 @@ export function CouncilPage() {
       }
 
       case "agent-thinking": {
-        const name = detail.agentName!;
+        const name = detail.agentName ?? "";
         const round = detail.round;
         // Remove pm-status once actual agent content starts
         setMessages((prev) => prev.filter((m) => m.id !== "pm-status"));
@@ -740,7 +742,7 @@ export function CouncilPage() {
       }
 
       case "agent-token": {
-        const name = detail.agentName!;
+        const name = detail.agentName ?? "";
         const token = detail.token ?? "";
         const round = detail.round;
         setAgentStates((prev) => {
@@ -759,7 +761,7 @@ export function CouncilPage() {
       }
 
       case "agent-response-complete": {
-        const name = detail.agentName!;
+        const name = detail.agentName ?? "";
         const round = detail.round;
         setAgentStates((prev) => {
           const next = new Map(prev);
@@ -877,7 +879,6 @@ export function CouncilPage() {
         rpc.stopCouncil(sessionId).catch(() => {});
       }
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [sessionId]);
 
   async function handleSend() {

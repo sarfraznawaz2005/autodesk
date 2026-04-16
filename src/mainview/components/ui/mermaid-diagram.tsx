@@ -65,7 +65,6 @@ export function MermaidDiagram({ code, fallbackClassName }: MermaidDiagramProps)
 
   if (failed) {
     // Hide entirely — never show raw mermaid syntax or mermaid error messages
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
     void fallbackClassName;
     return null;
   }

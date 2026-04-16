@@ -262,7 +262,7 @@ async function runBordaRanking(
         .map((r, i) => `[${i + 1}] ${truncate(r.content)}`)
         .join("\n\n---\n\n");
 
-      let rankingText = "";
+      let rankingText: string;
       try {
         const rankResult = await generateText({
           model,
@@ -277,7 +277,7 @@ async function runBordaRanking(
       }
 
       // Parse the ranking array
-      let ranking: number[] = [];
+      let ranking: number[];
       try {
         const match = rankingText.match(/\[[\s\S]*?\]/);
         ranking = JSON.parse(match ? match[0] : rankingText) as number[];
@@ -325,7 +325,7 @@ async function runSession(session: CouncilSession, query: string, context?: stri
     messages: [{ role: "user", content: `Available agents: ${agentListStr}\n\nUser question: ${effectiveQuery}\n\nWhich 3-5 agents should participate in this council?` }],
   });
 
-  let selectedNames: string[] = [];
+  let selectedNames: string[];
   try {
     const raw = selectionResult.text.trim();
     const match = raw.match(/\[[\s\S]*\]/);
@@ -417,7 +417,7 @@ async function runSession(session: CouncilSession, query: string, context?: stri
     messages: [{ role: "user", content: `User question: ${activeQuery}\n\nAnonymous positions:\n${anonymisedPositions}` }],
   });
 
-  let converged = false;
+  let converged: boolean;
   let anonymisedSummary = anonymisedPositions;
 
   try {

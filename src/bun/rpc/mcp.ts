@@ -1,4 +1,4 @@
-import { getRawSetting, getSettings, saveSetting } from "./settings";
+import { getRawSetting, saveSetting } from "./settings";
 import { reloadMcpClients, getMcpStatus, reconnectMcpServer, disconnectMcpServer } from "../mcp/client";
 
 export interface McpServerConfig {
