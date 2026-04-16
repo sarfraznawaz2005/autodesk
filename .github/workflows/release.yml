@@ -92,8 +92,18 @@ jobs:
           set -e
           dir="build/stable-macos-arm64"
 
-          # Read the hash Electrobun embedded in the built app
-          version_json=$(cat "$dir/AutoDesk.app/Contents/Resources/version.json")
+          # Show full app bundle structure so we can see exactly what Electrobun generates
+          echo "=== App bundle contents ==="
+          find "$dir/AutoDesk.app" -type f | sort
+
+          # Locate version.json wherever Electrobun placed it
+          version_json_path=$(find "$dir/AutoDesk.app" -name "version.json" | head -1)
+          if [ -z "$version_json_path" ]; then
+            echo "ERROR: version.json not found inside AutoDesk.app"
+            exit 1
+          fi
+          echo "Found version.json at: $version_json_path"
+          version_json=$(cat "$version_json_path")
           echo "App version info: $version_json"
 
           # update.json — fetched by Updater.checkForUpdate()
