@@ -47,12 +47,25 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
+      # Rename to the flat prefix-based names the updater expects:
+      #   {baseUrl}/stable-win-x64-update.json          ← checked by Updater.checkForUpdate()
+      #   {baseUrl}/stable-win-x64-AutoDesk.tar.zst     ← downloaded by Updater.downloadUpdate()
+      - name: Prepare distribution files
+        shell: pwsh
+        run: |
+          $dir = "build/stable-win-x64"
+          Copy-Item "$dir/AutoDesk-Setup.metadata.json" "$dir/stable-win-x64-update.json"
+          Copy-Item "$dir/AutoDesk-Setup.tar.zst"       "$dir/stable-win-x64-AutoDesk.tar.zst"
+
       - name: Upload Windows artifacts
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create-release.outputs.tag }}
-          files: build/stable-win-x64/**
-          fail_on_unmatched_files: false
+          files: |
+            build/stable-win-x64/AutoDesk-Setup.exe
+            build/stable-win-x64/stable-win-x64-update.json
+            build/stable-win-x64/stable-win-x64-AutoDesk.tar.zst
+          fail_on_unmatched_files: true
 
   # ── macOS arm64 build (Apple Silicon) ──────────────────────────────────────
   build-macos-arm64:
@@ -74,12 +87,24 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
+      - name: Prepare distribution files
+        run: |
+          dir="build/stable-macos-arm64"
+          ls -la "$dir"
+          metadata=$(find "$dir" -maxdepth 1 -name "*.metadata.json" | head -1)
+          tarball=$(find "$dir"  -maxdepth 1 -name "*.tar.zst"       | head -1)
+          cp "$metadata" "$dir/stable-macos-arm64-update.json"
+          cp "$tarball"  "$dir/stable-macos-arm64-AutoDesk.app.tar.zst"
+
       - name: Upload macOS arm64 artifacts
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create-release.outputs.tag }}
-          files: build/stable-macos-arm64/**
-          fail_on_unmatched_files: false
+          files: |
+            build/stable-macos-arm64/*.dmg
+            build/stable-macos-arm64/stable-macos-arm64-update.json
+            build/stable-macos-arm64/stable-macos-arm64-AutoDesk.app.tar.zst
+          fail_on_unmatched_files: true
 
   # ── macOS x64 build (Intel) ────────────────────────────────────────────────
   build-macos-x64:
@@ -101,9 +126,21 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
+      - name: Prepare distribution files
+        run: |
+          dir="build/stable-macos-x64"
+          ls -la "$dir"
+          metadata=$(find "$dir" -maxdepth 1 -name "*.metadata.json" | head -1)
+          tarball=$(find "$dir"  -maxdepth 1 -name "*.tar.zst"       | head -1)
+          cp "$metadata" "$dir/stable-macos-x64-update.json"
+          cp "$tarball"  "$dir/stable-macos-x64-AutoDesk.app.tar.zst"
+
       - name: Upload macOS x64 artifacts
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ needs.create-release.outputs.tag }}
-          files: build/stable-macos-x64/**
-          fail_on_unmatched_files: false
+          files: |
+            build/stable-macos-x64/*.dmg
+            build/stable-macos-x64/stable-macos-x64-update.json
+            build/stable-macos-x64/stable-macos-x64-AutoDesk.app.tar.zst
+          fail_on_unmatched_files: true
