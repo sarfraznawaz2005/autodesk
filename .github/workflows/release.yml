@@ -47,7 +47,9 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
-      # Rename to the flat prefix-based names the updater expects:
+      # The electrobun build already produces AutoDesk-Setup.zip (exe + .installer/ folder bundled).
+      # We only need to rename/copy the updater-specific files for Updater.checkForUpdate() and
+      # Updater.downloadUpdate() which expect flat prefix-based names at the release base URL:
       #   {baseUrl}/stable-win-x64-update.json          ← checked by Updater.checkForUpdate()
       #   {baseUrl}/stable-win-x64-AutoDesk.tar.zst     ← downloaded by Updater.downloadUpdate()
       - name: Prepare distribution files
@@ -64,8 +66,7 @@ jobs:
         with:
           tag_name: ${{ needs.create-release.outputs.tag }}
           files: |
-            build/stable-win-x64/AutoDesk-Setup.exe
-            build/stable-win-x64/AutoDesk-Setup.tar.zst
+            build/stable-win-x64/AutoDesk-Setup.zip
             build/stable-win-x64/stable-win-x64-update.json
             build/stable-win-x64/stable-win-x64-AutoDesk.tar.zst
           fail_on_unmatched_files: true
