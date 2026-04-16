@@ -37,4 +37,10 @@ export default {
 			icon: "assets/icon.ico",
 		},
 	},
+	// Update distribution — point to your GitHub Releases page.
+	// Format: "https://github.com/YOUR_ORG/YOUR_REPO/releases/latest/download"
+	// The updater fetches {baseUrl}/{channel}-{os}-{arch}-update.json to check for updates.
+	release: {
+		baseUrl: "https://github.com/sarfraznawaz2005/autodesk/releases/latest/download",
+	},
 } satisfies ElectrobunConfig;

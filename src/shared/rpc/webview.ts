@@ -207,6 +207,13 @@ export type WebviewSchema = RPCSchema<{
       error: string;
     };
 
+    // App update progress (streamed from Bun during download/check)
+    updateStatus: {
+      status: string;
+      message: string;
+      progress?: number;
+    };
+
     // Council multi-agent discussion events
     councilEvent: {
       sessionId: string;

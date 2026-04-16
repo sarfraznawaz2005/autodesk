@@ -44,6 +44,7 @@ import * as exportImportRpc from "./rpc/export-import";
 
 import * as skillsRpc from "./rpc/skills";
 import * as resetRpc from "./rpc/reset";
+import * as updaterRpc from "./rpc/updater";
 import * as healthRpc from "./rpc/health";
 import * as dashboardRpc from "./rpc/dashboard";
 import { engines, getOrCreateEngine, broadcastToWebview, removeEngine, resolveShellApproval, resolveUserQuestion, setAppFocused, abortAllAgents, abortAgentByName, getRunningAgentCount, getRunningAgentNames } from "./engine-manager";
@@ -833,6 +834,10 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 				answerCouncilQuestion(params.sessionId, params.questionId, params.answer);
 				return { success: true };
 			},
+			// ── Updater ──
+			checkForUpdate: () => updaterRpc.checkForUpdate(),
+			downloadUpdate: () => updaterRpc.downloadUpdate(),
+			applyUpdate: () => updaterRpc.applyUpdate(),
 		}),
 		messages: {
 			log: ({ level, message }) => {

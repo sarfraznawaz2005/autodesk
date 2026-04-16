@@ -160,6 +160,9 @@ const electroviewRpc = Electroview.defineRPC<AutoDeskRPC>({
       councilEvent: (payload) => {
         window.dispatchEvent(new CustomEvent("autodesk:council-event", { detail: payload }));
       },
+      updateStatus: (payload) => {
+        window.dispatchEvent(new CustomEvent("autodesk:update-status", { detail: payload }));
+      },
     },
   },
 });
@@ -965,6 +968,17 @@ export const rpc = {
 
   /** Delete a user-installed skill by name. */
   deleteSkill: (name: string) => electroviewRpc.request.deleteSkill({ name }),
+
+  // ---- Updater -------------------------------------------------------------
+
+  /** Check for an available app update. Returns devMode=true when running in dev channel. */
+  checkForUpdate: () => electroviewRpc.request.checkForUpdate({}),
+
+  /** Download and decompress the latest update. Progress arrives via "autodesk:update-status" events. */
+  downloadUpdate: () => electroviewRpc.request.downloadUpdate({}),
+
+  /** Apply the downloaded update and restart the app. */
+  applyUpdate: () => electroviewRpc.request.applyUpdate({}),
 
   // ---- Council -------------------------------------------------------------
 

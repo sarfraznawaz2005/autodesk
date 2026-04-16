@@ -18,6 +18,7 @@ import type { LspRequests } from "./lsp";
 import type { DashboardRequests } from "./dashboard";
 import type { SkillsRequests } from "./skills";
 import type { CouncilRequests } from "./council";
+import type { UpdaterRequests } from "./updater";
 import type { WebviewSchema } from "./webview";
 
 type BunRequests =
@@ -38,7 +39,8 @@ type BunRequests =
   & LspRequests
   & DashboardRequests
   & SkillsRequests
-  & CouncilRequests;
+  & CouncilRequests
+  & UpdaterRequests;
 
 export type AutoDeskRPC = {
   bun: RPCSchema<{
@@ -69,5 +71,6 @@ export type {
   DashboardRequests,
   SkillsRequests,
   CouncilRequests,
+  UpdaterRequests,
   WebviewSchema,
 };
