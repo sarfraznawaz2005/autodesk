@@ -29,7 +29,7 @@ import { broadcastToWebview } from "../engine-manager";
 const MAX_ROUNDS = 2 as const; // Hard cap: Round 1 (blind) + Round 2 (informed) only
 void MAX_ROUNDS; // referenced in comments/docs — kept as documentation constant
 const MAX_AGENTS = 5;
-const AGENT_STREAM_TIMEOUT_MS = 60_000;
+const AGENT_STREAM_TIMEOUT_MS = 120_000;
 // Truncate agent responses when building peer context to avoid token explosion
 const RESPONSE_TRUNCATE_CHARS = 1500;
 
@@ -216,7 +216,7 @@ async function runParallelRound(
         const isTimeout = err instanceof Error && err.message === "agent-timeout";
         console.warn(
           `[Council] agent ${agent.name} ${isTimeout ? "timed out" : "errored"} in round ${round}:`,
-          isTimeout ? "(60s)" : err,
+          isTimeout ? "(120s)" : err,
         );
         emit(sessionId, { type: "agent-response-complete", agentName: agent.name, round });
         return agentResponse.trim()
@@ -488,6 +488,13 @@ async function runSession(session: CouncilSession, query: string, context?: stri
   emit(sessionId, { type: "pm-status", message: "Agents are peer-ranking responses..." });
 
   const bordaScores = await runBordaRanking(signal, model, finalResponses);
+
+  // Agents that timed out / errored get a score of 0 so the sidebar shows ★0 for them
+  for (const agent of selectedAgents) {
+    if (bordaScores[agent.name] === undefined) {
+      bordaScores[agent.name] = 0;
+    }
+  }
 
   emit(sessionId, { type: "borda-scores", scores: bordaScores });
 
