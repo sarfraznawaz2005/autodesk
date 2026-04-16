@@ -42,6 +42,8 @@ mock.module("../../src/bun/providers", () => ({
 	createProviderAdapter: () => ({
 		createModel: () => ({ modelId: "test-model" }),
 	}),
+	getDefaultModel: () => "claude-3-5-sonnet-20241022",
+	getContextLimit: () => 128000,
 }));
 mock.module("../../src/bun/providers/models", () => ({
 	getDefaultModel: () => "claude-3-5-sonnet-20241022",

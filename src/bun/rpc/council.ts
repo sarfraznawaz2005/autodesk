@@ -280,7 +280,9 @@ async function runBordaRanking(
       let ranking: number[];
       try {
         const match = rankingText.match(/\[[\s\S]*?\]/);
-        ranking = JSON.parse(match ? match[0] : rankingText) as number[];
+        const parsed: unknown = JSON.parse(match ? match[0] : rankingText);
+        if (!Array.isArray(parsed)) return; // Valid JSON but not an array — skip
+        ranking = parsed as number[];
       } catch {
         return; // Unparseable — skip
       }
@@ -481,8 +483,8 @@ async function runSession(session: CouncilSession, query: string, context?: stri
     const msg = got === 1
       ? "Only 1 agent responded — need at least 2 for a meaningful council decision. Please try again."
       : "No agents responded successfully. Please check your AI provider and try again.";
-    emit(sessionId, { type: "error", message: msg });
-    return;
+    // Throw so the catch handler in startCouncilSession emits error + session-ended and cleans up.
+    throw new Error(msg);
   }
 
   // ── Phase 6: Borda ranking ─────────────────────────────────────────────
