@@ -47,15 +47,30 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
-      # The electrobun build already produces AutoDesk-Setup.zip (exe + .installer/ folder bundled).
-      # We only need to rename/copy the updater-specific files for Updater.checkForUpdate() and
-      # Updater.downloadUpdate() which expect flat prefix-based names at the release base URL:
+      # Bundle exe + archive into a single zip so users download one file.
+      # Layout mirrors what electrobun's wrapWindowsInstallerInZip produces:
+      #   AutoDesk-Setup.zip
+      #   ├── AutoDesk-Setup.exe          ← user runs this
+      #   └── .installer/
+      #       ├── AutoDesk-Setup.metadata.json
+      #       └── AutoDesk-Setup.tar.zst
+      # Also rename files to the flat prefix-based names the updater expects:
       #   {baseUrl}/stable-win-x64-update.json          ← checked by Updater.checkForUpdate()
       #   {baseUrl}/stable-win-x64-AutoDesk.tar.zst     ← downloaded by Updater.downloadUpdate()
       - name: Prepare distribution files
         shell: pwsh
         run: |
           $dir = "build/stable-win-x64"
+
+          # Build single-zip installer for user distribution
+          $staging = "$dir/.installer-staging"
+          New-Item -ItemType Directory -Force -Path "$staging/.installer" | Out-Null
+          Copy-Item "$dir/AutoDesk-Setup.exe"           "$staging/AutoDesk-Setup.exe"
+          Copy-Item "$dir/AutoDesk-Setup.metadata.json" "$staging/.installer/AutoDesk-Setup.metadata.json"
+          Copy-Item "$dir/AutoDesk-Setup.tar.zst"       "$staging/.installer/AutoDesk-Setup.tar.zst"
+          Compress-Archive -Path "$staging/*" -DestinationPath "$dir/AutoDesk-Setup.zip" -Force
+          Remove-Item -Recurse -Force "$staging"
+
           # update.json for Updater.checkForUpdate()
           Copy-Item "$dir/AutoDesk-Setup.metadata.json" "$dir/stable-win-x64-update.json"
           # Renamed tarball for Updater.downloadUpdate()
