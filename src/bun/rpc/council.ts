@@ -98,7 +98,7 @@ function truncate(text: string): string {
 // Public API
 // ---------------------------------------------------------------------------
 
-export async function startCouncilSession(query: string): Promise<{ sessionId: string }> {
+export async function startCouncilSession(query: string, context?: string): Promise<{ sessionId: string }> {
   const sessionId = `council-${Date.now()}-${Math.random().toString(36).slice(2, 8)}`;
   const abortController = new AbortController();
   const session: CouncilSession = {
@@ -109,7 +109,7 @@ export async function startCouncilSession(query: string): Promise<{ sessionId: s
   activeSessions.set(sessionId, session);
 
   // Run the session asynchronously — return the sessionId immediately
-  runSession(session, query).catch((err: unknown) => {
+  runSession(session, query, context).catch((err: unknown) => {
     // Only suppress actual user-triggered aborts (DOMException name === "AbortError")
     const isAbort =
       (err instanceof DOMException && err.name === "AbortError") ||
@@ -297,9 +297,15 @@ async function runBordaRanking(
   return scores;
 }
 
-async function runSession(session: CouncilSession, query: string): Promise<void> {
+async function runSession(session: CouncilSession, query: string, context?: string): Promise<void> {
   const { sessionId, abortController } = session;
   const signal = abortController.signal;
+
+  // If this is a follow-up, enrich the query with prior context so every
+  // phase (agent selection, prompts, synthesis) is naturally aware of it.
+  const effectiveQuery = context
+    ? `[Prior Council Discussion]:\n${context}\n\n[Follow-up Question]: ${query}`
+    : query;
 
   emit(sessionId, { type: "session-started", query });
   emit(sessionId, { type: "pm-status", message: "PM is assembling the council..." });
@@ -313,7 +319,7 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
     model,
     abortSignal: signal,
     system: `You are the Project Manager for a council of AI experts. Select the most relevant experts to answer the user's question. Default target is 3 agents; select up to 5 for complex multi-domain questions. Respond with ONLY a valid JSON array of agent names, e.g.: ["backend-engineer","security-expert"]. No markdown, no explanation.`,
-    messages: [{ role: "user", content: `Available agents: ${agentListStr}\n\nUser question: ${query}\n\nWhich 3-5 agents should participate in this council?` }],
+    messages: [{ role: "user", content: `Available agents: ${agentListStr}\n\nUser question: ${effectiveQuery}\n\nWhich 3-5 agents should participate in this council?` }],
   });
 
   let selectedNames: string[] = [];
@@ -346,10 +352,13 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
   const clarificationResult = await generateText({
     model,
     abortSignal: signal,
-    system: `You are the Project Manager facilitating an expert council discussion. Determine if the user's question needs clarification before proceeding. If yes, respond with "QUESTION: <your question>" (one concise question only). If the question is clear enough, respond with "PROCEED".`,
-    messages: [{ role: "user", content: `User question: ${query}` }],
+    system: `You are the Project Manager facilitating an expert council discussion. Determine if the user's question is missing a critical technical detail that would meaningfully change the experts' recommendations. Ask ONLY about technical or domain constraints (e.g. scale, existing infrastructure, specific requirements) — never about team size, budget, or process. If a useful clarification exists, respond with "QUESTION: <one concise technical question>". If the question is sufficiently clear, respond with "PROCEED". When in doubt, prefer PROCEED.`,
+    messages: [{ role: "user", content: `User question: ${effectiveQuery}` }],
   });
   const clarificationText = clarificationResult.text.trim();
+
+  // Use a mutable local so clarification answers augment the effective query
+  let activeQuery = effectiveQuery;
 
   if (clarificationText.startsWith("QUESTION:")) {
     const questionText = clarificationText.replace(/^QUESTION:\s*/, "").trim();
@@ -362,7 +371,7 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
       signal.addEventListener("abort", () => reject(new DOMException("Aborted", "AbortError")), { once: true });
     });
 
-    query = `${query}\n\nAdditional context from user: ${userAnswer}`;
+    activeQuery = `${effectiveQuery}\n\nAdditional context from user: ${userAnswer}`;
   }
 
   emit(sessionId, {
@@ -380,7 +389,7 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
     (agent) => [
       {
         role: "user" as const,
-        content: `Question: ${query}\n\nPlease share your expert perspective as ${agent.displayName}.`,
+        content: `Question: ${activeQuery}\n\nPlease share your expert perspective as ${agent.displayName}.`,
       },
     ],
     (agent) =>
@@ -402,7 +411,7 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
     model,
     abortSignal: signal,
     system: `You are the Project Manager reviewing anonymous expert positions. Determine whether these positions agree on the core recommendation. Reply with ONLY valid JSON: {"converged": true/false, "summary": "<brief anonymized summary of all positions for agents to review>"}`,
-    messages: [{ role: "user", content: `User question: ${query}\n\nAnonymous positions:\n${anonymisedPositions}` }],
+    messages: [{ role: "user", content: `User question: ${activeQuery}\n\nAnonymous positions:\n${anonymisedPositions}` }],
   });
 
   let converged = false;
@@ -448,7 +457,7 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
       (agent) => [
         {
           role: "user" as const,
-          content: `Original question: ${query}\n\nAnonymous peer positions from Round 1:\n${anonymisedSummary}\n\nPlease give your revised or maintained final position as ${agent.displayName}.`,
+          content: `Original question: ${activeQuery}\n\nAnonymous peer positions from Round 1:\n${anonymisedSummary}\n\nPlease give your revised or maintained final position as ${agent.displayName}.`,
         },
       ],
       (agent) =>
@@ -504,7 +513,7 @@ async function runSession(session: CouncilSession, query: string): Promise<void>
     messages: [
       {
         role: "user",
-        content: `User question: ${query}\n\nExpert discussion${didConverge ? " (converged after Round 1)" : " (two rounds)"}:\n${discussionContext}\n\nPlease provide the final council decision and recommendation.`,
+        content: `User question: ${activeQuery}\n\nExpert discussion${didConverge ? " (converged after Round 1)" : " (two rounds)"}:\n${discussionContext}\n\nPlease provide the final council decision and recommendation.`,
       },
     ],
   });

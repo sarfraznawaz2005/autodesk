@@ -821,7 +821,7 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 			// ── Council ──
 			startCouncil: async (params) => {
 				const { startCouncilSession } = await import("./rpc/council");
-				return startCouncilSession(params.query);
+				return startCouncilSession(params.query, params.context);
 			},
 			stopCouncil: async (params) => {
 				const { stopCouncilSession } = await import("./rpc/council");

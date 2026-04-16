@@ -616,7 +616,8 @@ export function CouncilPage() {
 
     switch (type) {
       case "session-started": {
-        setMessages((prev) => prev.filter((m) => m.type === "user-query"));
+        // Messages are already set by handleSend before startCouncil is called.
+        // Just reset per-round state so the new session starts clean visually.
         setAgents([]);
         setAgentStates(new Map());
         setBordaScores({});
@@ -883,37 +884,47 @@ export function CouncilPage() {
     const trimmed = query.trim();
     if (!trimmed || sessionState === "running") return;
 
+    const isFollowUp = sessionState === "done";
     setQuery("");
     setSessionState("running");
 
-    // Show the user's query immediately at the top of the feed
-    setMessages([
-      {
-        id: "user-query",
-        type: "user-query",
-        content: trimmed,
-      },
-    ]);
-    setAgents([]);
-    setAgentStates(new Map());
+    // Build prior context from existing messages for follow-up queries
+    let context: string | undefined;
+    if (isFollowUp) {
+      const parts: string[] = [];
+      let currentQ = "";
+      for (const m of messages) {
+        if (m.type === "user-query") currentQ = m.content;
+        if (m.type === "final-answer" && m.content) {
+          parts.push(`Q: ${currentQ}\n\nCouncil Decision:\n${m.content}`);
+        }
+      }
+      if (parts.length > 0) context = parts.join("\n\n---\n\n");
+    }
+
+    if (isFollowUp) {
+      // Append new query to existing feed — preserve history
+      setMessages((prev) => [
+        ...prev,
+        { id: `user-query-${Date.now()}`, type: "user-query", content: trimmed },
+      ]);
+    } else {
+      // Fresh start — clear feed
+      setMessages([{ id: "user-query", type: "user-query", content: trimmed }]);
+      setAgents([]);
+      setAgentStates(new Map());
+      setBordaScores({});
+    }
 
     try {
-      const result = (await rpc.startCouncil(trimmed)) as { sessionId: string };
+      const result = (await rpc.startCouncil(trimmed, context)) as { sessionId: string };
       setSessionId(result.sessionId);
     } catch (err) {
       setSessionState("error");
       const msg = err instanceof Error ? err.message : String(err);
-      setMessages([
-        {
-          id: "user-query",
-          type: "user-query",
-          content: trimmed,
-        },
-        {
-          id: "err-start",
-          type: "session-error" as const,
-          content: `Failed to start council: ${msg}`,
-        },
+      setMessages((prev) => [
+        ...prev,
+        { id: "err-start", type: "session-error" as const, content: `Failed to start council: ${msg}` },
       ]);
     }
   }
@@ -1004,37 +1015,36 @@ export function CouncilPage() {
                       content={agent.displayName}
                       side="bottom"
                     >
-                      <div style={{ position: "relative", display: "flex", flexDirection: "column", alignItems: "center", gap: 3, overflow: "visible", cursor: "default" }}>
+                      {/* Wrapper is exactly avatar-sized so the flex row centres on the circle.
+                          Score badge and typing bubble float above via position:absolute. */}
+                      <div style={{ position: "relative", width: 34, height: 34, overflow: "visible", cursor: "default" }}>
 
-                        {/* Borda score — above avatar, consistent dark pill */}
-                        <div style={{
-                          height: 16,
-                          minWidth: 20,
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                        }}>
-                          {score !== undefined && (
-                            <span style={{
-                              backgroundColor: agent.color,
-                              color: "#fff",
-                              borderRadius: 6,
-                              padding: "1px 6px",
-                              fontSize: 10,
-                              fontWeight: 700,
-                              lineHeight: 1.4,
-                              letterSpacing: 0.2,
-                            }}>
-                              {score}
-                            </span>
-                          )}
-                        </div>
+                        {/* Borda score — floats above avatar */}
+                        {score !== undefined && (
+                          <span style={{
+                            position: "absolute",
+                            bottom: "calc(100% + 4px)",
+                            left: "50%",
+                            transform: "translateX(-50%)",
+                            backgroundColor: agent.color,
+                            color: "#fff",
+                            borderRadius: 6,
+                            padding: "1px 6px",
+                            fontSize: 10,
+                            fontWeight: 700,
+                            lineHeight: 1.4,
+                            whiteSpace: "nowrap",
+                            zIndex: 5,
+                          }}>
+                            {score}
+                          </span>
+                        )}
 
-                        {/* Typing bubble — appears when streaming */}
+                        {/* Typing bubble — floats above avatar when streaming */}
                         {isSpeaking && (
                           <div style={{
                             position: "absolute",
-                            top: -22,
+                            bottom: "calc(100% + 6px)",
                             left: "50%",
                             transform: "translateX(-50%)",
                             backgroundColor: agent.color,

@@ -1,6 +1,6 @@
 export type CouncilRequests = {
   startCouncil: {
-    params: { query: string };
+    params: { query: string; context?: string };
     response: { sessionId: string };
   };
   stopCouncil: {

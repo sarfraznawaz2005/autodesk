@@ -969,8 +969,8 @@ export const rpc = {
   // ---- Council -------------------------------------------------------------
 
   /** Start a council session with a user query. Returns the session ID immediately. */
-  startCouncil: (query: string) =>
-    electroviewRpc.request.startCouncil({ query }),
+  startCouncil: (query: string, context?: string) =>
+    electroviewRpc.request.startCouncil({ query, context }),
 
   /** Stop an in-flight council session. */
   stopCouncil: (sessionId: string) =>
