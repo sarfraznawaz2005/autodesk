@@ -37,18 +37,6 @@ export async function activatePlugin(loaded: LoadedPlugin): Promise<void> {
 		dbRow = (await db.select().from(pluginsTable).where(eq(pluginsTable.name, manifest.name)).limit(1))[0];
 	}
 
-	// If the manifest declares defaultEnabled: false and the row was not newly
-	// created (i.e. it was auto-enabled before this flag existed), correct it.
-	if (!isNewInstall && manifest.defaultEnabled === false && dbRow && dbRow.enabled === 1) {
-		const settingsRow = JSON.parse(dbRow.settings ?? "{}");
-		// Only auto-disable if the user has never explicitly interacted
-		// (no custom settings written). This is a one-time correction.
-		if (Object.keys(settingsRow).length === 0) {
-			await db.update(pluginsTable).set({ enabled: 0, updatedAt: new Date().toISOString() }).where(eq(pluginsTable.name, manifest.name));
-			dbRow = { ...dbRow, enabled: 0 };
-		}
-	}
-
 	// Backfill manifest prompt into DB if the column is empty (e.g. after migration added the column)
 	if (!isNewInstall && dbRow && !dbRow.prompt && manifest.prompt) {
 		await db.update(pluginsTable).set({ prompt: manifest.prompt }).where(eq(pluginsTable.name, manifest.name));
