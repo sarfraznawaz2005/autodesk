@@ -93,34 +93,58 @@ async function queueWindowsUpdateFallback(): Promise<void> {
 		// then extracts the tar and relaunches. No sentinel check needed since
 		// we skip Updater.applyUpdate() on Windows entirely.
 		const psContent = `# AutoDesk update extractor
-# Runs detached after the app quits. Waits for bun.exe to exit so no file
-# is locked, then extracts the update tar and relaunches.
+# Runs detached after the app quits. Waits for the app process to fully exit
+# so no files are locked, then extracts the update tar and relaunches.
 
 $tarFile  = '${esc(tarFile)}'
 $appDir   = '${esc(appDir)}'
 $launcher = '${esc(launcherPath)}'
 
-# Wait up to 30 s for bun.exe to fully exit before touching any files
+# Log helper — writes to a file next to this script so failures are diagnosable
+$logFile = [System.IO.Path]::ChangeExtension($MyInvocation.MyCommand.Path, '.log')
+function Log($msg) { "$(Get-Date -Format 'HH:mm:ss') $msg" | Add-Content $logFile }
+
+Log "Update extractor started"
+
+# Wait up to 30 s for the app to fully exit.
+# The process may be named 'bun' or 'AutoDesk' depending on the build.
 $timeout = 30
 $elapsed = 0
-while ((Get-Process -Name 'bun' -ErrorAction SilentlyContinue) -and ($elapsed -lt $timeout)) {
+function AppRunning {
+    (Get-Process -Name 'bun'      -ErrorAction SilentlyContinue) -or
+    (Get-Process -Name 'AutoDesk' -ErrorAction SilentlyContinue)
+}
+while ((AppRunning) -and ($elapsed -lt $timeout)) {
     Start-Sleep -Seconds 1
     $elapsed++
 }
-# Small buffer to ensure OS releases all file handles
-Start-Sleep -Seconds 2
+Log "App exited after $($elapsed)s (or timeout). Waiting extra 3s for handles to release"
+Start-Sleep -Seconds 3
 
 # Extract the update into the app directory
 if (Test-Path $tarFile) {
-    tar -xf $tarFile -C $appDir --strip-components=1 2>$null
-    Remove-Item -Path $tarFile -Force -ErrorAction SilentlyContinue
+    Log "Extracting $tarFile -> $appDir"
+    $result = tar -xf $tarFile -C $appDir --strip-components=1 2>&1
+    Log "tar result: $result (exit $LASTEXITCODE)"
+    if ($LASTEXITCODE -eq 0) {
+        Remove-Item -Path $tarFile -Force -ErrorAction SilentlyContinue
+        Log "Tar removed"
+    } else {
+        Log "ERROR: tar failed — leaving tar in place for diagnostics"
+    }
+} else {
+    Log "ERROR: tar not found at $tarFile"
 }
 
 # Relaunch
 if (Test-Path $launcher) {
+    Log "Launching $launcher"
     Start-Process -FilePath $launcher
+} else {
+    Log "ERROR: launcher not found at $launcher"
 }
 
+Log "Done"
 Remove-Item $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
 `;
 
