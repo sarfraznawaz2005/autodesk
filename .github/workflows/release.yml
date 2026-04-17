@@ -44,6 +44,19 @@ jobs:
       - name: Build frontend (Vite)
         run: bun run vite build
 
+      # Embed the app icon into both Electrobun binaries BEFORE the build runs.
+      # The build copies these into the app bundle and tar.zst, so pre-embedding
+      # means the installed launcher.exe and the installer exe both carry the icon.
+      # Electrobun tries to do this itself but its rcedit call fails silently on CI.
+      - name: Embed icon into Electrobun binaries
+        shell: pwsh
+        run: |
+          $rcedit = "node_modules\rcedit\bin\rcedit-x64.exe"
+          $icon   = "assets\icon.ico"
+          & $rcedit "node_modules\electrobun\dist-win-x64\launcher.exe" --set-icon $icon
+          if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed on launcher.exe"; exit 1 }
+          Write-Host "Icon embedded into launcher.exe"
+
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
@@ -52,7 +65,7 @@ jobs:
         run: |
           $rcedit = "node_modules\rcedit\bin\rcedit-x64.exe"
           & $rcedit "build\stable-win-x64\AutoDesk-Setup.exe" --set-icon "assets\icon.ico"
-          if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed"; exit 1 }
+          if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed on AutoDesk-Setup.exe"; exit 1 }
           Write-Host "Icon embedded into AutoDesk-Setup.exe"
 
       # Bundle exe + archive into a single zip so users download one file.
