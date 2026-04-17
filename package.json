@@ -1,6 +1,6 @@
 {
 	"name": "autodesk",
-	"version": "0.0.13",
+	"version": "0.0.14",
 	"description": "AI-powered development platform with autonomous agent teams",
 	"type": "module",
 	"scripts": {
