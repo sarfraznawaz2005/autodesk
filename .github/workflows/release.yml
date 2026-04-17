@@ -47,6 +47,14 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
+      - name: Embed icon into installer exe
+        shell: pwsh
+        run: |
+          $rcedit = "node_modules\rcedit\bin\rcedit-x64.exe"
+          & $rcedit "build\stable-win-x64\AutoDesk-Setup.exe" --set-icon "assets\icon.ico"
+          if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed"; exit 1 }
+          Write-Host "Icon embedded into AutoDesk-Setup.exe"
+
       # Bundle exe + archive into a single zip so users download one file.
       # Layout mirrors what electrobun's wrapWindowsInstallerInZip produces:
       #   AutoDesk-Setup.zip
