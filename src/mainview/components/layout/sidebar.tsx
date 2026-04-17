@@ -260,6 +260,10 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   };
 
   const handleApply = () => {
+    // Immediately lock the UI — prevents the panel re-opening or showing stale state
+    // if the app takes a few seconds to close after applyUpdate() is called.
+    setUpdateState("idle");
+    setShowUpdatePanel(false);
     rpc.applyUpdate().catch(() => {});
   };
 
