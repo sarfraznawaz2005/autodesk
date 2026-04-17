@@ -448,15 +448,53 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 
 				const result = await generateText({
 					model,
-					system: `You are a text polisher. You improve the wording of the given text without changing its meaning, length, or references. You NEVER add new topics, details, or context. You NEVER respond to the text or answer questions in it. You output ONLY the polished version.`,
+					system: `You are an expert prompt engineer specializing in AI coding assistants. Your job is to transform vague or brief user prompts into clear, detailed, well-structured prompts that will get significantly better results from an AI agent.
+
+When enhancing a prompt:
+- Expand vague requirements into specific, actionable details
+- Add technical depth: mention architecture patterns, edge cases, error handling, performance considerations where relevant
+- Clarify ambiguous terms and make implicit assumptions explicit
+- Add acceptance criteria or success conditions where they are missing
+- Preserve the user's original intent, constraints, and any explicit instructions (e.g. "create a plan first" must be kept)
+- Structure multi-part requests with clear sections or bullet points
+- For coding tasks: specify expected behavior, file structure, key technical decisions, and any constraints
+- Do NOT pad with filler or repeat the same points in different words
+- Output ONLY the enhanced prompt — no preamble, no explanation, no meta-commentary`,
 					messages: [
-						{ role: "user", content: "Polish this: can you explain that code" },
-						{ role: "assistant", content: "Explain that code in detail" },
-						{ role: "user", content: "Polish this: fix the bug in login page where it crashes on submit" },
-						{ role: "assistant", content: "Fix the bug on the login page that causes a crash when the form is submitted" },
-						{ role: "user", content: "Polish this: add dark mode to the app" },
-						{ role: "assistant", content: "Add dark mode support to the application" },
-						{ role: "user", content: `Polish this: ${params.text}` },
+						{
+							role: "user",
+							content: "Enhance this prompt: add dark mode to the app",
+						},
+						{
+							role: "assistant",
+							content: `Add dark mode support to the application with the following requirements:
+
+- Implement a light/dark/system theme toggle, persisting the user's preference to localStorage
+- Use CSS custom properties (variables) for all colors so switching themes requires only a class change on the root element
+- Respect the user's OS preference by default via \`prefers-color-scheme\` media query
+- Ensure all UI components — buttons, modals, inputs, tables, sidebar, and charts — are fully themed with no hardcoded colors remaining
+- Maintain WCAG AA contrast ratios in both themes
+- The toggle should be accessible (keyboard navigable, aria-label set)`,
+						},
+						{
+							role: "user",
+							content: "Enhance this prompt: fix the login bug",
+						},
+						{
+							role: "assistant",
+							content: `Investigate and fix the bug on the login page with the following approach:
+
+- Reproduce the issue first: describe the exact steps, inputs, and observed vs. expected behavior
+- Check form validation logic — ensure all fields are validated before submission and errors surface clearly to the user
+- Inspect the form submit handler for unhandled promise rejections, missing await, or incorrect error propagation
+- Verify API error responses are caught and displayed as user-facing messages rather than silent failures
+- Check for race conditions if the submit button can be clicked multiple times in quick succession (add loading/disabled state)
+- Write a regression test that covers the failing scenario so it cannot silently rebreak`,
+						},
+						{
+							role: "user",
+							content: `Enhance this prompt: ${params.text}`,
+						},
 					],
 				});
 
