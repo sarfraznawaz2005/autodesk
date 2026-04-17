@@ -98,7 +98,13 @@ jobs:
           Remove-Item -Recurse -Force "$staging"
 
           # update.json for Updater.checkForUpdate()
-          Copy-Item "$dir/AutoDesk-Setup.metadata.json" "$dir/stable-win-x64-update.json"
+          # Inject version from the git tag (strips leading 'v') so Updater.checkForUpdate()
+          # can return a non-undefined version string for the UI to display.
+          $tag     = "${{ needs.create-release.outputs.tag }}"
+          $semver  = $tag -replace '^v', ''
+          $meta    = Get-Content "$dir/AutoDesk-Setup.metadata.json" | ConvertFrom-Json
+          $meta | Add-Member -NotePropertyName 'version' -NotePropertyValue $semver -Force
+          $meta | ConvertTo-Json -Compress | Set-Content "$dir/stable-win-x64-update.json"
           # Renamed tarball for Updater.downloadUpdate()
           Copy-Item "$dir/AutoDesk-Setup.tar.zst" "$dir/stable-win-x64-AutoDesk.tar.zst"
 
@@ -142,7 +148,10 @@ jobs:
           echo "App metadata: $(cat $metadata)"
 
           # update.json — fetched by Updater.checkForUpdate()
-          cp "$metadata" "$dir/stable-macos-arm64-update.json"
+          # Inject version from git tag so the UI can display it correctly.
+          semver="${{ needs.create-release.outputs.tag }}"
+          semver="${semver#v}"
+          jq --arg v "$semver" '. + {version: $v}' "$metadata" > "$dir/stable-macos-arm64-update.json"
 
           # tar.zst — downloaded by Updater.downloadUpdate()
           tar -cf - -C "$dir" "AutoDesk.app" | zstd --stdout > "$dir/stable-macos-arm64-AutoDesk.app.tar.zst"
