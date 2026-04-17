@@ -47,9 +47,39 @@ jobs:
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
-      # The launcher binary is Zig-compiled and has no PE resource section, so
-      # rcedit cannot embed an icon into it. We only patch the installer exe,
-      # which is a standard Windows PE binary that rcedit can modify.
+      # Embed icon into launcher.exe and repack tar.zst.
+      # CI runners may mark extracted files read-only, so we clear that first.
+      # Uses electrobun's own bundled zig-zstd for repacking (no extra installs).
+      # If rcedit fails for any reason we warn and continue — Setup.exe still gets its icon.
+      - name: Embed icon into launcher and repack tar.zst
+        shell: pwsh
+        run: |
+          $rcedit  = "node_modules\rcedit\bin\rcedit-x64.exe"
+          $icon    = "assets\icon.ico"
+          $dir     = "build\stable-win-x64"
+          $binDir  = "$dir\AutoDesk\bin"
+          $zstd    = "node_modules\electrobun\dist-win-x64\zig-zstd.exe"
+
+          # Ensure launcher has .exe extension — rcedit requires it to commit PE changes
+          if ((Test-Path "$binDir\launcher") -and -not (Test-Path "$binDir\launcher.exe")) {
+            Rename-Item "$binDir\launcher" "launcher.exe"
+            Write-Host "Renamed launcher → launcher.exe"
+          }
+          $launcher = "$binDir\launcher.exe"
+          Write-Host "Launcher: $launcher"
+
+          & $rcedit $launcher --set-icon $icon
+          if ($LASTEXITCODE -eq 0) {
+            Write-Host "Icon embedded into launcher. Repacking tar.zst..."
+            Remove-Item "$dir\AutoDesk-Setup.tar.zst" -Force
+            tar -cf "$dir\_tmp.tar" -C $dir AutoDesk
+            & $zstd compress -i "$dir\_tmp.tar" -o "$dir\AutoDesk-Setup.tar.zst"
+            Remove-Item "$dir\_tmp.tar" -Force
+            Write-Host "Repacked AutoDesk-Setup.tar.zst"
+          } else {
+            Write-Warning "rcedit could not embed icon into launcher — skipping repack"
+          }
+
       - name: Embed icon into installer exe
         shell: pwsh
         run: |
