@@ -68,7 +68,10 @@ async function queueWindowsUpdateFallback(): Promise<void> {
 	try {
 		const selfExtractionDir = join(Utils.paths.userData, "self-extraction");
 		const appDir            = join(Utils.paths.userData, "app");
-		const launcherPath      = join(appDir, "bin", "launcher.exe");
+		// launcher.exe lives at the userData level (one above app/), not inside app/bin/
+		const launcherPath      = join(Utils.paths.userData, "launcher.exe");
+		// Sentinel file: if native extractor succeeded, Resources/version.json exists
+		const sentinelPath      = join(appDir, "Resources", "version.json");
 
 		// Find the downloaded update tar (deposited by downloadUpdate())
 		let tars: string[] = [];
@@ -86,30 +89,35 @@ async function queueWindowsUpdateFallback(): Promise<void> {
 		// PS single-quote escape helper
 		const esc = (s: string) => s.replace(/'/g, "''");
 
-		// The fallback script: waits 15s, checks if native extractor succeeded, extracts if not
+		// The fallback script: waits 20s, checks if native extractor succeeded via
+		// version.json sentinel, extracts + relaunches only if it didn't.
 		const psContent = `# AutoDesk update fallback
 # Queued before Apply & Restart to handle the intermittent electrobun extractor
 # deadlock (https://github.com/blackboardsh/electrobun/pull/277).
-# Logic: wait 15s, then check if launcher.exe is running. If yes, native
-# extractor succeeded - exit. If not, extract the tar ourselves and relaunch.
+# Logic: wait 20s, then check Resources/version.json (sentinel).
+# If it exists the native extractor succeeded — exit silently.
+# If it doesn't exist (deadlock scenario), extract the tar and relaunch.
 
 $tarFile  = '${esc(tarFile)}'
 $appDir   = '${esc(appDir)}'
+$sentinel = '${esc(sentinelPath)}'
 $launcher = '${esc(launcherPath)}'
 
-Start-Sleep -Seconds 15
+Start-Sleep -Seconds 20
 
-# Native extractor success: launcher is already running
-$running = Get-Process -Name 'launcher' -ErrorAction SilentlyContinue
-if ($running) {
+# Native extractor success: version.json was written by the extractor
+if (Test-Path $sentinel) {
     Remove-Item $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
     exit 0
 }
 
-# Native extractor failed: tar still present - extract and relaunch
+# Native extractor failed (deadlock): extract ourselves and relaunch
 if (Test-Path $tarFile) {
     tar -xf $tarFile -C $appDir --strip-components=1 2>$null
     Remove-Item -Path $tarFile -Force -ErrorAction SilentlyContinue
+}
+
+if (Test-Path $launcher) {
     Start-Process -FilePath $launcher
 }
 
