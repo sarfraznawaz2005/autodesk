@@ -23,6 +23,7 @@ export default {
 			"assets/icon.ico": "app.ico",
 			"plugins": "plugins",
 			"skills": "skills",
+			"assets/uninstall.ps1": "uninstall.ps1",
 		},
 		// Ignore Vite output in watch mode — HMR handles view rebuilds separately
 		watchIgnore: ["dist/**"],

@@ -19,6 +19,7 @@ import { EmailAdapter } from "./channels/email-adapter";
 
 import * as settingsRpc from "./rpc/settings";
 import { maybeRunStartupMaintenance } from "./db/maintenance";
+import { registerWindowsUninstaller } from "./windows-registry";
 import { getOrCreateEngine, setMainWindowRef } from "./engine-manager";
 import { rpc, onSettingChange, getLastKnownRoute } from "./rpc-registration";
 import { syncWorkspaceFolders } from "./rpc/projects";
@@ -132,6 +133,9 @@ initGlobalErrorHandlers();
 // ---------------------------------------------------------------------------
 runMigrations();
 await seedDatabase();
+
+// Register Windows uninstaller entry (no-op on non-Windows / dev builds)
+registerWindowsUninstaller().catch(() => {});
 
 maybeRunStartupMaintenance();
 startWalCheckpointTimer();
