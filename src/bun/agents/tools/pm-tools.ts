@@ -388,12 +388,21 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						writeAgentRunning = true;
 					}
 
-					// Resolve agent display name from DB
+					// Resolve agent display name + enabled status from DB
 					const agentRows = await db
-						.select({ displayName: agentsTable.displayName })
+						.select({ displayName: agentsTable.displayName, isEnabled: agentsTable.isEnabled })
 						.from(agentsTable)
 						.where(eq(agentsTable.name, args.agent))
 						.limit(1);
+
+					if (agentRows.length > 0 && !agentRows[0].isEnabled) {
+						dispatchingAgents.delete(dispatchKey);
+						if (!isReadOnly) writeAgentRunning = false;
+						return JSON.stringify({
+							success: false,
+							error: `Agent "${args.agent}" is disabled and cannot be dispatched. Enable it in Settings → Agents or choose a different agent.`,
+						});
+					}
 
 					const displayName = agentRows.length > 0 ? agentRows[0].displayName : args.agent;
 
@@ -772,10 +781,15 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 					const allResults = await Promise.allSettled(
 						args.tasks.map(async (t) => {
 							const agentRows = await db
-								.select({ displayName: agentsTable.displayName })
+								.select({ displayName: agentsTable.displayName, isEnabled: agentsTable.isEnabled })
 								.from(agentsTable)
 								.where(eq(agentsTable.name, t.agent))
 								.limit(1);
+
+							if (agentRows.length > 0 && !agentRows[0].isEnabled) {
+								throw new Error(`Agent "${t.agent}" is disabled and cannot be dispatched. Enable it in Settings → Agents or choose a different agent.`);
+							}
+
 							const displayName = agentRows.length > 0 ? agentRows[0].displayName : t.agent;
 
 							const agentAbort = new AbortController();
@@ -1809,8 +1823,9 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 
 		list_agents: tool({
 			description:
-				"List all available agents with their capabilities, models, and status. " +
-				"Shows which agents are enabled, their assigned models, and configuration.",
+				"List all agents with their capabilities, models, and enabled status. " +
+				"IMPORTANT: Only dispatch agents where isEnabled=true. Disabled agents (isEnabled=false) " +
+				"will be rejected by run_agent — do not attempt to call them.",
 			inputSchema: z.object({}),
 			execute: async () => {
 				try {
