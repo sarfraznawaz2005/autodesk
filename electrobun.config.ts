@@ -4,7 +4,7 @@ export default {
 	app: {
 		name: "AutoDesk",
 		identifier: "com.sarfrazai.autodesk",
-		version: "0.0.16",
+		version: "0.0.17",
 	},
 	runtime: {
 		// Keep Bun alive when the last window closes so we can recreate it
