@@ -70,8 +70,7 @@ async function queueWindowsUpdateFallback(): Promise<void> {
 	try {
 		const selfExtractionDir = join(Utils.paths.userData, "self-extraction");
 		const appDir            = join(Utils.paths.userData, "app");
-		// launcher.exe lives at the userData root (one level above app/), not inside app/bin/
-		const launcherPath      = join(Utils.paths.userData, "launcher.exe");
+		const launcherPath      = join(Utils.paths.userData, "app", "bin", "launcher.exe");
 
 		// Find the downloaded update tar (deposited by downloadUpdate())
 		let tars: string[] = [];
