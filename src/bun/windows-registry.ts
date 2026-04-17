@@ -24,7 +24,8 @@ export async function registerWindowsUninstaller(): Promise<void> {
 
         const installDir  = join(Utils.paths.userData, "app");
         const iconPath    = join(installDir, "Resources", "app.ico");
-        const scriptPath  = join(installDir, "Resources", "uninstall.ps1");
+        // electrobun copies all copy-section assets into Resources/app/
+        const scriptPath  = join(installDir, "Resources", "app", "uninstall.ps1");
         const regKeyPs    = `HKCU:\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Uninstall\\${identifier}`;
         const uninstallStr = `powershell.exe -ExecutionPolicy Bypass -WindowStyle Hidden -File "${scriptPath}"`;
 
