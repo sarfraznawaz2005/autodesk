@@ -44,27 +44,37 @@ jobs:
       - name: Build frontend (Vite)
         run: bun run vite build
 
-      # Embed the app icon into both Electrobun binaries BEFORE the build runs.
-      # The build copies these into the app bundle and tar.zst, so pre-embedding
-      # means the installed launcher.exe and the installer exe both carry the icon.
-      # Electrobun tries to do this itself but its rcedit call fails silently on CI.
-      - name: Embed icon into Electrobun binaries
-        shell: pwsh
-        run: |
-          $rcedit = "node_modules\rcedit\bin\rcedit-x64.exe"
-          $icon   = "assets\icon.ico"
-          & $rcedit "node_modules\electrobun\dist-win-x64\launcher.exe" --set-icon $icon
-          if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed on launcher.exe"; exit 1 }
-          Write-Host "Icon embedded into launcher.exe"
-
       - name: Build app (Electrobun stable)
         run: bunx electrobun build --env=stable
 
-      - name: Embed icon into installer exe
+      # Electrobun's rcedit calls are wrapped in silent try/catch and fail on CI.
+      # We embed icons explicitly here after the build produces the binaries.
+      # The launcher lives inside the app bundle — we embed the icon then repack
+      # the tar.zst so both fresh installs and auto-updates get the correct icon.
+      - name: Embed icons and repack tar.zst
         shell: pwsh
         run: |
-          $rcedit = "node_modules\rcedit\bin\rcedit-x64.exe"
-          & $rcedit "build\stable-win-x64\AutoDesk-Setup.exe" --set-icon "assets\icon.ico"
+          $rcedit  = "node_modules\rcedit\bin\rcedit-x64.exe"
+          $icon    = "assets\icon.ico"
+          $dir     = "build\stable-win-x64"
+          $binDir  = "$dir\AutoDesk\bin"
+
+          # Launcher may be named 'launcher' or 'launcher.exe' depending on OS/Bun behaviour
+          $launcher = if (Test-Path "$binDir\launcher.exe") { "$binDir\launcher.exe" } else { "$binDir\launcher" }
+          Write-Host "Embedding icon into launcher: $launcher"
+          & $rcedit $launcher --set-icon $icon
+          if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed on launcher"; exit 1 }
+
+          # Install zstd for repacking
+          choco install zstandard -y --no-progress | Out-Null
+
+          # Repack tar.zst so the icon-embedded launcher is inside the archive
+          Remove-Item "$dir\AutoDesk-Setup.tar.zst" -Force
+          tar -cf - -C $dir AutoDesk | zstd -o "$dir\AutoDesk-Setup.tar.zst"
+          Write-Host "Repacked AutoDesk-Setup.tar.zst with icon-embedded launcher"
+
+          # Embed icon into the installer exe
+          & $rcedit "$dir\AutoDesk-Setup.exe" --set-icon $icon
           if ($LASTEXITCODE -ne 0) { Write-Error "rcedit failed on AutoDesk-Setup.exe"; exit 1 }
           Write-Host "Icon embedded into AutoDesk-Setup.exe"
 
