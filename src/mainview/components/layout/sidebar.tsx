@@ -192,7 +192,10 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
         setUpdateMsg("You're on the latest version");
       } else if (status === "update-available") {
         setUpdateState("available");
-        setUpdateMsg(message);
+        // Don't use electrobun's raw hash-based message (e.g. "abc123 → def456").
+        // The version string is set properly by handleVersionClick after checkForUpdate resolves.
+        // Only set a fallback if we don't already have a version-based message.
+        setUpdateMsg((prev) => (prev && prev.startsWith("v")) ? prev : "Update available");
       } else if (["downloading-full-bundle", "downloading-patch", "decompressing", "download-progress", "fetching-patch"].includes(status)) {
         setUpdateState("downloading");
         setUpdateMsg(message);
