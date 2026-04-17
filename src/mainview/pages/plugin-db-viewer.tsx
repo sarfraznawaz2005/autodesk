@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from "react";
-import { Eye, Trash2, ChevronLeft, ChevronRight, Database, Loader2 } from "lucide-react";
+import { Eye, Trash2, ChevronLeft, ChevronRight, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { ConfirmationDialog } from "@/components/ui/confirmation-dialog";
@@ -158,38 +158,32 @@ export function DbViewerPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="shrink-0 px-6 py-4 border-b border-gray-200 bg-white">
-        <div className="flex items-center justify-between gap-4">
-          <div className="flex items-center gap-2">
-            <Database className="w-5 h-5 text-indigo-600" />
-            <h1 className="text-lg font-semibold text-gray-900">Database Viewer</h1>
-          </div>
-          <div className="flex items-center gap-3">
-            <Select value={selectedTable} onValueChange={setSelectedTable}>
-              <SelectTrigger className="w-56">
-                <SelectValue placeholder="Select a table…" />
-              </SelectTrigger>
-              <SelectContent>
-                {tables.map((t) => (
-                  <SelectItem key={t.name} value={t.name}>
-                    {t.displayName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
+      {/* Table selector + row info */}
+      <div className="shrink-0 px-6 py-3 border-b border-gray-200 bg-white">
+        <div className="flex items-center gap-3">
+          <Select value={selectedTable} onValueChange={setSelectedTable}>
+            <SelectTrigger className="w-56">
+              <SelectValue placeholder="Select a table…" />
+            </SelectTrigger>
+            <SelectContent>
+              {tables.map((t) => (
+                <SelectItem key={t.name} value={t.name}>
+                  {t.displayName}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+          {tableMeta && (
+            <p className="text-xs text-gray-500">
+              <span className="font-mono">{tableMeta.name}</span>
+              {" · "}
+              {total.toLocaleString()} row{total !== 1 ? "s" : ""}
+              {!tableMeta.deletable && (
+                <span className="ml-2 text-amber-600">(read-only)</span>
+              )}
+            </p>
+          )}
         </div>
-        {tableMeta && (
-          <p className="mt-1 text-xs text-gray-500">
-            <span className="font-mono">{tableMeta.name}</span>
-            {" · "}
-            {total.toLocaleString()} row{total !== 1 ? "s" : ""}
-            {!tableMeta.deletable && (
-              <span className="ml-2 text-amber-600">(read-only)</span>
-            )}
-          </p>
-        )}
       </div>
 
       {/* Table */}

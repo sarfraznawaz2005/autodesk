@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback, useRef } from "react";
+import { useHeaderActions } from "@/lib/header-context";
 import { rpc } from "../lib/rpc";
 import { toast } from "@/components/ui/toast";
 import { Tip } from "@/components/ui/tooltip";
@@ -1141,24 +1142,18 @@ export function AgentsPage() {
   const builtinAgents = agents.filter((a) => a.isBuiltin);
   const customAgents = agents.filter((a) => !a.isBuiltin);
 
+  useHeaderActions(
+    () => (
+      <Button onClick={() => setCreateDialogOpen(true)}>
+        <Plus className="w-4 h-4" />
+        Add Custom Agent
+      </Button>
+    ),
+    [],
+  );
+
   return (
     <div className="p-6 max-w-6xl mx-auto">
-      <div className="mb-6 flex items-center justify-between gap-4">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground">Agents</h1>
-          <p className="text-muted-foreground mt-1">
-            {loading ? "Loading agents..." : `${agents.length} agents available`}
-          </p>
-        </div>
-        <Button
-          onClick={() => setCreateDialogOpen(true)}
-          className="flex items-center gap-2 flex-shrink-0"
-        >
-          <Plus className="w-4 h-4" />
-          Add Custom Agent
-        </Button>
-      </div>
-
       {loading ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
           {Array.from({ length: 13 }).map((_, i) => (
@@ -1170,7 +1165,7 @@ export function AgentsPage() {
           {builtinAgents.length > 0 && (
             <section className="mb-8">
               <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">
-                Built-in Agents
+                Built-in Agents ({builtinAgents.length})
               </h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                 {builtinAgents.map((agent) => (

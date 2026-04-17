@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from "react";
 import pkg from "../../../../package.json";
+import appIcon from "../../../../assets/icon.png";
 import {
-  Zap,
   LayoutDashboard,
   Bot,
   Settings,
@@ -283,43 +283,42 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   return (
     <aside
       className={cn(
-        "flex flex-col bg-gray-50 border-r border-gray-200 transition-all duration-200 ease-in-out shrink-0",
+        "relative flex flex-col bg-gray-50 border-r border-gray-200 transition-all duration-200 ease-in-out shrink-0",
         collapsed ? "w-[60px]" : "w-[200px]"
       )}
       aria-label="Main navigation"
     >
       {/* Brand area */}
-      <div
-        className={cn(
-          "flex items-center h-14 border-b border-gray-200 shrink-0 overflow-hidden",
-          collapsed ? "justify-center px-0" : "gap-2 px-3"
-        )}
-      >
+      <div className="flex items-center justify-center h-14 border-b border-gray-200 shrink-0 overflow-hidden px-3">
         <Link to="/" className="flex items-center gap-2 cursor-pointer min-w-0">
-          <Zap className="h-5 w-5 text-indigo-600 shrink-0" aria-hidden="true" />
+          <img src={appIcon} alt="AutoDesk" className="h-5 w-5 shrink-0" />
           {!collapsed && (
-            <span className="font-semibold text-lg text-gray-900 truncate flex-1">
+            <span className="font-semibold text-lg text-gray-900 truncate">
               AutoDesk
             </span>
           )}
         </Link>
-        <button
-          type="button"
-          onClick={onToggleCollapse}
-          aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
-          className={cn(
-            "flex items-center justify-center rounded-md p-1.5 text-gray-400 shrink-0",
-            "hover:bg-gray-200 hover:text-gray-600 transition-colors",
-            "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
-          )}
-        >
-          {collapsed ? (
-            <ChevronRight className="h-4 w-4" aria-hidden="true" />
-          ) : (
-            <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-          )}
-        </button>
       </div>
+
+      {/* Collapse toggle — floats on the right edge, vertically centred in the brand bar */}
+      <button
+        type="button"
+        onClick={onToggleCollapse}
+        aria-label={collapsed ? "Expand sidebar" : "Collapse sidebar"}
+        className={cn(
+          "absolute right-0 top-7 -translate-y-1/2 translate-x-1/2 z-20",
+          "flex items-center justify-center w-5 h-5 rounded-full",
+          "bg-white border border-gray-300 text-gray-400 shadow-sm",
+          "hover:bg-gray-100 hover:text-gray-600 transition-colors",
+          "focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-indigo-500",
+        )}
+      >
+        {collapsed ? (
+          <ChevronRight className="h-3 w-3" aria-hidden="true" />
+        ) : (
+          <ChevronLeft className="h-3 w-3" aria-hidden="true" />
+        )}
+      </button>
 
       {/* Navigation */}
       <nav className="flex-1 p-2 space-y-1 overflow-y-auto overflow-x-hidden">
@@ -331,6 +330,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
             active={activeHref === item.href}
           />
         ))}
+
       </nav>
 
       {/* Footer: version + update panel */}

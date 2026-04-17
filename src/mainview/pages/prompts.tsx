@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { BookOpen, Plus, Pencil, Trash2, Search, X } from "lucide-react";
+import { useHeaderActions } from "@/lib/header-context";
 import { rpc } from "@/lib/rpc";
 import { toast } from "@/components/ui/toast";
 import { Button } from "@/components/ui/button";
@@ -147,24 +148,19 @@ export function PromptsPage() {
     }
   };
 
+  useHeaderActions(
+    () => (
+      <Button size="sm" onClick={() => setShowCreate(true)}>
+        <Plus className="w-3.5 h-3.5 mr-1.5" /> New Prompt
+      </Button>
+    ),
+    [],
+  );
+
   return (
     <div className="flex flex-col h-full">
       {/* Header */}
-      <div className="px-6 pt-6 pb-4 border-b shrink-0">
-        <div className="flex items-center justify-between">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <BookOpen className="w-5 h-5" /> Prompts
-            </h2>
-            <p className="text-sm text-muted-foreground mt-0.5">
-              Manage prompt templates for quick reuse in chat
-            </p>
-          </div>
-          <Button size="sm" onClick={() => setShowCreate(true)}>
-            <Plus className="w-3.5 h-3.5 mr-1.5" /> New Prompt
-          </Button>
-        </div>
-
+      <div className="px-6 pt-4 pb-4 border-b shrink-0">
         {/* Search */}
         <div className="relative mt-4 max-w-sm">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-muted-foreground" />

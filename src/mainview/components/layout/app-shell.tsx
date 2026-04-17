@@ -10,13 +10,38 @@ import { ErrorBoundary } from "@/components/ui/error-boundary";
 import { ConnectionStatus } from "@/components/ui/connection-status";
 import { StartupHealthDialog } from "../modals/startup-health-dialog";
 import { UserQuestionDialog } from "../modals/user-question-dialog";
+import { HeaderProvider, useHeaderContext } from "@/lib/header-context";
+
+/** Maps top-level route segments to human-readable page titles. */
+const PAGE_TITLES: Record<string, string> = {
+  "/": "Dashboard",
+  "/inbox": "Inbox",
+  "/agents": "Agents",
+  "/skills": "Skills",
+  "/prompts": "Prompts",
+  "/scheduler": "Scheduler",
+  "/analytics": "Analytics",
+  "/council": "Council",
+  "/settings": "Settings",
+  "/plugins": "Plugins",
+  "/plugin/db-viewer": "Database Viewer",
+};
 
 export function AppShell() {
+  return (
+    <HeaderProvider>
+      <AppShellContent />
+    </HeaderProvider>
+  );
+}
+
+function AppShellContent() {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
   const [paletteOpen, setPaletteOpen] = useState(false);
   const [checkingFirstLaunch, setCheckingFirstLaunch] = useState(true);
   const [pageTitle, setPageTitle] = useState("AutoDesk");
   const [projectWorkspacePath, setProjectWorkspacePath] = useState<string | null>(null);
+  const { headerActions } = useHeaderContext();
   const navigate = useNavigate();
   const location = useLocation();
   const { projectId } = useParams({ strict: false }) as { projectId?: string };
@@ -53,10 +78,13 @@ export function AppShell() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  // Update the top-nav title + workspace path when navigating to/from a project
+  // Update the top-nav title + workspace path when navigating between pages/projects
   useEffect(() => {
     if (!projectId) {
-      setPageTitle("AutoDesk");
+      // Check full path first (e.g. "/plugin/db-viewer"), then fall back to
+      // the top-level segment (e.g. "/settings/providers" → "Settings")
+      const segment = `/${location.pathname.split("/").filter(Boolean)[0] ?? ""}`;
+      setPageTitle(PAGE_TITLES[location.pathname] ?? PAGE_TITLES[segment] ?? "AutoDesk");
       setProjectWorkspacePath(null);
       return;
     }
@@ -65,7 +93,7 @@ export function AppShell() {
       setPageTitle(project?.name ?? "AutoDesk");
       setProjectWorkspacePath(project?.workspacePath ?? null);
     }).catch(() => {});
-  }, [projectId]);
+  }, [projectId, location.pathname]);
 
   // Redirect to onboarding if no providers exist (first launch or after reset)
   useEffect(() => {
@@ -138,7 +166,7 @@ export function AppShell() {
       <main className="flex-1 flex flex-col min-w-0">
         <ConnectionStatus />
         <TopNav title={pageTitle} workspacePath={projectWorkspacePath ?? undefined}>
-          {/* action buttons go here */}
+          {headerActions}
         </TopNav>
         <div className="flex-1 overflow-auto">
           <ErrorBoundary>

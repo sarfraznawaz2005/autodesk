@@ -572,15 +572,8 @@ export function AnalyticsPage() {
 
   return (
     <div className="flex flex-col h-full">
-      {/* Header */}
-      <div className="px-6 pt-6 pb-0 border-b space-y-4 shrink-0">
-        <div>
-          <h2 className="text-xl font-bold flex items-center gap-2">
-            <BarChart2 className="w-5 h-5" /> Analytics
-          </h2>
-          <p className="text-sm text-muted-foreground mt-0.5">Statistics and performance metrics</p>
-        </div>
-
+      {/* Sub-tabs */}
+      <div className="px-6 pt-5 pb-0 border-b shrink-0">
         {/* Sub-tabs */}
         <div className="flex gap-0.5">
           {TABS.map((t) => (

@@ -45,7 +45,6 @@ function SubTabs({ tabs }: { tabs: { value: string; label: string; content: Reac
 export function SettingsPage() {
   return (
     <div className="p-6 max-w-4xl mx-auto">
-      <h2 className="text-2xl font-bold text-foreground mb-6">Settings</h2>
       <Tabs defaultValue="general" className="w-full">
         <TabsList>
           <TabsTrigger value="general">General</TabsTrigger>

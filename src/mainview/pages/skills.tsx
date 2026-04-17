@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Sparkles, RefreshCw, FolderOpen, Pencil, Info, Wrench, AlertTriangle, Trash2, Package } from "lucide-react";
+import { useHeaderActions } from "@/lib/header-context";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { rpc } from "@/lib/rpc";
@@ -380,13 +381,28 @@ export function SkillsPage() {
     }
   }, [deleteSkill, loadSkills]);
 
+  useHeaderActions(
+    () => (
+      <>
+        <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
+          <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
+          Refresh
+        </Button>
+        <Button variant="outline" size="sm" onClick={handleOpenFolder}>
+          <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
+          Open Skills Folder
+        </Button>
+      </>
+    ),
+    [refreshing],
+  );
+
   return (
     <div className="flex-1 overflow-y-auto px-6 py-6 max-w-7xl mx-auto">
-      {/* Header */}
+      {/* Sub-header: count, error badge, search */}
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center gap-3">
           <Sparkles className="h-5 w-5 text-indigo-500" />
-          <h1 className="text-lg font-semibold">Skills</h1>
           {!loading && (
             <>
               <span className="text-sm text-gray-500">{skills.length} skill{skills.length !== 1 ? "s" : ""}</span>
@@ -399,24 +415,14 @@ export function SkillsPage() {
             </>
           )}
         </div>
-        <div className="flex items-center gap-2">
-          {!loading && skills.length > 0 && (
-            <SearchInput
-              value={search}
-              onChange={setSearch}
-              placeholder="Filter skills..."
-              className="w-48"
-            />
-          )}
-          <Button variant="outline" size="sm" onClick={handleRefresh} disabled={refreshing}>
-            <RefreshCw className={`h-3.5 w-3.5 mr-1.5 ${refreshing ? "animate-spin" : ""}`} />
-            Refresh
-          </Button>
-          <Button variant="outline" size="sm" onClick={handleOpenFolder}>
-            <FolderOpen className="h-3.5 w-3.5 mr-1.5" />
-            Open Skills Folder
-          </Button>
-        </div>
+        {!loading && skills.length > 0 && (
+          <SearchInput
+            value={search}
+            onChange={setSearch}
+            placeholder="Filter skills..."
+            className="w-48"
+          />
+        )}
       </div>
 
       {/* Info banner */}

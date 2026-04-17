@@ -4,6 +4,7 @@ import remarkGfm from "remark-gfm";
 import rehypeSanitize from "rehype-sanitize";
 import { rpc } from "@/lib/rpc";
 import { Users, Send, Loader2, CheckCircle, Copy, Check, Download } from "lucide-react";
+import { useHeaderActions } from "@/lib/header-context";
 import { toast } from "@/components/ui/toast";
 import { MermaidDiagram } from "@/components/ui/mermaid-diagram";
 import { CodeBlock } from "@/components/chat/code-block";
@@ -957,6 +958,26 @@ export function CouncilPage() {
       ? "Answer the PM's question above..."
       : "Ask the council...";
 
+  useHeaderActions(
+    () => (isRunning || isWaiting) ? (
+      <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+        {isRunning && (
+          <span style={{ fontSize: 11, color: "#22c55e", fontWeight: 500, display: "flex", alignItems: "center", gap: 4 }}>
+            <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block", animation: "council-live-blink 1s ease-in-out infinite" }} />
+            In session
+          </span>
+        )}
+        <button
+          onClick={handleStop}
+          style={{ fontSize: 12, color: "#ef4444", background: "none", border: "1px solid #ef4444", borderRadius: 5, padding: "3px 10px", cursor: "pointer", fontWeight: 500 }}
+        >
+          Stop
+        </button>
+      </div>
+    ) : null,
+    [isRunning, isWaiting],
+  );
+
   return (
     <>
       <style>{KEYFRAME_CSS}</style>
@@ -968,39 +989,6 @@ export function CouncilPage() {
           backgroundColor: "#f9fafb",
         }}
       >
-        {/* Header — title | stop */}
-        <div
-          style={{
-            padding: "0 16px",
-            height: 52,
-            borderBottom: "1px solid #e5e7eb",
-            backgroundColor: "#fff",
-            display: "flex",
-            alignItems: "center",
-            justifyContent: "space-between",
-            flexShrink: 0,
-          }}
-        >
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <Users size={17} color="#22c55e" />
-            <span style={{ fontWeight: 700, fontSize: 15, color: "#111827" }}>Council</span>
-            {isRunning && (
-              <span style={{ fontSize: 11, color: "#22c55e", fontWeight: 500, display: "flex", alignItems: "center", gap: 3 }}>
-                <span style={{ width: 6, height: 6, borderRadius: "50%", backgroundColor: "#22c55e", display: "inline-block", animation: "council-live-blink 1s ease-in-out infinite" }} />
-                In session
-              </span>
-            )}
-          </div>
-          {(isRunning || isWaiting) && (
-            <button
-              onClick={handleStop}
-              style={{ fontSize: 12, color: "#ef4444", background: "none", border: "1px solid #ef4444", borderRadius: 5, padding: "3px 10px", cursor: "pointer", fontWeight: 500 }}
-            >
-              Stop
-            </button>
-          )}
-        </div>
-
         {/* Body: main column (feed + input) + right sidebar */}
         <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
 

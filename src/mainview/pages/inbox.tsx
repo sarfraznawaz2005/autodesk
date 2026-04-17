@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import { relativeTime as formatTimestamp } from "@/lib/date-utils";
+import { useHeaderActions } from "@/lib/header-context";
 import {
   Inbox,
   Mail,
@@ -652,62 +653,66 @@ export function InboxPage() {
   // Render
   // ---------------------------------------------------------------------------
 
+  const hasUnread = messages.some((m) => m.isRead === 0);
+
+  useHeaderActions(
+    () => (
+      <>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setRulesOpen(true)}
+          className="flex items-center gap-1.5"
+        >
+          <Settings2 className="h-3.5 w-3.5" aria-hidden="true" />
+          Rules
+        </Button>
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={handleMarkAllRead}
+          disabled={markingAllRead || loading || !hasUnread}
+          className="flex items-center gap-1.5"
+        >
+          <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
+          {markingAllRead ? "Marking..." : "Mark All Read"}
+        </Button>
+      </>
+    ),
+    [markingAllRead, loading, hasUnread],
+  );
+
   return (
     <div className="flex flex-1 flex-col gap-0 min-h-0">
-      {/* Page header */}
-      <div className="flex items-center justify-between px-6 pt-6 pb-4 shrink-0">
-        <div className="flex items-center gap-3">
-          <Inbox className="h-5 w-5 text-indigo-600" aria-hidden="true" />
-          <div>
-            <h1 className="text-2xl font-bold tracking-tight">Inbox</h1>
-            {!loading && (
-              <p className="text-sm text-muted-foreground">
-                {unreadCount === 0
-                  ? "All caught up"
-                  : `${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`}
-              </p>
-            )}
-          </div>
+      {/* Sub-header: unread count + archive toggle */}
+      <div className="flex items-center justify-between px-6 pt-4 pb-4 shrink-0">
+        <div>
+          {!loading && (
+            <p className="text-sm text-muted-foreground">
+              {unreadCount === 0
+                ? "All caught up"
+                : `${unreadCount} unread ${unreadCount === 1 ? "message" : "messages"}`}
+            </p>
+          )}
         </div>
 
-        <div className="flex items-center gap-2">
-          {/* Archive filter toggle */}
-          <div className="flex items-center gap-1" role="group" aria-label="Archive filter">
-            <Button
-              variant={archiveFilter === "inbox" ? "default" : "outline"}
-              size="sm"
-              className="h-8 px-3 text-xs"
-              onClick={() => setArchiveFilter("inbox")}
-            >
-              <Inbox className="h-3 w-3 mr-1" /> Inbox
-            </Button>
-            <Button
-              variant={archiveFilter === "archived" ? "default" : "outline"}
-              size="sm"
-              className="h-8 px-3 text-xs"
-              onClick={() => setArchiveFilter("archived")}
-            >
-              <Archive className="h-3 w-3 mr-1" /> Archived
-            </Button>
-          </div>
+        {/* Archive filter toggle */}
+        <div className="flex items-center gap-1" role="group" aria-label="Archive filter">
           <Button
-            variant="outline"
+            variant={archiveFilter === "inbox" ? "default" : "outline"}
             size="sm"
-            onClick={() => setRulesOpen(true)}
-            className="flex items-center gap-1.5"
+            className="h-8 px-3 text-xs"
+            onClick={() => setArchiveFilter("inbox")}
           >
-            <Settings2 className="h-3.5 w-3.5" aria-hidden="true" />
-            Rules
+            <Inbox className="h-3 w-3 mr-1" /> Inbox
           </Button>
           <Button
-            variant="outline"
+            variant={archiveFilter === "archived" ? "default" : "outline"}
             size="sm"
-            onClick={handleMarkAllRead}
-            disabled={markingAllRead || loading || !messages.some((m) => m.isRead === 0)}
-            className="flex items-center gap-1.5"
+            className="h-8 px-3 text-xs"
+            onClick={() => setArchiveFilter("archived")}
           >
-            <CheckCheck className="h-3.5 w-3.5" aria-hidden="true" />
-            {markingAllRead ? "Marking..." : "Mark All Read"}
+            <Archive className="h-3 w-3 mr-1" /> Archived
           </Button>
         </div>
       </div>

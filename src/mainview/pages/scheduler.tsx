@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import {
-  Calendar,
   Clock,
   Plus,
   Pencil,
@@ -814,19 +813,6 @@ export function SchedulerPage() {
 
   return (
     <div className="flex flex-1 flex-col min-h-0">
-      {/* Page header */}
-      <div className="flex items-center gap-3 px-6 pt-6 pb-4 shrink-0">
-        <Calendar className="h-5 w-5 text-indigo-600" aria-hidden="true" />
-        <div>
-          <h1 className="text-2xl font-bold tracking-tight">Scheduler</h1>
-          <p className="text-sm text-muted-foreground">
-            Manage cron jobs and automation rules
-          </p>
-        </div>
-      </div>
-
-      <Separator />
-
       {/* Tab content */}
       <div className="flex-1 overflow-y-auto min-h-0 px-6 py-5">
         <Tabs value={activeTab} onValueChange={setActiveTab}>

@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { Plus, FolderOpen, ArrowUpDown } from "lucide-react";
+import { useHeaderActions } from "@/lib/header-context";
 
 import { Button } from "@/components/ui/button";
 import { EmptyState } from "@/components/ui/empty-state";
@@ -202,26 +203,18 @@ export function DashboardPage() {
 	const hasResults = filteredProjects.length > 0;
 	const isFiltered = searchQuery.trim() !== "" || statusFilter !== "all";
 
+	useHeaderActions(
+		() => (
+			<Button onClick={() => setModalOpen(true)}>
+				<Plus aria-hidden="true" />
+				New Project
+			</Button>
+		),
+		[],
+	);
 
 	return (
 		<div className="flex flex-1 flex-col gap-6 p-6">
-			{/* Page header */}
-			<div className="flex items-center justify-between">
-				<div>
-					<h1 className="text-2xl font-bold tracking-tight">Dashboard</h1>
-					{!loading && hasProjects && (
-						<p className="text-sm text-muted-foreground">
-							{filteredProjects.length} of {projects.length}{" "}
-							{projects.length === 1 ? "project" : "projects"}
-						</p>
-					)}
-				</div>
-				<Button onClick={() => setModalOpen(true)}>
-					<Plus aria-hidden="true" />
-					New Project
-				</Button>
-			</div>
-
 			{/* Search, filter, sort bar — only shown when there are projects */}
 			{!loading && hasProjects && (
 				<div className="flex flex-wrap items-center gap-3">
