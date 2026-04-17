@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from "react";
+import { createPortal } from "react-dom";
 import pkg from "../../../../package.json";
 import appIcon from "../../../../assets/icon.png";
 import {
@@ -132,6 +133,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   const [updateMsg, setUpdateMsg] = useState("");
   const [updateProgress, setUpdateProgress] = useState(0);
   const [showUpdatePanel, setShowUpdatePanel] = useState(false);
+  const [applyingUpdate, setApplyingUpdate] = useState(false);
   const panelRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -260,10 +262,9 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
   };
 
   const handleApply = () => {
-    // Immediately lock the UI — prevents the panel re-opening or showing stale state
-    // if the app takes a few seconds to close after applyUpdate() is called.
     setUpdateState("idle");
     setShowUpdatePanel(false);
+    setApplyingUpdate(true);
     rpc.applyUpdate().catch(() => {});
   };
 
@@ -281,6 +282,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
     .map((item) => (item.href === "/inbox" ? { ...item, badge: inboxUnread } : item));
 
   return (
+    <>
     <aside
       className={cn(
         "relative flex flex-col bg-gray-50 border-r border-gray-200 transition-all duration-200 ease-in-out shrink-0",
@@ -436,5 +438,18 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
         )}
       </div>
     </aside>
+
+    {/* Full-screen restart overlay — non-closable, covers the whole app */}
+    {applyingUpdate && createPortal(
+      <div className="fixed inset-0 z-[9999] flex flex-col items-center justify-center bg-white/80 backdrop-blur-sm">
+        <div className="flex flex-col items-center gap-4 text-center">
+          <RefreshCw className="h-10 w-10 text-indigo-500 animate-spin" />
+          <p className="text-lg font-semibold text-gray-800">Applying update…</p>
+          <p className="text-sm text-gray-500">The app will restart automatically. Please wait.</p>
+        </div>
+      </div>,
+      document.body
+    )}
+    </>
   );
 }

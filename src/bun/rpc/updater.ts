@@ -44,13 +44,15 @@ export async function downloadUpdate() {
 
 export async function applyUpdate() {
 	try {
-		// On Windows, queue a detached fallback extractor before calling applyUpdate().
-		// The native electrobun extractor has an intermittent deadlock bug (fixed in
-		// electrobun 1.17.x). The fallback wakes up 15s after quit, checks whether
-		// the native extractor ran (launcher.exe running = success), and extracts +
-		// relaunches if it didn't.
 		if (process.platform === "win32") {
+			// The native Electrobun applyUpdate() deadlocks on Windows because it tries
+			// to extract the tar while bun.exe is still running (file-in-use), then
+			// launches from a hardcoded wrong path (app/bin/launcher.exe).
+			// Instead: queue our PS script (which waits for bun.exe to die first) and
+			// exit cleanly ourselves. The PS script handles extraction and relaunch.
 			await queueWindowsUpdateFallback();
+			setTimeout(() => process.exit(0), 400); // give RPC response time to flush
+			return { success: true };
 		}
 
 		await Updater.applyUpdate();
@@ -68,10 +70,8 @@ async function queueWindowsUpdateFallback(): Promise<void> {
 	try {
 		const selfExtractionDir = join(Utils.paths.userData, "self-extraction");
 		const appDir            = join(Utils.paths.userData, "app");
-		// launcher.exe lives at the userData level (one above app/), not inside app/bin/
+		// launcher.exe lives at the userData root (one level above app/), not inside app/bin/
 		const launcherPath      = join(Utils.paths.userData, "launcher.exe");
-		// Sentinel file: if native extractor succeeded, Resources/version.json exists
-		const sentinelPath      = join(appDir, "Resources", "version.json");
 
 		// Find the downloaded update tar (deposited by downloadUpdate())
 		let tars: string[] = [];
@@ -89,34 +89,34 @@ async function queueWindowsUpdateFallback(): Promise<void> {
 		// PS single-quote escape helper
 		const esc = (s: string) => s.replace(/'/g, "''");
 
-		// The fallback script: waits 20s, checks if native extractor succeeded via
-		// version.json sentinel, extracts + relaunches only if it didn't.
-		const psContent = `# AutoDesk update fallback
-# Queued before Apply & Restart to handle the intermittent electrobun extractor
-# deadlock (https://github.com/blackboardsh/electrobun/pull/277).
-# Logic: wait 20s, then check Resources/version.json (sentinel).
-# If it exists the native extractor succeeded — exit silently.
-# If it doesn't exist (deadlock scenario), extract the tar and relaunch.
+		// The PS script: waits for bun.exe to fully exit (so no file locks),
+		// then extracts the tar and relaunches. No sentinel check needed since
+		// we skip Updater.applyUpdate() on Windows entirely.
+		const psContent = `# AutoDesk update extractor
+# Runs detached after the app quits. Waits for bun.exe to exit so no file
+# is locked, then extracts the update tar and relaunches.
 
 $tarFile  = '${esc(tarFile)}'
 $appDir   = '${esc(appDir)}'
-$sentinel = '${esc(sentinelPath)}'
 $launcher = '${esc(launcherPath)}'
 
-Start-Sleep -Seconds 20
-
-# Native extractor success: version.json was written by the extractor
-if (Test-Path $sentinel) {
-    Remove-Item $MyInvocation.MyCommand.Path -Force -ErrorAction SilentlyContinue
-    exit 0
+# Wait up to 30 s for bun.exe to fully exit before touching any files
+$timeout = 30
+$elapsed = 0
+while ((Get-Process -Name 'bun' -ErrorAction SilentlyContinue) -and ($elapsed -lt $timeout)) {
+    Start-Sleep -Seconds 1
+    $elapsed++
 }
+# Small buffer to ensure OS releases all file handles
+Start-Sleep -Seconds 2
 
-# Native extractor failed (deadlock): extract ourselves and relaunch
+# Extract the update into the app directory
 if (Test-Path $tarFile) {
     tar -xf $tarFile -C $appDir --strip-components=1 2>$null
     Remove-Item -Path $tarFile -Force -ErrorAction SilentlyContinue
 }
 
+# Relaunch
 if (Test-Path $launcher) {
     Start-Process -FilePath $launcher
 }
