@@ -735,7 +735,7 @@ export async function readWorkspaceImageFile(
  * - Sets the workspacePath explicitly so no new directory is created
  * - Safe to call multiple times — only imports unregistered folders
  */
-export async function syncWorkspaceFolders(): Promise<void> {
+export async function syncWorkspaceFolders(): Promise<{ synced: number }> {
 	try {
 		const gwpRows = await db
 			.select({ value: settings.value })
@@ -743,12 +743,12 @@ export async function syncWorkspaceFolders(): Promise<void> {
 			.where(eq(settings.key, "global_workspace_path"))
 			.limit(1);
 
-		if (gwpRows.length === 0) return;
+		if (gwpRows.length === 0) return { synced: 0 };
 
 		let globalWorkspace = "";
 		try { globalWorkspace = JSON.parse(gwpRows[0].value) as string; } catch { globalWorkspace = gwpRows[0].value; }
 
-		if (!globalWorkspace || !existsSync(globalWorkspace)) return;
+		if (!globalWorkspace || !existsSync(globalWorkspace)) return { synced: 0 };
 
 		// Get all folders in the global workspace
 		const entries = readdirSync(globalWorkspace, { withFileTypes: true });
@@ -756,7 +756,7 @@ export async function syncWorkspaceFolders(): Promise<void> {
 			.filter((e) => e.isDirectory() && !e.name.startsWith("."))
 			.map((e) => ({ name: e.name, path: join(globalWorkspace, e.name) }));
 
-		if (folders.length === 0) return;
+		if (folders.length === 0) return { synced: 0 };
 
 		// Get already-registered workspace paths
 		const existing = await db.select({ workspacePath: projects.workspacePath }).from(projects);
@@ -766,20 +766,20 @@ export async function syncWorkspaceFolders(): Promise<void> {
 		for (const folder of folders) {
 			if (registeredPaths.has(resolve(folder.path))) continue;
 
-			// Register the folder as a new project
 			await createProjectHandler({
 				name: folder.name,
 				workspacePath: folder.path,
 			});
 			imported++;
-			console.log(`[startup] Auto-registered workspace folder as project: ${folder.name}`);
+			console.log(`[workspace-sync] Auto-registered: ${folder.name}`);
 		}
 
 		if (imported > 0) {
-			console.log(`[startup] Imported ${imported} unregistered workspace folder(s) as projects.`);
+			console.log(`[workspace-sync] Imported ${imported} folder(s) as projects.`);
 		}
+		return { synced: imported };
 	} catch (err) {
-		// Non-fatal — log and continue
-		console.warn("[startup] syncWorkspaceFolders failed:", err instanceof Error ? err.message : String(err));
+		console.warn("[workspace-sync] Failed:", err instanceof Error ? err.message : String(err));
+		return { synced: 0 };
 	}
 }

@@ -179,6 +179,11 @@ onSettingChange("minimize_to_tray", (val) => {
 	minimizeToTray = String(val) === "true";
 });
 
+// Re-sync workspace folders whenever the global workspace path changes
+onSettingChange("global_workspace_path", () => {
+	syncWorkspaceFolders().catch(() => {});
+});
+
 
 // Load persisted window state (or compute centered defaults)
 const savedFrame = await loadWindowState();
@@ -209,7 +214,7 @@ setMainWindowRef(mainWindow);
 let backgroundServicesInitialised = false;
 mainWindow.webview.on("dom-ready", () => {
 	mainWindow.maximize();
-	setWindowTitlebarIcon("AutoDesk", titlebarIconPath);
+	setWindowTitlebarIcon("AutoDesk", appIconPath);
 	if (!isDevMode) {
 		// Disable right-click context menu in production — removes Inspect Element
 		mainWindow.webview.executeJavascript(
@@ -327,12 +332,18 @@ Electrobun.events.on("before-quit", () => {
 ApplicationMenu.setApplicationMenu([]);
 
 // ---------------------------------------------------------------------------
-// Titlebar icon (Windows only) — set via Win32 FFI after DOM is ready.
-// The .ico is copied to {app.exe}/../Resources/app.ico by electrobun.config.ts.
+// App icon path — resolved once, used for both titlebar (Win32 FFI) and tray.
+// Production: bundled as Resources/app.ico next to the bun binary.
+// Dev / fallback: source assets/icon.ico.
 // ---------------------------------------------------------------------------
-const titlebarIconPath = join(dirname(process.argv0), "..", "Resources", "app.ico");
+// Electrobun copies app.ico into Resources/app/ next to bun.exe (../Resources/app/app.ico).
+const bundledIconPath = join(dirname(process.argv0), "..", "Resources", "app", "app.ico");
+const appIconPath = existsSync(bundledIconPath)
+	? bundledIconPath
+	: resolve(import.meta.dir, "../../assets/icon.ico");
 
 function setWindowTitlebarIcon(windowTitle: string, iconFilePath: string): void {
+	if (process.platform !== "win32") return;
 	try {
 		const user32 = dlopen("user32.dll", {
 			FindWindowW:  { args: [FFIType.ptr, FFIType.ptr], returns: FFIType.ptr },
@@ -366,11 +377,8 @@ function setWindowTitlebarIcon(windowTitle: string, iconFilePath: string): void 
 	}
 }
 
-// System tray — use an absolute path so the native binary can load it directly.
-// In production: bundled app.ico in Resources/. In dev: source assets/icon.ico.
-const trayIconPath = existsSync(titlebarIconPath)
-	? titlebarIconPath
-	: resolve(import.meta.dir, "../../assets/icon.ico");
+// System tray icon
+const trayIconPath = appIconPath;
 
 const tray = new Tray({
 	title: "AutoDesk",
@@ -419,7 +427,7 @@ function showOrRestoreWindow(): void {
 
 	mainWindow.webview.on("dom-ready", () => {
 		mainWindow.maximize();
-		setWindowTitlebarIcon("AutoDesk", titlebarIconPath);
+		setWindowTitlebarIcon("AutoDesk", appIconPath);
 		if (!isDevMode) {
 			mainWindow.webview.executeJavascript(
 				"document.addEventListener('contextmenu', e => e.preventDefault(), true)",

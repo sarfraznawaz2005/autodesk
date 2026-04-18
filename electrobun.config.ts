@@ -35,7 +35,11 @@ export default {
 		},
 		win: {
 			bundleCEF: false,
-			icon: "assets/icon.ico",
+			// Icon is embedded into the exe files via explicit rcedit calls in the
+			// GitHub Actions release workflow (release.yml). Do NOT set `icon` here —
+			// Electrobun 1.16.0's CLI binary has rcedit's path baked in from its own
+			// CI environment (D:\a\electrobun\...) which doesn't exist locally, causing
+			// a spurious ENOENT warning on every `bun run dev`.
 		},
 	},
 	// Update distribution — point to your GitHub Releases page.

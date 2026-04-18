@@ -79,4 +79,8 @@ export type ProjectsRequests = {
     params: { projectId: string; filePath: string };
     response: { data: string; mimeType: string; error?: string };
   };
+  syncWorkspaceFolders: {
+    params: Record<string, never>;
+    response: { synced: number };
+  };
 };

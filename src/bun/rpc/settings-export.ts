@@ -133,22 +133,28 @@ export function importSettings(data: string): { success: boolean; error?: string
 			upsertSetting.run(row.key, row.value, row.category ?? "general");
 		}
 
-		// AI providers: full replace (clear existing, insert all from bundle)
-		sqlite.prepare("DELETE FROM ai_providers").run();
-		const insertProvider = sqlite.prepare(
-			"INSERT INTO ai_providers (id, name, provider_type, api_key, base_url, default_model, is_default, is_valid, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
-		);
-		for (const p of bundle.aiProviders ?? []) {
-			insertProvider.run(p.name, p.providerType, p.apiKey, p.baseUrl ?? null, p.defaultModel ?? null, p.isDefault ? 1 : 0);
+		// AI providers: full replace only when the bundle contains providers.
+		// If the bundle has none (e.g. exported before any provider was configured),
+		// leave existing providers untouched so we don't strand the user on onboarding.
+		if (bundle.aiProviders?.length) {
+			sqlite.prepare("DELETE FROM ai_providers").run();
+			const insertProvider = sqlite.prepare(
+				"INSERT INTO ai_providers (id, name, provider_type, api_key, base_url, default_model, is_default, is_valid, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, ?, ?, 0, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+			);
+			for (const p of bundle.aiProviders) {
+				insertProvider.run(p.name, p.providerType, p.apiKey, p.baseUrl ?? null, p.defaultModel ?? null, p.isDefault ? 1 : 0);
+			}
 		}
 
-		// Channels: full replace (clear existing, insert all from bundle)
-		sqlite.prepare("DELETE FROM channels").run();
-		const insertChannel = sqlite.prepare(
-			"INSERT INTO channels (id, platform, config, enabled, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
-		);
-		for (const c of bundle.channels ?? []) {
-			insertChannel.run(c.platform, c.config, c.enabled ? 1 : 0);
+		// Channels: full replace only when the bundle contains channel configs.
+		if (bundle.channels?.length) {
+			sqlite.prepare("DELETE FROM channels").run();
+			const insertChannel = sqlite.prepare(
+				"INSERT INTO channels (id, platform, config, enabled, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+			);
+			for (const c of bundle.channels) {
+				insertChannel.run(c.platform, c.config, c.enabled ? 1 : 0);
+			}
 		}
 
 		// Notification preferences (global only): full replace

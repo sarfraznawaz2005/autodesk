@@ -297,6 +297,9 @@ export const rpc = {
   readWorkspaceImageFile: (projectId: string, filePath: string) =>
     electroviewRpc.request.readWorkspaceImageFile({ projectId, filePath }),
 
+  /** Scan the global workspace path and register any new subdirectories as projects. */
+  syncWorkspaceFolders: () => electroviewRpc.request.syncWorkspaceFolders({}),
+
   // ---- System --------------------------------------------------------------
 
   /** Open a native OS directory picker and return the chosen path. */

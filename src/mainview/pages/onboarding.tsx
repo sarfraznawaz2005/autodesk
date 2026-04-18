@@ -1069,6 +1069,12 @@ export function OnboardingPage() {
         // Non-fatal — navigate anyway
       }
     }
+    // Ensure workspace projects are registered before the dashboard loads
+    try {
+      await rpc.syncWorkspaceFolders();
+    } catch {
+      // Non-fatal — projects will sync on next restart
+    }
     navigate({ to: "/" });
   }
 
