@@ -68,14 +68,20 @@ export function DocsTab({ projectId }: DocsTabProps) {
     loadDocs();
   }, [loadDocs]);
 
-  // Refresh docs when agents finish or PM stream completes
+  // Refresh docs when agents finish, PM stream completes, or a kanban task moves columns
   useEffect(() => {
     const refresh = () => loadDocs();
+    const onKanbanMove = (e: Event) => {
+      const { action } = (e as CustomEvent<{ action: string }>).detail ?? {};
+      if (action === "moved") loadDocs();
+    };
     window.addEventListener("autodesk:agent-inline-complete", refresh);
     window.addEventListener("autodesk:stream-complete", refresh);
+    window.addEventListener("autodesk:kanban-task-updated", onKanbanMove);
     return () => {
       window.removeEventListener("autodesk:agent-inline-complete", refresh);
       window.removeEventListener("autodesk:stream-complete", refresh);
+      window.removeEventListener("autodesk:kanban-task-updated", onKanbanMove);
     };
   }, [loadDocs]);
 

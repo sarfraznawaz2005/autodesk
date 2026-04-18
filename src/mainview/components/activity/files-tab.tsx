@@ -272,15 +272,21 @@ export function FilesTab({ projectId }: FilesTabProps) {
     loadRoot();
   }
 
-  // Live-refresh when agents finish or PM stream completes
+  // Live-refresh when agents finish, PM stream completes, or a kanban task moves columns
   useEffect(() => {
     if (!projectId) return;
     const refresh = () => loadRoot();
+    const onKanbanMove = (e: Event) => {
+      const { action } = (e as CustomEvent<{ action: string }>).detail ?? {};
+      if (action === "moved") loadRoot();
+    };
     window.addEventListener("autodesk:agent-inline-complete", refresh);
     window.addEventListener("autodesk:stream-complete", refresh);
+    window.addEventListener("autodesk:kanban-task-updated", onKanbanMove);
     return () => {
       window.removeEventListener("autodesk:agent-inline-complete", refresh);
       window.removeEventListener("autodesk:stream-complete", refresh);
+      window.removeEventListener("autodesk:kanban-task-updated", onKanbanMove);
     };
   }, [projectId, loadRoot]);
 
