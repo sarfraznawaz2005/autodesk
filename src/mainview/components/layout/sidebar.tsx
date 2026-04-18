@@ -293,7 +293,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
       {/* Brand area */}
       <div className="flex items-center justify-center h-14 border-b border-gray-200 shrink-0 overflow-hidden px-3">
         <Link to="/" className="flex items-center gap-2 cursor-pointer min-w-0">
-          <Cpu className="h-5 w-5 shrink-0 text-indigo-600" />
+          <Cpu className="h-5 w-5 shrink-0 text-gray-900" />
           {!collapsed && (
             <span className="font-semibold text-lg text-gray-900 truncate">
               AutoDesk
