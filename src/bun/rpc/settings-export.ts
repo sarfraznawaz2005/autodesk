@@ -40,7 +40,17 @@ export interface SettingsBundle {
 }
 
 export function exportSettings(): { data: string } {
-	const settings = sqlite.prepare("SELECT key, value, category FROM settings").all() as Array<{
+	// Exclude:
+	//   - project-specific settings (tied to project UUIDs, not portable)
+	//   - internal system markers (keys starting with '_')
+	//   - derived/computed status keys that become stale on a new machine
+	const EXCLUDED_KEYS = ["github_status"];
+	const settings = sqlite.prepare(
+		`SELECT key, value, category FROM settings
+		 WHERE category != 'project'
+		   AND key NOT LIKE '\\_%' ESCAPE '\\'
+		   AND key NOT IN (${EXCLUDED_KEYS.map(() => "?").join(",")})`
+	).all(...EXCLUDED_KEYS) as Array<{
 		key: string; value: string; category: string;
 	}>;
 
@@ -112,11 +122,14 @@ export function importSettings(data: string): { success: boolean; error?: string
 	}
 
 	const tx = sqlite.transaction(() => {
-		// Settings: upsert each row (INSERT OR REPLACE preserves UNIQUE key constraint)
+		// Settings: upsert each row, skipping project-specific and internal keys
+		// (guards against older exports that may have included them)
 		const upsertSetting = sqlite.prepare(
 			"INSERT INTO settings (id, key, value, category, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP) ON CONFLICT(key) DO UPDATE SET value = excluded.value, category = excluded.category, updated_at = CURRENT_TIMESTAMP"
 		);
+		const SKIP_KEYS = new Set(["github_status"]);
 		for (const row of bundle.settings ?? []) {
+			if (row.category === "project" || row.key.startsWith("_") || SKIP_KEYS.has(row.key)) continue;
 			upsertSetting.run(row.key, row.value, row.category ?? "general");
 		}
 

@@ -979,16 +979,22 @@ export function OnboardingPage() {
     // Extract default provider (or first provider) to pre-fill the wizard
     const defaultProvider = bundle.aiProviders?.find((p) => p.isDefault) ?? bundle.aiProviders?.[0];
 
-    // Extract user settings from the settings array
+    // Settings values are stored as JSON-encoded strings in the DB (e.g. "\"Sarfraz\"").
+    // Parse each value so we get the actual string, not the JSON-wrapped form.
+    function parseSetting(raw: string | undefined): string {
+      if (raw === undefined) return "";
+      try { return JSON.parse(raw); } catch { return raw; }
+    }
+
     const settingsMap = Object.fromEntries(
       (bundle.settings ?? []).map((s) => [s.key, s.value])
     );
 
     setFormData((prev) => ({
       ...prev,
-      userName: settingsMap["user_name"] ?? prev.userName,
-      userEmail: settingsMap["user_email"] ?? prev.userEmail,
-      workspacePath: settingsMap["global_workspace_path"] ?? prev.workspacePath,
+      userName: parseSetting(settingsMap["user_name"]) || prev.userName,
+      userEmail: parseSetting(settingsMap["user_email"]) || prev.userEmail,
+      workspacePath: parseSetting(settingsMap["global_workspace_path"]) || prev.workspacePath,
       provider: (defaultProvider?.providerType as ProviderType | undefined) ?? prev.provider,
       apiKey: defaultProvider?.apiKey ?? prev.apiKey,
       baseUrl: defaultProvider?.baseUrl ?? prev.baseUrl,
@@ -997,8 +1003,13 @@ export function OnboardingPage() {
 
     setPendingSettingsBundle(bundleJson);
 
-    // Jump straight to step 5 (Validate) to test the provider
-    setStep(5);
+    if (defaultProvider) {
+      // Jump straight to step 5 (Validate) to test the provider
+      setStep(5);
+    } else {
+      // No provider in bundle — skip to About You with pre-filled user info
+      setStep(2);
+    }
   }
 
   // ---- navigation handlers ----
@@ -1019,7 +1030,16 @@ export function OnboardingPage() {
       }
     }
     setValidation({ status: "idle" });
-    setStep(4); // Go back to Configure step
+
+    if (pendingSettingsBundle) {
+      // Came from an import flow — clear the bundle so the user goes through
+      // manual setup. Send them to step 3 (provider selection) so they can
+      // pick a different provider or re-enter credentials from scratch.
+      setPendingSettingsBundle(null);
+      setStep(3);
+    } else {
+      setStep(4); // Normal flow — go back to Configure step
+    }
   }
 
   async function handleFinish() {
