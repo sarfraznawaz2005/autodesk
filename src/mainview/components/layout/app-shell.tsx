@@ -80,6 +80,8 @@ function AppShellContent() {
 
   // Update the top-nav title + workspace path when navigating between pages/projects
   useEffect(() => {
+    let ignore = false;
+
     if (!projectId) {
       // Check full path first (e.g. "/plugin/db-viewer"), then fall back to
       // the top-level segment (e.g. "/settings/providers" → "Settings")
@@ -89,10 +91,13 @@ function AppShellContent() {
       return;
     }
     rpc.getProject(projectId).then((p) => {
+      if (ignore) return; // navigated away before this resolved — discard stale result
       const project = p as { name?: string; workspacePath?: string } | null;
       setPageTitle(project?.name ?? "AutoDesk");
       setProjectWorkspacePath(project?.workspacePath ?? null);
     }).catch(() => {});
+
+    return () => { ignore = true; };
   }, [projectId, location.pathname]);
 
   // Redirect to onboarding if no providers exist (first launch or after reset)

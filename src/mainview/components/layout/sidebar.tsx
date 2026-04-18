@@ -1,7 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { createPortal } from "react-dom";
 import pkg from "../../../../package.json";
-import appIcon from "../../../../assets/icon.png";
 import {
   LayoutDashboard,
   Bot,
@@ -19,6 +18,7 @@ import {
   RefreshCw,
   CheckCircle2,
   AlertCircle,
+  Cpu,
   type LucideIcon,
   icons,
 } from "lucide-react";
@@ -293,7 +293,7 @@ export function Sidebar({ collapsed, onToggleCollapse }: SidebarProps) {
       {/* Brand area */}
       <div className="flex items-center justify-center h-14 border-b border-gray-200 shrink-0 overflow-hidden px-3">
         <Link to="/" className="flex items-center gap-2 cursor-pointer min-w-0">
-          <img src={appIcon} alt="AutoDesk" className="h-5 w-5 shrink-0" />
+          <Cpu className="h-5 w-5 shrink-0 text-indigo-600" />
           {!collapsed && (
             <span className="font-semibold text-lg text-gray-900 truncate">
               AutoDesk
