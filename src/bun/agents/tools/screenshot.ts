@@ -207,11 +207,13 @@ const MAX_DIMENSION = 1280;
  * If the image is already within limits, re-encodes as JPEG to normalise format.
  */
 async function resizeToFit(buffer: Buffer): Promise<{ data: Buffer; mimeType: string }> {
-	const sharp = (await import("sharp")).default;
-	const data = await sharp(buffer)
-		.resize(MAX_DIMENSION, MAX_DIMENSION, { fit: "inside", withoutEnlargement: true })
-		.jpeg({ quality: 85 })
-		.toBuffer();
+	const { Jimp } = await import("jimp");
+	const image = await Jimp.fromBuffer(buffer);
+	const { width, height } = image.bitmap;
+	if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
+		image.scaleToFit({ w: MAX_DIMENSION, h: MAX_DIMENSION });
+	}
+	const data = Buffer.from(await image.getBuffer("image/jpeg"));
 	return { data, mimeType: "image/jpeg" };
 }
 
