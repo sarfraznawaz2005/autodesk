@@ -400,6 +400,8 @@ function GeneralTab({ project, onProjectUpdated }: GeneralTabProps) {
     toast("success", "Project data reset. All conversations and tasks have been cleared.");
     navigate({ to: "/project/$projectId", params: { projectId: project.id } });
     window.dispatchEvent(new CustomEvent("autodesk:switch-tab", { detail: { tab: "chat" } }));
+    // Trigger files-tab and notes-tab to reload immediately without requiring navigation
+    window.dispatchEvent(new CustomEvent("autodesk:stream-complete"));
   }, [project.id, navigate]);
 
   return (
