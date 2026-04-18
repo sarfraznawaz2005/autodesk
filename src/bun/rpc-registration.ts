@@ -41,6 +41,7 @@ import * as maintenanceRpc from "./rpc/maintenance";
 import * as auditRpc from "./rpc/audit";
 import * as backupRpc from "./rpc/backup";
 import * as exportImportRpc from "./rpc/export-import";
+import * as settingsExportRpc from "./rpc/settings-export";
 
 import * as skillsRpc from "./rpc/skills";
 import * as resetRpc from "./rpc/reset";
@@ -381,6 +382,10 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 			// ── Phase 13: Export/Import ──
 			exportProjectData: (params) => exportImportRpc.exportProjectData(params.projectId),
 			importProjectData: (params) => exportImportRpc.importProjectData(params.projectId, params.data, params.mode),
+
+			// ── Settings Export/Import ──
+			exportSettings: () => settingsExportRpc.exportSettings(),
+			importSettings: (params) => settingsExportRpc.importSettings(params.data),
 
 			// ── Prompt Debug Log ──
 			clearPromptLog: () => clearPromptLog(),

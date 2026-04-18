@@ -145,13 +145,16 @@ function onStreamReset(e: Event): void {
 }
 
 function onStreamComplete(e: Event): void {
-  const { conversationId, messageId, content, metadata, usage } = (e as CustomEvent<{
+  // Event may be fired with no detail (e.g. to trigger UI refresh after a reset).
+  const detail = (e as CustomEvent<{
     conversationId: string;
     messageId: string;
     content: string;
     metadata?: string | null;
     usage: { promptTokens: number; completionTokens: number };
-  }>).detail;
+  } | null>).detail;
+  if (!detail) return;
+  const { conversationId, messageId, content, metadata, usage } = detail;
 
   // Flush any pending token buffer before processing completion
   if (buffers.tokenFlushTimer) {

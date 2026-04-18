@@ -293,6 +293,92 @@ interface ProjectOption {
   name: string;
 }
 
+// ---------------------------------------------------------------------------
+// SettingsExportImportCard — export/import the full app settings bundle
+// ---------------------------------------------------------------------------
+
+function SettingsExportImportCard() {
+  const [exporting, setExporting] = useState(false);
+  const [importing, setImporting] = useState(false);
+
+  const handleExport = useCallback(async () => {
+    setExporting(true);
+    try {
+      const result = await rpc.exportSettings();
+      const blob = new Blob([result.data], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `autodesk-settings-${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast("success", "Settings exported successfully.");
+    } catch {
+      toast("error", "Failed to export settings.");
+    } finally {
+      setExporting(false);
+    }
+  }, []);
+
+  const handleImport = useCallback(() => {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      setImporting(true);
+      try {
+        const text = await file.text();
+        const result = await rpc.importSettings(text);
+        if (result.success) {
+          toast("success", "Settings imported. Some changes may require a restart.");
+        } else {
+          toast("error", result.error ?? "Import failed.");
+        }
+      } catch (err) {
+        toast("error", `Import failed: ${err instanceof Error ? err.message : "Unknown error"}`);
+      } finally {
+        setImporting(false);
+      }
+    };
+    input.click();
+  }, []);
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle>Export / Import Settings</CardTitle>
+        <CardDescription>
+          Back up or restore your app configuration — AI providers (including API keys), channel
+          configs, notification preferences, and all settings. Useful for migrating to a new machine.
+        </CardDescription>
+      </CardHeader>
+      <CardContent className="space-y-4">
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting}>
+            {exporting ? "Exporting…" : "Export Settings"}
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Downloads a <code className="font-mono">autodesk-settings-YYYY-MM-DD.json</code> file.
+          </span>
+        </div>
+        <Separator />
+        <div className="flex items-center gap-3">
+          <Button variant="outline" size="sm" onClick={handleImport} disabled={importing}>
+            {importing ? "Importing…" : "Import Settings"}
+          </Button>
+          <span className="text-xs text-muted-foreground">
+            Replaces all providers, channels, and preferences from a previously exported file.
+          </span>
+        </div>
+      </CardContent>
+    </Card>
+  );
+}
+
 export function DataSettings() {
   const [projects, setProjects] = useState<ProjectOption[]>([]);
   const [exportProjectId, setExportProjectId] = useState("");
@@ -369,6 +455,9 @@ export function DataSettings() {
           Manage your database, backups, and project data.
         </p>
       </div>
+
+      {/* Settings Export / Import */}
+      <SettingsExportImportCard />
 
       {/* Export */}
       <Card>

@@ -170,7 +170,35 @@ function StepIndicator({
 // Step 1: Welcome
 // ---------------------------------------------------------------------------
 
-function StepWelcome({ onNext }: { onNext: () => void }) {
+function StepWelcome({
+  onNext,
+  onImportSettings,
+}: {
+  onNext: () => void;
+  onImportSettings: (bundleJson: string) => void;
+}) {
+  const [importing, setImporting] = useState(false);
+
+  function handleImportClick() {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".json";
+    input.onchange = async () => {
+      const file = input.files?.[0];
+      if (!file) return;
+      setImporting(true);
+      try {
+        const text = await file.text();
+        onImportSettings(text);
+      } catch {
+        toast("error", "Failed to read settings file.");
+      } finally {
+        setImporting(false);
+      }
+    };
+    input.click();
+  }
+
   return (
     <div className="flex flex-col items-center gap-8 text-center">
       <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-primary text-primary-foreground shadow-lg">
@@ -198,10 +226,27 @@ function StepWelcome({ onNext }: { onNext: () => void }) {
           </li>
         ))}
       </ul>
-      <Button size="lg" className="w-full max-w-xs" onClick={onNext}>
-        Get Started
-        <ChevronRight className="h-4 w-4" aria-hidden="true" />
-      </Button>
+      <div className="flex flex-col gap-3 w-full max-w-xs">
+        <Button size="lg" className="w-full" onClick={onNext}>
+          Get Started
+          <ChevronRight className="h-4 w-4" aria-hidden="true" />
+        </Button>
+        <Button
+          size="lg"
+          variant="outline"
+          className="w-full"
+          onClick={handleImportClick}
+          disabled={importing}
+        >
+          {importing ? (
+            <Loader2 className="h-4 w-4 animate-spin" aria-hidden="true" />
+          ) : null}
+          Import Settings
+        </Button>
+        <p className="text-xs text-muted-foreground">
+          Already have AutoDesk on another machine? Import your settings file to restore providers, channels, and preferences.
+        </p>
+      </div>
     </div>
   );
 }
@@ -799,6 +844,8 @@ export function OnboardingPage() {
   const [validation, setValidation] = useState<ValidationState>({
     status: "idle",
   });
+  // Stores the raw settings bundle JSON when imported on step 1
+  const [pendingSettingsBundle, setPendingSettingsBundle] = useState<string | null>(null);
 
   // ---- helpers ----
 
@@ -907,6 +954,53 @@ export function OnboardingPage() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [step]);
 
+  // ---- import settings from step 1 ----
+
+  function handleImportSettings(bundleJson: string) {
+    let bundle: {
+      type?: string;
+      aiProviders?: Array<{
+        name: string; providerType: string; apiKey: string;
+        baseUrl: string | null; defaultModel: string | null; isDefault: boolean;
+      }>;
+      settings?: Array<{ key: string; value: string; category: string }>;
+    };
+    try {
+      bundle = JSON.parse(bundleJson);
+    } catch {
+      toast("error", "Invalid settings file — not valid JSON.");
+      return;
+    }
+    if (bundle.type !== "autodesk-settings") {
+      toast("error", "Not a valid AutoDesk settings export file.");
+      return;
+    }
+
+    // Extract default provider (or first provider) to pre-fill the wizard
+    const defaultProvider = bundle.aiProviders?.find((p) => p.isDefault) ?? bundle.aiProviders?.[0];
+
+    // Extract user settings from the settings array
+    const settingsMap = Object.fromEntries(
+      (bundle.settings ?? []).map((s) => [s.key, s.value])
+    );
+
+    setFormData((prev) => ({
+      ...prev,
+      userName: settingsMap["user_name"] ?? prev.userName,
+      userEmail: settingsMap["user_email"] ?? prev.userEmail,
+      workspacePath: settingsMap["global_workspace_path"] ?? prev.workspacePath,
+      provider: (defaultProvider?.providerType as ProviderType | undefined) ?? prev.provider,
+      apiKey: defaultProvider?.apiKey ?? prev.apiKey,
+      baseUrl: defaultProvider?.baseUrl ?? prev.baseUrl,
+      model: defaultProvider?.defaultModel ?? prev.model,
+    }));
+
+    setPendingSettingsBundle(bundleJson);
+
+    // Jump straight to step 5 (Validate) to test the provider
+    setStep(5);
+  }
+
   // ---- navigation handlers ----
 
   function handleProviderSelect(p: ProviderType) {
@@ -929,10 +1023,17 @@ export function OnboardingPage() {
   }
 
   async function handleFinish() {
-    // Persist the selected model to the provider saved during validation
-    if (validation.savedId && formData.model) {
+    // If we came from an import settings flow, restore the full bundle now.
+    // This replaces providers (including the one just validated), channels, prefs, and settings.
+    if (pendingSettingsBundle) {
       try {
-        // Normalize baseUrl before saving
+        await rpc.importSettings(pendingSettingsBundle);
+      } catch {
+        // Non-fatal — best-effort restore
+      }
+    } else if (validation.savedId && formData.model) {
+      // Persist the selected model to the provider saved during validation
+      try {
         const normalizedBaseUrl = formData.baseUrl ? normalizeBaseUrl(formData.baseUrl) : undefined;
 
         await rpc.saveProvider({
@@ -963,7 +1064,7 @@ export function OnboardingPage() {
           </p>
         </CardHeader>
         <CardContent className="pt-4">
-          {step === 1 && <StepWelcome onNext={goNext} />}
+          {step === 1 && <StepWelcome onNext={goNext} onImportSettings={handleImportSettings} />}
 
           {step === 2 && (
             <StepAboutYou

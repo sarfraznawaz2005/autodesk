@@ -893,6 +893,10 @@ export const rpc = {
   importProjectData: (projectId: string, data: string, mode: "merge" | "replace") =>
     electroviewRpc.request.importProjectData({ projectId, data, mode }),
 
+  // ── Settings Export/Import ──
+  exportSettings: () => electroviewRpc.request.exportSettings({}),
+  importSettings: (data: string) => electroviewRpc.request.importSettings({ data }),
+
   // ── Reset Application ──
   resetApplication: () => electroviewRpc.request.resetApplication({}),
 
