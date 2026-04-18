@@ -13,6 +13,7 @@ import { db } from "../db";
 import { channels, conversations, projects, settings } from "../db/schema";
 import { writeInboxMessage } from "../rpc/inbox";
 import { sendNativeNotification } from "../notifications/native";
+import { getSetting } from "../rpc/settings";
 import { eventBus } from "../scheduler";
 import { broadcastToWebview } from "../engine-manager";
 import type { AgentEngine } from "../agents/engine";
@@ -206,6 +207,9 @@ export async function sendChannelMessage(
  * Silently skips channels that are not in "connected" status.
  */
 export async function broadcastTaskDoneNotification(taskTitle: string, projectName?: string): Promise<void> {
+	const enabled = await getSetting("task_done_channel_notify", "notifications");
+	if (enabled !== null && String(enabled) === "false") return;
+
 	const label = projectName ? `[${projectName}] ` : "";
 	const text = `${label}✅ Task done: ${taskTitle}`;
 

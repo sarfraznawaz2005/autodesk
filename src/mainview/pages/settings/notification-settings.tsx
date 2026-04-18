@@ -281,8 +281,10 @@ export function NotificationSettings() {
   const [saving, setSaving] = useState(false);
   const [sessionCompleteNotif, setSessionCompleteNotif] = useState(true);
   const [sessionCompleteNotifDirty, setSessionCompleteNotifDirty] = useState(false);
+  const [taskDoneChannelNotify, setTaskDoneChannelNotify] = useState(true);
+  const [taskDoneChannelNotifyDirty, setTaskDoneChannelNotifyDirty] = useState(false);
 
-  const anyDirty = Object.values(dirty).some(Boolean) || sessionCompleteNotifDirty;
+  const anyDirty = Object.values(dirty).some(Boolean) || sessionCompleteNotifDirty || taskDoneChannelNotifyDirty;
 
   // ---- Load on mount -------------------------------------------------------
 
@@ -315,6 +317,9 @@ export function NotificationSettings() {
 
         const stored = await rpc.getSetting("session_complete_notification", "notifications");
         setSessionCompleteNotif(stored === null ? true : String(stored) !== "false");
+
+        const taskDoneStored = await rpc.getSetting("task_done_channel_notify", "notifications");
+        setTaskDoneChannelNotify(taskDoneStored === null ? true : String(taskDoneStored) !== "false");
       } catch {
         if (!cancelled) {
           toast("error", "Failed to load notification preferences.");
@@ -385,6 +390,9 @@ export function NotificationSettings() {
         ...(sessionCompleteNotifDirty
           ? [rpc.saveSetting("session_complete_notification", String(sessionCompleteNotif), "notifications")]
           : []),
+        ...(taskDoneChannelNotifyDirty
+          ? [rpc.saveSetting("task_done_channel_notify", String(taskDoneChannelNotify), "notifications")]
+          : []),
       ]);
 
       // Update ids returned from the server
@@ -404,13 +412,14 @@ export function NotificationSettings() {
 
       setDirty(buildDefaultDirty());
       setSessionCompleteNotifDirty(false);
+      setTaskDoneChannelNotifyDirty(false);
       toast("success", "Notification preferences saved.");
     } catch {
       toast("error", "Failed to save notification preferences. Please try again.");
     } finally {
       setSaving(false);
     }
-  }, [prefs, dirty, sessionCompleteNotif, sessionCompleteNotifDirty]);
+  }, [prefs, dirty, sessionCompleteNotif, sessionCompleteNotifDirty, taskDoneChannelNotify, taskDoneChannelNotifyDirty]);
 
   // ---- Loading skeleton -----------------------------------------------------
 
@@ -456,6 +465,27 @@ export function NotificationSettings() {
               onToggle={() => {
                 setSessionCompleteNotif((v) => !v);
                 setSessionCompleteNotifDirty(true);
+              }}
+            />
+          </CardContent>
+        </Card>
+      </div>
+
+      <Separator />
+
+      {/* Channel messages */}
+      <div>
+        <h4 className="text-sm font-semibold text-foreground mb-3">Channel Messages</h4>
+        <Card>
+          <CardContent className="pt-4">
+            <ToggleRow
+              id="task-done-channel-notify"
+              label="Task completion message"
+              description="Send a message to all connected channels (Discord, WhatsApp, Email) when a kanban task is marked as done"
+              value={taskDoneChannelNotify}
+              onToggle={() => {
+                setTaskDoneChannelNotify((v) => !v);
+                setTaskDoneChannelNotifyDirty(true);
               }}
             />
           </CardContent>

@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { useNavigate } from "@tanstack/react-router";
 import { relativeTimeVerbose } from "@/lib/date-utils";
-import { Circle, GitBranch, Github, Loader2, MoreVertical, Trash2 } from "lucide-react";
+import { Circle, FolderOpen, GitBranch, Github, Loader2, MoreVertical, Trash2 } from "lucide-react";
 import { Tip } from "@/components/ui/tooltip";
 
 import { StatusBadge } from "@/components/ui/status-badge";
@@ -18,6 +18,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { rpc } from "@/lib/rpc";
 
 interface Project {
   id: string;
@@ -130,6 +131,13 @@ export function ProjectCard({ project, onDelete, onStatusChange, activeAgentCoun
                       ))}
                     </DropdownMenuSubContent>
                   </DropdownMenuSub>
+                  <DropdownMenuSeparator />
+                  <DropdownMenuItem
+                    onClick={() => rpc.openInExplorer(project.workspacePath).catch(() => {})}
+                  >
+                    <FolderOpen aria-hidden="true" />
+                    Show in Explorer
+                  </DropdownMenuItem>
                   <DropdownMenuSeparator />
                   <DropdownMenuItem
                     className="text-destructive focus:text-destructive"
