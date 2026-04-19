@@ -144,12 +144,18 @@ const checkProcessTool = tool({
 		const exitCode = job.proc.exitCode;
 		const elapsedMs = Date.now() - job.startedAt.getTime();
 
-		// Read log tail
+		// Read log tail from the end of the file — avoids loading the entire log into memory
 		let logTail: string;
 		try {
-			const content = await Bun.file(job.logPath).text();
-			const lines = content.split("\n");
-			logTail = lines.slice(-tailLines).join("\n");
+			const file = Bun.file(job.logPath);
+			const size = file.size;
+			const TAIL_BYTES = 64 * 1024; // 64KB is plenty for 50-500 lines
+			const start = Math.max(0, size - TAIL_BYTES);
+			const tailText = await file.slice(start, size).text();
+			const lines = tailText.split("\n");
+			// If we sliced mid-line, drop the first potentially partial line
+			const effectiveLines = start > 0 ? lines.slice(1) : lines;
+			logTail = effectiveLines.slice(-tailLines).join("\n");
 		} catch {
 			logTail = "(log not yet available)";
 		}

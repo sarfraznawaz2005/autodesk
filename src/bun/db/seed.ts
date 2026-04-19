@@ -1124,6 +1124,9 @@ const FILE_ADVANCED = [
 	"batch_rename", "file_permissions", "archive",
 ] as const;
 
+/** Subset of FILE_ADVANCED tools broadly useful across most write agents */
+const FILE_COMMON_ADVANCED = ["download_file", "find_dead_code", "diff_text"] as const;
+
 const SHELL = ["run_shell"] as const;
 
 /** Full kanban tools */
@@ -1167,25 +1170,25 @@ const SKILLS = ["read_skill", "read_skill_file", "find_skills", "validate_skill"
  */
 const defaultAgentTools: Record<string, readonly string[]> = {
 	"task-planner": [...PLANNING, ...NOTES, ...KANBAN_READ, ...FILE_READ],
-	"software-architect": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...GIT_READ, ...NOTES, ...KANBAN, ...LSP, ...PROCESS, ...SCREENSHOT, ...SYSTEM, ...SKILLS],
-	"frontend_engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...SCREENSHOT, ...PROCESS, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
-	"backend-engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...SCREENSHOT, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"software-architect": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...GIT_READ, ...NOTES, ...KANBAN, ...LSP, ...PROCESS, ...SCREENSHOT, ...SYSTEM, ...SKILLS],
+	"frontend_engineer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...SCREENSHOT, ...PROCESS, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"backend-engineer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...SCREENSHOT, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
 	"code-reviewer": [...FILE_READ, ...SHELL, ...KANBAN_REVIEWER, ...GIT_READ, ...LSP, ...SYSTEM, ...NOTES, ...SKILLS],
 	"qa-engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...SKILLS],
-	"devops-engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...GIT_READ, ...GIT_WRITE, ...PROCESS, ...SYSTEM, ...NOTES, ...SKILLS],
+	"devops-engineer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...GIT_READ, ...GIT_WRITE, ...PROCESS, ...SYSTEM, ...NOTES, ...SKILLS],
 	"security-expert": [...FILE_READ, ...SHELL, ...KANBAN, ...GIT_READ, ...LSP, ...WEB, ...SYSTEM, ...NOTES, ...SKILLS],
 	"documentation-expert": [...FILE_READ, ...FILE_WRITE, ...KANBAN, ...NOTES, ...GIT_READ, ...SYSTEM, ...SKILLS],
-	"debugging-specialist": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...SCREENSHOT, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
-	"performance-expert": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
-	"data-engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"debugging-specialist": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...SCREENSHOT, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"performance-expert": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"data-engineer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
 	"database-expert": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
 	"ui-ux-designer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...SCREENSHOT, ...WEB, ...SYSTEM, ...NOTES, ...SKILLS],
 	"refactoring-specialist": [...FILE_READ, ...FILE_WRITE, ...FILE_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
-	"code-explorer": [...FILE_READ, ...SHELL, ...GIT_READ, ...WEB, ...LSP, ...SYSTEM, ...KANBAN_READ, ...SKILLS, ...NOTES],
+	"code-explorer": [...FILE_READ, ...FILE_COMMON_ADVANCED, ...SHELL, ...GIT_READ, ...WEB, ...LSP, ...SYSTEM, ...KANBAN_READ, ...SKILLS, ...NOTES],
 	"research-expert": [...FILE_READ, ...WEB, ...NOTES, ...SYSTEM, ...KANBAN_READ, ...SKILLS, ...COMMUNICATION],
-	"api-designer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...WEB, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
-	"mobile-engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...SCREENSHOT, ...NOTES, ...SKILLS],
-	"ml-engineer": [...FILE_READ, ...FILE_WRITE, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...WEB, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"api-designer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...WEB, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
+	"mobile-engineer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...GIT_READ, ...SYSTEM, ...SCREENSHOT, ...NOTES, ...SKILLS],
+	"ml-engineer": [...FILE_READ, ...FILE_WRITE, ...FILE_COMMON_ADVANCED, ...SHELL, ...KANBAN, ...LSP, ...PROCESS, ...WEB, ...GIT_READ, ...SYSTEM, ...NOTES, ...SKILLS],
 };
 
 /**

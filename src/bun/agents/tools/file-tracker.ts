@@ -3,17 +3,15 @@ import { statSync } from "node:fs";
 /**
  * Per-agent-instance file tracker.
  *
- * Tracks content hashes and modification times for files an agent has read or
- * written. Before an edit is applied, the tracker compares the stored mtime
- * against the current disk mtime to detect external modifications (e.g. by
- * another concurrent agent).
+ * Tracks modification times for files an agent has read or written. Before an
+ * edit is applied, the tracker compares the stored mtime against the current
+ * disk mtime to detect external modifications (e.g. by another concurrent agent).
  *
  * Lifecycle: one instance per sub-agent run — created in runSubAgent(),
  * garbage-collected when the agent finishes. Never persisted.
  */
 
 export interface TrackedFile {
-	contentHash: string;
 	mtimeMs: number;
 }
 
@@ -21,12 +19,6 @@ export type FreshnessResult =
 	| { status: "fresh" }
 	| { status: "modified_externally" }
 	| { status: "untracked" };
-
-function hashContent(content: string): string {
-	const hasher = new Bun.CryptoHasher("sha256");
-	hasher.update(content);
-	return hasher.digest("hex");
-}
 
 function getMtimeMs(filePath: string): number | null {
 	try {
@@ -41,16 +33,13 @@ export class FileTracker {
 	private writtenFiles = new Set<string>();
 
 	/**
-	 * Record a file's content hash and current mtime.
+	 * Record a file's current mtime.
 	 * Called after read_file, write_file, and successful edits.
 	 */
-	track(absolutePath: string, content: string): void {
+	track(absolutePath: string): void {
 		const mtimeMs = getMtimeMs(absolutePath);
 		if (mtimeMs === null) return; // file doesn't exist (shouldn't happen after read/write)
-		this.files.set(absolutePath, {
-			contentHash: hashContent(content),
-			mtimeMs,
-		});
+		this.files.set(absolutePath, { mtimeMs });
 	}
 
 	/**
@@ -81,11 +70,11 @@ export class FileTracker {
 
 	/**
 	 * Record a file write/edit. Call after write_file, edit_file, etc.
-	 * Also calls track() to update the content hash and mtime.
+	 * Also calls track() to update the mtime.
 	 */
-	trackWrite(absolutePath: string, content: string): void {
+	trackWrite(absolutePath: string): void {
 		this.writtenFiles.add(absolutePath);
-		this.track(absolutePath, content);
+		this.track(absolutePath);
 	}
 
 	/** Return all files that were written/edited during this agent run. */

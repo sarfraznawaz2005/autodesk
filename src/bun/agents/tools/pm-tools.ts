@@ -837,23 +837,23 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 			execute: async (args) => {
 				try {
 					const { resolve, dirname, extname } = await import("node:path");
-					const { readFileSync, existsSync } = await import("node:fs");
 
 					const wsPath = deps.workspacePath ?? ".";
 					const entryPath = resolve(wsPath, args.entry_point);
 
-					if (!existsSync(entryPath)) {
+					if (!(await Bun.file(entryPath).exists())) {
 						return JSON.stringify({ valid: false, issues: [`Entry point not found: ${args.entry_point}`], filesChecked: 0 });
 					}
 
 					const issues: string[] = [];
 					const checked = new Set<string>();
 
-					function checkFile(filePath: string, fromFile: string) {
+					async function checkFile(filePath: string, fromFile: string): Promise<void> {
 						if (checked.has(filePath)) return;
 						checked.add(filePath);
 
-						if (!existsSync(filePath)) {
+						const file = Bun.file(filePath);
+						if (!(await file.exists())) {
 							issues.push(`Missing: ${filePath} (referenced from ${fromFile})`);
 							return;
 						}
@@ -862,10 +862,11 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						if (![".html", ".js", ".ts", ".jsx", ".tsx", ".mjs", ".css"].includes(ext)) return;
 
 						let content: string;
-						try { content = readFileSync(filePath, "utf-8"); }
+						try { content = await file.text(); }
 						catch { return; }
 
 						const dir = dirname(filePath);
+						const refs: string[] = [];
 
 						if (ext === ".html") {
 							// script src, link href, img src
@@ -874,7 +875,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 							while ((m = srcRe.exec(content)) !== null) {
 								const ref = m[1];
 								if (ref.startsWith("http") || ref.startsWith("//") || ref.startsWith("data:") || ref.startsWith("#")) continue;
-								checkFile(resolve(dir, ref), filePath);
+								refs.push(resolve(dir, ref));
 							}
 						} else if ([".js", ".ts", ".jsx", ".tsx", ".mjs"].includes(ext)) {
 							// import/require
@@ -884,13 +885,17 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 								const ref = m[1];
 								if (!ref.startsWith(".")) continue; // skip node_modules
 								let resolved = resolve(dir, ref);
-								if (!existsSync(resolved)) {
+								if (!(await Bun.file(resolved).exists())) {
 									// Try common extensions
 									const tryExts = [".ts", ".tsx", ".js", ".jsx", ".mjs", "/index.ts", "/index.js"];
-									const found = tryExts.find((e) => existsSync(resolved + e));
-									if (found) resolved = resolved + found;
+									for (const e of tryExts) {
+										if (await Bun.file(resolved + e).exists()) {
+											resolved = resolved + e;
+											break;
+										}
+									}
 								}
-								checkFile(resolved, filePath);
+								refs.push(resolved);
 							}
 						} else if (ext === ".css") {
 							const importRe = /@import\s+(?:url\()?['"]([^'"]+)['"]\)?/g;
@@ -898,12 +903,14 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 							while ((m = importRe.exec(content)) !== null) {
 								const ref = m[1];
 								if (ref.startsWith("http")) continue;
-								checkFile(resolve(dir, ref), filePath);
+								refs.push(resolve(dir, ref));
 							}
 						}
+
+						await Promise.all(refs.map((r) => checkFile(r, filePath)));
 					}
 
-					checkFile(entryPath, "(entry)");
+					await checkFile(entryPath, "(entry)");
 
 					return JSON.stringify({
 						valid: issues.length === 0,
@@ -2393,21 +2400,23 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 
 					const { readdir, stat } = await import("node:fs/promises");
 					const entries = await readdir(workspacePath, { withFileTypes: true });
-					const folders: Array<{ name: string; path: string; hasGit: boolean }> = [];
 
-					for (const entry of entries) {
-						if (!entry.isDirectory() || entry.name.startsWith(".")) continue;
-						const fullPath = `${workspacePath}/${entry.name}`;
-						// Check if it has a .git folder
-						let hasGit = false;
-						try {
-							const gitStat = await stat(`${fullPath}/.git`);
-							hasGit = gitStat.isDirectory();
-						} catch {
-							// No .git folder
-						}
-						folders.push({ name: entry.name, path: fullPath, hasGit });
-					}
+					// Parallelize .git stat checks across all directories
+					const dirEntries = entries.filter(
+						(e) => e.isDirectory() && !e.name.startsWith("."),
+					);
+
+					const folders = await Promise.all(
+						dirEntries.map(async (entry) => {
+							const fullPath = `${workspacePath}/${entry.name}`;
+							let hasGit = false;
+							try {
+								const gitStat = await stat(`${fullPath}/.git`);
+								hasGit = gitStat.isDirectory();
+							} catch { /* no .git folder */ }
+							return { name: entry.name, path: fullPath, hasGit };
+						}),
+					);
 
 					// Cross-reference with registered projects
 					const allProjects = await getProjectsList();

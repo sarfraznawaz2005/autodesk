@@ -204,12 +204,22 @@ const MAX_DIMENSION = 1280;
 /**
  * Resize an image buffer so its longest edge ≤ MAX_DIMENSION, then return
  * as JPEG (good compression, universally supported by vision APIs).
- * If the image is already within limits, re-encodes as JPEG to normalise format.
+ * If the image is already within limits AND is already JPEG, returns original
+ * buffer without re-encoding to avoid unnecessary lossy compression.
  */
 async function resizeToFit(buffer: Buffer): Promise<{ data: Buffer; mimeType: string }> {
 	const { Jimp } = await import("jimp");
 	const image = await Jimp.fromBuffer(buffer);
 	const { width, height } = image.bitmap;
+
+	// Skip re-encoding if already within size limits and already JPEG
+	if (width <= MAX_DIMENSION && height <= MAX_DIMENSION) {
+		// JPEG magic bytes: FF D8
+		if (buffer[0] === 0xFF && buffer[1] === 0xD8) {
+			return { data: buffer, mimeType: "image/jpeg" };
+		}
+	}
+
 	if (width > MAX_DIMENSION || height > MAX_DIMENSION) {
 		image.scaleToFit({ w: MAX_DIMENSION, h: MAX_DIMENSION });
 	}

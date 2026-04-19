@@ -1,7 +1,9 @@
 import { tool } from "ai";
 import type { Tool } from "ai";
 import { z } from "zod";
-import { readdir, unlink, rename, mkdir, stat, copyFile as fsCopyFile, chmod } from "node:fs/promises";
+import { readdir, unlink, rename, mkdir, stat, copyFile as fsCopyFile, chmod, appendFile as fsAppendFile } from "node:fs/promises";
+import { createPatch } from "diff";
+import { ripgrep } from "ripgrep";
 import path from "node:path";
 import { createWriteStream } from "node:fs";
 import type { ToolRegistryEntry } from "./index";
@@ -307,12 +309,20 @@ const searchFilesTool = tool({
 			const resolvedDir = validatePath(dir);
 			const glob = new Bun.Glob(args.pattern);
 
-			const results: string[] = [];
+			// Collect all matching paths first, then batch the ignore checks in parallel
+			const allPaths: string[] = [];
 			for await (const filePath of glob.scan({ cwd: resolvedDir, onlyFiles: true })) {
-				if (await isPathIgnored(filePath, resolvedDir)) continue;
-				results.push(path.join(resolvedDir, filePath));
-				if (results.length >= 200) break;
+				allPaths.push(filePath);
 			}
+
+			const ignoreResults = await Promise.all(
+				allPaths.map((p) => isPathIgnored(p, resolvedDir)),
+			);
+
+			const results = allPaths
+				.filter((_, i) => !ignoreResults[i])
+				.slice(0, 200)
+				.map((p) => path.join(resolvedDir, p));
 
 			return JSON.stringify(results);
 		} catch (err) {
@@ -343,37 +353,75 @@ const searchContentTool = tool({
 	execute: async (args): Promise<string> => {
 		try {
 			const resolvedDir = validatePath(args.directory);
-			const fileGlob = new Bun.Glob(args.filePattern ?? "**/*");
-			const queryRegex = new RegExp(args.query);
 
-			const matches: string[] = [];
+			const rgArgs: string[] = [
+				"--json",
+				"--max-count", "100",
+				"--max-total-count", "100",
+			];
 
-			for await (const relPath of fileGlob.scan({ cwd: resolvedDir, onlyFiles: true })) {
-				if (matches.length >= 100) break;
-				if (await isPathIgnored(relPath, resolvedDir)) continue;
+			if (args.filePattern) {
+				rgArgs.push("--glob", args.filePattern);
+			}
 
-				const absoluteFilePath = path.join(resolvedDir, relPath);
+			// Escape the query for ripgrep — it accepts PCRE-compatible regex
+			rgArgs.push(args.query, ".");
 
-				let content: string;
-				try {
-					content = await Bun.file(absoluteFilePath).text();
-				} catch {
-					continue;
-				}
+			const { code, stdout } = await ripgrep(rgArgs, {
+				buffer: true,
+				// Map guest "." to our target directory so ripgrep sees all files
+				preopens: { ".": resolvedDir },
+			});
 
-				const lines = content.split("\n");
-				for (let i = 0; i < lines.length; i++) {
-					if (queryRegex.test(lines[i])) {
-						matches.push(`${absoluteFilePath}:${i + 1}:${lines[i]}`);
-						if (matches.length >= 100) break;
+			// code 1 = no matches (not an error), code 2 = error
+			if (code === 2) {
+				// Fall back to JS grep on ripgrep error (invalid regex, etc.)
+				const fileGlob = new Bun.Glob(args.filePattern ?? "**/*");
+				const queryRegex = new RegExp(args.query);
+				const matches: string[] = [];
+
+				for await (const relPath of fileGlob.scan({ cwd: resolvedDir, onlyFiles: true })) {
+					if (matches.length >= 100) break;
+					if (await isPathIgnored(relPath, resolvedDir)) continue;
+					const absoluteFilePath = path.join(resolvedDir, relPath);
+					let content: string;
+					try { content = await Bun.file(absoluteFilePath).text(); } catch { continue; }
+					const lines = content.split("\n");
+					for (let i = 0; i < lines.length; i++) {
+						if (queryRegex.test(lines[i])) {
+							matches.push(`${absoluteFilePath}:${i + 1}:${lines[i]}`);
+							if (matches.length >= 100) break;
+						}
 					}
 				}
+				if (matches.length === 0) return "No matches found";
+				const raw = matches.join("\n");
+				const result = await truncateSearchResults(raw);
+				return result.content;
 			}
 
-			if (matches.length === 0) {
-				return "No matches found";
+			if (code === 1 || !stdout.trim()) return "No matches found";
+
+			// Parse ripgrep JSON output — each line is a JSON object
+			const matches: string[] = [];
+			for (const line of stdout.split("\n")) {
+				if (!line.trim()) continue;
+				try {
+					const obj = JSON.parse(line) as {
+						type: string;
+						data: { path: { text: string }; line_number: number; lines: { text: string } };
+					};
+					if (obj.type === "match") {
+						const absPath = path.join(resolvedDir, obj.data.path.text);
+						const lineNum = obj.data.line_number;
+						const lineContent = obj.data.lines.text.trimEnd();
+						matches.push(`${absPath}:${lineNum}:${lineContent}`);
+						if (matches.length >= 100) break;
+					}
+				} catch { /* skip malformed JSON lines */ }
 			}
 
+			if (matches.length === 0) return "No matches found";
 			const raw = matches.join("\n");
 			const result = await truncateSearchResults(raw);
 			return result.content;
@@ -428,13 +476,15 @@ const appendFileTool = tool({
 			const resolvedPath = validatePath(args.path);
 			const parentDir = path.dirname(resolvedPath);
 			await mkdir(parentDir, { recursive: true });
+			// Use fs.appendFile — no full-file read before write
+			await fsAppendFile(resolvedPath, args.content);
+			// Notify LSP with current content (read-back is only for diagnostics)
+			try {
+				const fullContent = await Bun.file(resolvedPath).text();
+				await notifyFileChange(resolvedPath, fullContent);
+			} catch { /* non-fatal */ }
 
-			const file = Bun.file(resolvedPath);
-			const existing = await file.exists() ? await file.text() : "";
-			const combined = existing + args.content;
-			const diags = await writeAndNotify(resolvedPath, combined);
-
-			return `Successfully appended ${args.content.length} bytes to "${resolvedPath}"${formatDiagnosticsSuffix(diags)}`;
+			return `Successfully appended ${args.content.length} bytes to "${resolvedPath}"`;
 		} catch (err) {
 			return `Error appending to file "${args.path}": ${err instanceof Error ? err.message : String(err)}`;
 		}
@@ -472,45 +522,24 @@ const multiEditFileTool = tool({
 const diffTextTool = tool({
 	description:
 		"Generate a unified diff between two strings (before and after). " +
-		"Useful for producing a human-readable summary of changes during code review. " +
-		"Uses git diff --no-index via temporary files.",
+		"Useful for producing a human-readable summary of changes during code review.",
 	inputSchema: z.object({
 		before: z.string().describe("The original text"),
 		after: z.string().describe("The modified text"),
 		label: z.string().optional().describe("Optional label used as the filename in the diff header (default: 'file')"),
 	}),
 	execute: async ({ before, after, label = "file" }): Promise<string> => {
-		const os = await import("node:os");
-		const tmpDir = os.tmpdir();
-		const id = crypto.randomUUID().slice(0, 8);
-		const fileA = path.join(tmpDir, `aidesk-diff-a-${id}`);
-		const fileB = path.join(tmpDir, `aidesk-diff-b-${id}`);
-
 		try {
-			await Promise.all([Bun.write(fileA, before), Bun.write(fileB, after)]);
-
-			const proc = Bun.spawn(
-				["git", "diff", "--no-index", "--", fileA, fileB],
-				{ stdout: "pipe", stderr: "pipe" },
-			);
-			await proc.exited;
-
-			let diff = await new Response(proc.stdout).text();
-
-			// Replace temp paths with the human-readable label
-			diff = diff.replace(new RegExp(fileA.replace(/[/\\]/g, "[/\\\\]"), "g"), `a/${label}`);
-			diff = diff.replace(new RegExp(fileB.replace(/[/\\]/g, "[/\\\\]"), "g"), `b/${label}`);
-
-			if (!diff.trim()) return "(no differences)";
+			const diff = createPatch(label, before, after, "original", "modified");
+			// createPatch always returns a header even with no changes — detect empty diff
+			const lines = diff.split("\n");
+			const hasChanges = lines.some(l => l.startsWith("+") || l.startsWith("-"));
+			if (!hasChanges) return "(no differences)";
 
 			const MAX = 20_000;
 			return diff.length > MAX ? diff.slice(0, MAX) + "\n... (truncated)" : diff;
 		} catch (err) {
 			return `Error generating diff: ${err instanceof Error ? err.message : String(err)}`;
-		} finally {
-			// Clean up temp files (best-effort)
-			try { await unlink(fileA); } catch { /* ignore */ }
-			try { await unlink(fileB); } catch { /* ignore */ }
 		}
 	},
 });
@@ -776,9 +805,11 @@ const findDeadCodeTool = tool({
 			const resolvedDir = validatePath(args.directory);
 			const fileGlob = new Bun.Glob(args.filePattern ?? "**/*.{ts,tsx,js,jsx}");
 
-			// Phase 1: Collect all exported symbols from all files
+			// Phase 1: Collect all exported symbols and cache file contents
 			const exportMap = new Map<string, { file: string; symbols: string[] }>();
 			const allFiles: string[] = [];
+			// Content cache — avoids O(exports × files) re-reads in Phase 2
+			const contentCache = new Map<string, string>();
 
 			for await (const relPath of fileGlob.scan({ cwd: resolvedDir, onlyFiles: true })) {
 				if (await isPathIgnored(relPath, resolvedDir)) continue;
@@ -792,6 +823,7 @@ const findDeadCodeTool = tool({
 				} catch {
 					continue;
 				}
+				contentCache.set(absPath, content);
 
 				const symbols: string[] = [];
 
@@ -818,7 +850,8 @@ const findDeadCodeTool = tool({
 				}
 			}
 
-			// Phase 2: For each exported symbol, check if it's imported anywhere else
+			// Phase 2: For each exported symbol, check if it's imported anywhere else.
+			// Uses contentCache to avoid re-reading files from disk.
 			const unusedExports: Array<{ file: string; symbol: string }> = [];
 
 			for (const [exportFile, { file: relFile, symbols }] of exportMap) {
@@ -827,16 +860,11 @@ const findDeadCodeTool = tool({
 					if (sym === "default" || sym === "App" || sym === "main") continue;
 
 					let found = false;
-					// Check all files for an import of this symbol
+					// Check all cached file contents for an import of this symbol
 					for (const checkFile of allFiles) {
 						if (checkFile === exportFile) continue;
-
-						let content: string;
-						try {
-							content = await Bun.file(checkFile).text();
-						} catch {
-							continue;
-						}
+						const content = contentCache.get(checkFile);
+						if (!content) continue;
 
 						// Check for: import { sym } or import { ... sym ... } or import { x as sym }
 						// Also check for direct references like `from "...file"` combined with sym usage
@@ -917,7 +945,7 @@ export function createTrackedFileTools(
 			try {
 				const resolvedPath = vp(args.path);
 				const content = await Bun.file(resolvedPath).text();
-				tracker.track(resolvedPath, content);
+				tracker.track(resolvedPath);
 				return sliceFileContent(content, args.startLine, args.endLine);
 			} catch (err) {
 				return `Error reading file "${args.path}": ${err instanceof Error ? err.message : String(err)}`;
@@ -933,8 +961,8 @@ export function createTrackedFileTools(
 				const resolvedPath = vp(args.path);
 				const parentDir = path.dirname(resolvedPath);
 				await mkdir(parentDir, { recursive: true });
-				const diags = await writeAndNotify(resolvedPath,args.content);
-				tracker.trackWrite(resolvedPath, args.content);
+				const diags = await writeAndNotify(resolvedPath, args.content);
+				tracker.trackWrite(resolvedPath);
 
 				return `Successfully wrote ${args.content.length} bytes to "${resolvedPath}"${formatDiagnosticsSuffix(diags)}`;
 			} catch (err) {
@@ -965,7 +993,7 @@ export function createTrackedFileTools(
 					return `Error editing file "${resolvedPath}": ${result.error}`;
 				}
 				const diags = await writeAndNotify(resolvedPath, result.updated ?? "");
-				tracker.trackWrite(resolvedPath, result.updated ?? "");
+				tracker.trackWrite(resolvedPath);
 
 				return `Successfully edited "${resolvedPath}"${formatDiagnosticsSuffix(diags)}`;
 			} catch (err) {
@@ -995,8 +1023,8 @@ export function createTrackedFileTools(
 					}
 					content = content.replace(old_text, new_text);
 				}
-				const diags = await writeAndNotify(resolvedPath,content);
-				tracker.trackWrite(resolvedPath, content);
+				const diags = await writeAndNotify(resolvedPath, content);
+				tracker.trackWrite(resolvedPath);
 
 				return `Successfully applied ${args.edits.length} edit(s) to "${resolvedPath}"${formatDiagnosticsSuffix(diags)}`;
 			} catch (err) {
@@ -1045,8 +1073,8 @@ export function createTrackedFileTools(
 				}
 
 				const patched = fileLines.join("\n");
-				const diags = await writeAndNotify(resolvedPath,patched);
-				tracker.trackWrite(resolvedPath, patched);
+				const diags = await writeAndNotify(resolvedPath, patched);
+				tracker.trackWrite(resolvedPath);
 
 				return `Successfully patched "${resolvedPath}" — ${hunks.length} hunk(s) applied: ${applied.join(", ")}${formatDiagnosticsSuffix(diags)}`;
 			} catch (err) {
@@ -1063,13 +1091,16 @@ export function createTrackedFileTools(
 				const resolvedPath = vp(args.path);
 				const parentDir = path.dirname(resolvedPath);
 				await mkdir(parentDir, { recursive: true });
-				const file = Bun.file(resolvedPath);
-				const existing = await file.exists() ? await file.text() : "";
-				const newContent = existing + args.content;
-				const diags = await writeAndNotify(resolvedPath,newContent);
-				tracker.trackWrite(resolvedPath, newContent);
+				// Use fs.appendFile — no full-file read before write
+				await fsAppendFile(resolvedPath, args.content);
+				tracker.trackWrite(resolvedPath);
+				// Notify LSP with current content (read-back is only for diagnostics)
+				try {
+					const fullContent = await Bun.file(resolvedPath).text();
+					await notifyFileChange(resolvedPath, fullContent);
+				} catch { /* non-fatal */ }
 
-				return `Successfully appended ${args.content.length} bytes to "${resolvedPath}"${formatDiagnosticsSuffix(diags)}`;
+				return `Successfully appended ${args.content.length} bytes to "${resolvedPath}"`;
 			} catch (err) {
 				return `Error appending to file "${args.path}": ${err instanceof Error ? err.message : String(err)}`;
 			}
@@ -1153,7 +1184,10 @@ async function buildTree(
 			return a.name.localeCompare(b.name);
 		});
 
-	const lines: string[] = [];
+	// Collect directory entries that need recursive traversal, fan them out in parallel
+	const dirTasks: Array<{ index: number; entry: (typeof visible)[0]; connector: string; childPrefix: string }> = [];
+	const placeholders: string[] = new Array(visible.length).fill("");
+
 	for (let i = 0; i < visible.length; i++) {
 		const entry = visible[i];
 		const isLast = i === visible.length - 1;
@@ -1161,19 +1195,36 @@ async function buildTree(
 		const childPrefix = isLast ? "    " : "│   ";
 
 		if (entry.isDirectory()) {
-			lines.push(`${prefix}${connector}${entry.name}/`);
+			placeholders[i] = `${prefix}${connector}${entry.name}/`;
 			if (depth < maxDepth) {
-				const children = await buildTree(
-					path.join(dir, entry.name),
-					prefix + childPrefix,
-					depth + 1,
-					maxDepth,
-					ignoreFilter,
-				);
-				lines.push(...children);
+				dirTasks.push({ index: i, entry, connector, childPrefix });
 			}
 		} else {
-			lines.push(`${prefix}${connector}${entry.name}`);
+			placeholders[i] = `${prefix}${connector}${entry.name}`;
+		}
+	}
+
+	// Fan out all directory traversals in parallel, preserving original order
+	const childResults = await Promise.all(
+		dirTasks.map(({ entry, childPrefix }) =>
+			buildTree(
+				path.join(dir, entry.name),
+				prefix + childPrefix,
+				depth + 1,
+				maxDepth,
+				ignoreFilter,
+			),
+		),
+	);
+
+	// Rebuild lines array in original sorted order
+	const lines: string[] = [];
+	let taskIdx = 0;
+	for (let i = 0; i < visible.length; i++) {
+		if (placeholders[i]) lines.push(placeholders[i]);
+		if (dirTasks[taskIdx]?.index === i) {
+			lines.push(...childResults[taskIdx]);
+			taskIdx++;
 		}
 	}
 	return lines;
@@ -1298,13 +1349,14 @@ const downloadFileTool = tool({
 				});
 			}
 
-			const buffer = await response.arrayBuffer();
-			await Bun.write(resolvedPath, buffer);
+			// Stream directly to disk — avoids buffering entire file in memory
+			await Bun.write(resolvedPath, response);
+			const fileSize = Number(response.headers.get("content-length")) || (await stat(resolvedPath)).size;
 
 			return JSON.stringify({
 				success: true,
 				path: resolvedPath,
-				size: buffer.byteLength,
+				size: fileSize,
 				contentType: response.headers.get("content-type") ?? "unknown",
 			});
 		} catch (err) {
@@ -1334,16 +1386,18 @@ const checksumTool = tool({
 				return JSON.stringify({ error: "File not found", path: resolvedPath });
 			}
 
+			// Stream through hasher — avoids loading entire file into memory
 			const hasher = new Bun.CryptoHasher(args.algorithm);
-			const buffer = await file.arrayBuffer();
-			hasher.update(new Uint8Array(buffer));
+			for await (const chunk of file.stream() as unknown as AsyncIterable<Uint8Array>) {
+				hasher.update(chunk);
+			}
 			const hash = hasher.digest("hex");
 
 			return JSON.stringify({
 				path: resolvedPath,
 				algorithm: args.algorithm,
 				hash,
-				size: buffer.byteLength,
+				size: file.size,
 			});
 		} catch (err) {
 			return `Error computing checksum: ${err instanceof Error ? err.message : String(err)}`;

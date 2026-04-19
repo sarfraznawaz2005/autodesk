@@ -1,7 +1,6 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { eq, like } from "drizzle-orm";
-import { existsSync, readFileSync } from "fs";
 import { join } from "path";
 import { db } from "../../db";
 import { projects } from "../../db/schema";
@@ -197,9 +196,10 @@ export function createDecisionsTool(workspacePath: string): Record<string, ToolR
 						if (impact) entry += `\n**Impact**: ${impact}\n`;
 
 						// Read existing content or create new file
-						let existing = "";
-						if (existsSync(filePath)) {
-							existing = readFileSync(filePath, "utf-8");
+						const decisionFile = Bun.file(filePath);
+						let existing: string;
+						if (await decisionFile.exists()) {
+							existing = await decisionFile.text();
 						} else {
 							existing = "# Project Decisions\n\nArchitectural and design decisions made during development.\nAll agents should read this before starting work and log new decisions here.\n";
 						}

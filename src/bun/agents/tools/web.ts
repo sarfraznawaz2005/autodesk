@@ -1,6 +1,7 @@
 import { tool } from "ai";
 import { z } from "zod";
 import { eq, and } from "drizzle-orm";
+import { parse as parseHtml } from "node-html-parser";
 import { db } from "../../db";
 import { settings } from "../../db/schema";
 import type { ToolRegistryEntry } from "./index";
@@ -23,26 +24,126 @@ async function getIntegrationKey(key: string): Promise<string | null> {
 // ---------------------------------------------------------------------------
 
 function stripHtml(html: string): string {
-	return html
-		.replace(/<[^>]+>/g, "")
-		.replace(/&amp;/g, "&")
-		.replace(/&lt;/g, "<")
-		.replace(/&gt;/g, ">")
-		.replace(/&quot;/g, '"')
-		.replace(/&#x27;/g, "'")
-		.replace(/&nbsp;/g, " ")
-		.replace(/\s+/g, " ")
-		.trim();
+	const root = parseHtml(html);
+	// Remove script and style blocks — their text content is not human-readable
+	root.querySelectorAll("script, style").forEach((el) => el.remove());
+	return root.textContent.replace(/\s+/g, " ").trim();
 }
 
 // ---------------------------------------------------------------------------
-// web_search — DuckDuckGo HTML (no API key required)
+// Search helpers
+// ---------------------------------------------------------------------------
+
+async function ddgSearch(
+	query: string,
+	maxResults: number,
+	abortSignal?: AbortSignal,
+): Promise<string> {
+	const response = await fetch("https://html.duckduckgo.com/html/", {
+		method: "POST",
+		headers: {
+			"Content-Type": "application/x-www-form-urlencoded",
+			"User-Agent":
+				"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
+		},
+		body: new URLSearchParams({ q: query, kl: "us-en" }),
+		signal: abortSignal ?? AbortSignal.timeout(15_000),
+	});
+
+	if (!response.ok) {
+		return JSON.stringify({ error: `DuckDuckGo returned HTTP ${response.status}` });
+	}
+
+	const html = await response.text();
+	const results: Array<{ title: string; url: string; snippet: string }> = [];
+
+	// Each organic result has: result__a (title+redirect href), result__url (display url), result__snippet
+	const blocks = html.matchAll(
+		/<a[^>]+class="result__a"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]+class="result__url"[^>]*>\s*([\s\S]*?)\s*<\/a>[\s\S]*?<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g,
+	);
+
+	for (const match of blocks) {
+		if (results.length >= maxResults) break;
+		const [, titleHtml, urlText, snippetHtml] = match;
+		const url = stripHtml(urlText);
+		if (!url) continue;
+		results.push({
+			title: stripHtml(titleHtml),
+			url: url.startsWith("http") ? url : `https://${url}`,
+			snippet: stripHtml(snippetHtml),
+		});
+	}
+
+	if (results.length === 0) {
+		return JSON.stringify({
+			error: "No results parsed — DuckDuckGo may have changed its HTML structure or blocked the request",
+		});
+	}
+
+	return JSON.stringify({ query, results });
+}
+
+async function tavilySearch(
+	query: string,
+	apiKey: string,
+	maxResults: number,
+	abortSignal?: AbortSignal,
+): Promise<string> {
+	const response = await fetch("https://api.tavily.com/search", {
+		method: "POST",
+		headers: { "Content-Type": "application/json" },
+		body: JSON.stringify({
+			api_key: apiKey,
+			query,
+			search_depth: "advanced",
+			max_results: Math.min(maxResults, 10),
+			include_answer: true,
+			include_raw_content: false,
+		}),
+		signal: abortSignal ?? AbortSignal.timeout(30_000),
+	});
+
+	if (response.status === 401) {
+		return JSON.stringify({
+			error: "Invalid Tavily API key. Update it in Settings → Integrations → Tavily.",
+		});
+	}
+	if (response.status === 429) {
+		return JSON.stringify({
+			error: "Tavily API rate limit reached. Try again shortly.",
+		});
+	}
+	if (!response.ok) {
+		const body = await response.text().catch(() => "");
+		return JSON.stringify({ error: `Tavily API error ${response.status}: ${body}` });
+	}
+
+	const data = await response.json() as {
+		answer?: string;
+		results: Array<{ title: string; url: string; content: string; score: number }>;
+	};
+
+	return JSON.stringify({
+		query,
+		answer: data.answer ?? null,
+		results: data.results.map((r) => ({
+			title: r.title,
+			url: r.url,
+			content: r.content,
+			score: r.score,
+		})),
+	});
+}
+
+// ---------------------------------------------------------------------------
+// web_search — Tavily (if configured) with DuckDuckGo fallback
 // ---------------------------------------------------------------------------
 
 const webSearchTool = tool({
 	description:
-		"Search the web using DuckDuckGo. Returns titles, URLs, and snippets for the top results. " +
-		"No API key required. Use this to research errors, find packages, or look up documentation.",
+		"Search the web. Uses Tavily API if configured in Settings → Integrations (higher quality, structured results). " +
+		"Falls back to DuckDuckGo when no Tavily key is set (no API key required). " +
+		"Use this to research errors, find packages, or look up documentation.",
 	inputSchema: z.object({
 		query: z.string().describe("The search query"),
 		maxResults: z
@@ -55,48 +156,11 @@ const webSearchTool = tool({
 	}),
 	execute: async ({ query, maxResults = 10 }, { abortSignal }): Promise<string> => {
 		try {
-			const response = await fetch("https://html.duckduckgo.com/html/", {
-				method: "POST",
-				headers: {
-					"Content-Type": "application/x-www-form-urlencoded",
-					"User-Agent":
-						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
-				},
-				body: new URLSearchParams({ q: query, kl: "us-en" }),
-				signal: abortSignal ?? AbortSignal.timeout(15_000),
-			});
-
-			if (!response.ok) {
-				return JSON.stringify({ error: `DuckDuckGo returned HTTP ${response.status}` });
+			const tavilyKey = await getIntegrationKey("tavily_api_key");
+			if (tavilyKey) {
+				return tavilySearch(query, tavilyKey, maxResults, abortSignal);
 			}
-
-			const html = await response.text();
-			const results: Array<{ title: string; url: string; snippet: string }> = [];
-
-			// Each organic result has: result__a (title+redirect href), result__url (display url), result__snippet
-			const blocks = html.matchAll(
-				/<a[^>]+class="result__a"[^>]*>([\s\S]*?)<\/a>[\s\S]*?<a[^>]+class="result__url"[^>]*>\s*([\s\S]*?)\s*<\/a>[\s\S]*?<a[^>]+class="result__snippet"[^>]*>([\s\S]*?)<\/a>/g,
-			);
-
-			for (const match of blocks) {
-				if (results.length >= maxResults) break;
-				const [, titleHtml, urlText, snippetHtml] = match;
-				const url = stripHtml(urlText);
-				if (!url) continue;
-				results.push({
-					title: stripHtml(titleHtml),
-					url: url.startsWith("http") ? url : `https://${url}`,
-					snippet: stripHtml(snippetHtml),
-				});
-			}
-
-			if (results.length === 0) {
-				return JSON.stringify({
-					error: "No results parsed — DuckDuckGo may have changed its HTML structure or blocked the request",
-				});
-			}
-
-			return JSON.stringify({ query, results });
+			return ddgSearch(query, maxResults, abortSignal);
 		} catch (err) {
 			return JSON.stringify({ error: err instanceof Error ? err.message : String(err) });
 		}
@@ -128,9 +192,10 @@ const webFetchTool = tool({
 	execute: async ({ url, headers, timeout = 15_000 }, { abortSignal }): Promise<string> => {
 		try {
 			const response = await fetch(url, {
+				redirect: "follow",
 				headers: {
 					"User-Agent":
-						"Mozilla/5.0 (compatible; AutoDeskAI/1.0)",
+						"Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36",
 					...headers,
 				},
 				signal: abortSignal ?? AbortSignal.timeout(timeout),
@@ -172,7 +237,9 @@ const webFetchTool = tool({
 				body,
 			});
 		} catch (err) {
-			return JSON.stringify({ error: err instanceof Error ? err.message : String(err), url });
+			const msg = err instanceof Error ? err.message : String(err);
+			const hint = msg.includes("redirect") ? " Try providing the final URL directly." : "";
+			return JSON.stringify({ error: msg + hint, url });
 		}
 	},
 });
@@ -275,12 +342,8 @@ const enhancedWebSearchTool = tool({
 			.max(10)
 			.optional()
 			.describe("Maximum number of results to return (default: 5)"),
-		includeAnswer: z
-			.boolean()
-			.optional()
-			.describe("Include a synthesised AI answer summarising the results (default: true)"),
 	}),
-	execute: async ({ query, maxResults = 5, includeAnswer = true }, { abortSignal }): Promise<string> => {
+	execute: async ({ query, maxResults = 5 }, { abortSignal }): Promise<string> => {
 		const apiKey = await getIntegrationKey("tavily_api_key");
 
 		if (!apiKey) {
@@ -289,57 +352,12 @@ const enhancedWebSearchTool = tool({
 					"Tavily API key not configured. " +
 					"Go to Settings → Integrations → Tavily and add your API key. " +
 					"You can get a free key at tavily.com (1,000 searches/month free). " +
-					"Alternatively, use the web_search tool which requires no API key.",
+					"Alternatively, use the web_search tool which falls back to DuckDuckGo.",
 			});
 		}
 
 		try {
-			const response = await fetch("https://api.tavily.com/search", {
-				method: "POST",
-				headers: { "Content-Type": "application/json" },
-				body: JSON.stringify({
-					api_key: apiKey,
-					query,
-					search_depth: "advanced",
-					max_results: maxResults,
-					include_answer: includeAnswer,
-					include_raw_content: false,
-				}),
-				signal: abortSignal ?? AbortSignal.timeout(30_000),
-			});
-
-			if (response.status === 401) {
-				return JSON.stringify({
-					error: "Invalid Tavily API key. Update it in Settings → Integrations → Tavily.",
-				});
-			}
-
-			if (response.status === 429) {
-				return JSON.stringify({
-					error: "Tavily API rate limit reached. Try again shortly or use the free web_search tool.",
-				});
-			}
-
-			if (!response.ok) {
-				const body = await response.text().catch(() => "");
-				return JSON.stringify({ error: `Tavily API error ${response.status}: ${body}` });
-			}
-
-			const data = await response.json() as {
-				answer?: string;
-				results: Array<{ title: string; url: string; content: string; score: number }>;
-			};
-
-			return JSON.stringify({
-				query,
-				answer: data.answer ?? null,
-				results: data.results.map((r) => ({
-					title: r.title,
-					url: r.url,
-					content: r.content,
-					score: r.score,
-				})),
-			});
+			return tavilySearch(query, apiKey, maxResults, abortSignal);
 		} catch (err) {
 			return JSON.stringify({ error: err instanceof Error ? err.message : String(err) });
 		}

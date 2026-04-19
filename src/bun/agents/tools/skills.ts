@@ -1,5 +1,5 @@
 import { join } from "path";
-import { readFileSync, existsSync, statSync } from "fs";
+import { existsSync } from "fs";
 import { tool } from "ai";
 import { z } from "zod";
 import { skillRegistry } from "../../skills/registry";
@@ -132,32 +132,34 @@ export const skillTools: Record<string, ToolRegistryEntry> = {
 					});
 				}
 
-				if (!existsSync(filePath)) {
+				const file = Bun.file(filePath);
+				if (!(await file.exists())) {
 					return JSON.stringify({ error: `File not found: ${filePath}` });
 				}
 
 				try {
+					const fileSize = file.size;
+
 					// Binary guard: check first 8KB for null bytes
-					const stat = statSync(filePath);
-					const probe = Buffer.alloc(Math.min(8192, stat.size));
-					const fd = Bun.file(filePath);
-					const slice = await fd.slice(0, probe.length).arrayBuffer();
-					if (new Uint8Array(slice).includes(0)) {
-						return JSON.stringify({
-							error: `Binary file — cannot read: ${filePath} (${stat.size} bytes). Use is_binary to inspect.`,
-						});
+					const probeSize = Math.min(8192, fileSize);
+					if (probeSize > 0) {
+						const slice = await file.slice(0, probeSize).arrayBuffer();
+						if (new Uint8Array(slice).includes(0)) {
+							return JSON.stringify({
+								error: `Binary file — cannot read: ${filePath} (${fileSize} bytes). Use is_binary to inspect.`,
+							});
+						}
 					}
 
 					// Size guard: cap at 512KB to protect agent context
 					const MAX_SIZE = 512 * 1024;
-					if (stat.size > MAX_SIZE) {
+					if (fileSize > MAX_SIZE) {
 						return JSON.stringify({
-							error: `File too large (${(stat.size / 1024).toFixed(0)}KB). Max ${MAX_SIZE / 1024}KB. Use read_file with startLine/endLine for partial reads.`,
+							error: `File too large (${(fileSize / 1024).toFixed(0)}KB). Max ${MAX_SIZE / 1024}KB. Use read_file with startLine/endLine for partial reads.`,
 						});
 					}
 
-					const content = readFileSync(filePath, "utf-8");
-					return content;
+					return await file.text();
 				} catch (err) {
 					return JSON.stringify({
 						error: `Failed to read file: ${err instanceof Error ? err.message : String(err)}`,
