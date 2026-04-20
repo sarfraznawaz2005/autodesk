@@ -70,6 +70,12 @@ export interface PMToolsDeps {
 	onAgentDone?: (agentName: string, displayName: string, result: { status: string; summary: string; filesModified: string[] }) => void;
 	/** When true, only read-only agents may be dispatched and all agents get read-only tools. */
 	planMode?: boolean;
+	/**
+	 * The original user message that triggered this PM run.
+	 * Appended to sub-agent task prompts (when no kanban_task_id) so the agent
+	 * always sees the user's exact words, including any specific tool or method requests.
+	 */
+	lastUserMessage?: string;
 }
 
 // ---------------------------------------------------------------------------
@@ -281,6 +287,14 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 						});
 					}
 
+					// When the agent is dispatched for a direct user query (no kanban task),
+					// append the original user message so the agent sees the user's exact words,
+					// including any specific tool names or methods they requested.
+					let task = args.task;
+					if (!args.kanban_task_id && deps.lastUserMessage) {
+						task = `${task}\n\n---\nOriginal User Request: ${deps.lastUserMessage}`;
+					}
+
 					// Channel conversations (WhatsApp, Discord, Email) have no meaningful
 					// default project — the routing project is arbitrary. Require an explicit
 					// project_id so the agent always runs in the right place.
@@ -449,7 +463,7 @@ Available agents: ${AGENT_NAMES.join(", ")}.`,
 					].filter(Boolean).join("\n");
 
 					// Append workflow-style instructions when dispatching with a kanban task
-					let taskWithInstructions = args.task;
+					let taskWithInstructions = task;
 					if (args.kanban_task_id) {
 						const tid = args.kanban_task_id;
 						taskWithInstructions = [

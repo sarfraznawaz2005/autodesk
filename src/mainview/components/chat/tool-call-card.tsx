@@ -60,86 +60,86 @@ export interface ToolCallPartData {
 // Tool metadata registry — icon + collapsed summary builder
 const TOOL_META: Record<string, { Icon: React.ElementType; summary: (input: Record<string, unknown>) => string }> = {
 	// File operations
-	read_file: { Icon: FileText, summary: (a) => { const p = shortPath(a.path ?? a.file_path); const ln = a.startLine ? `:${a.startLine}${a.endLine ? `-${a.endLine}` : ""}` : ""; return `Read ${p}${ln}`; } },
-	write_file: { Icon: FileText, summary: (a) => `Write ${shortPath(a.path ?? a.file_path)}` },
-	edit_file: { Icon: Pencil, summary: (a) => `Edit ${shortPath(a.path ?? a.file_path)}` },
-	multi_edit_file: { Icon: Pencil, summary: (a) => `Multi-edit ${shortPath(a.path ?? a.file_path)}` },
-	append_file: { Icon: FileText, summary: (a) => `Append ${shortPath(a.path ?? a.file_path)}` },
-	delete_file: { Icon: Trash2, summary: (a) => `Delete ${shortPath(a.path ?? a.file_path)}` },
-	move_file: { Icon: FileText, summary: (a) => `Move ${shortPath(a.source)} → ${shortPath(a.destination)}` },
-	copy_file: { Icon: CopyIcon, summary: (a) => `Copy ${shortPath(a.source)}` },
-	patch_file: { Icon: Pencil, summary: (a) => `Patch ${shortPath(a.path ?? a.file_path)}` },
-	file_info: { Icon: FileText, summary: (a) => `Info ${shortPath(a.path)}` },
-	diff_text: { Icon: GitCompare, summary: () => "Diff" },
-	find_dead_code: { Icon: Search, summary: (a) => `Dead code ${shortPath(a.directory)}` },
-	is_binary: { Icon: FileText, summary: (a) => `Check binary ${shortPath(a.path)}` },
-	download_file: { Icon: Globe, summary: (a) => `Download ${truncate(String(a.url ?? ""), 50)}` },
-	checksum: { Icon: FileText, summary: (a) => `Checksum ${shortPath(a.path)}` },
-	batch_rename: { Icon: Pencil, summary: () => "Batch rename" },
-	archive: { Icon: FileText, summary: (a) => `Archive ${shortPath(a.output_path)}` },
+	read_file: { Icon: FileText, summary: (a) => { const p = shortPath(a.path ?? a.file_path); const ln = a.startLine ? `:${a.startLine}${a.endLine ? `-${a.endLine}` : ""}` : ""; return `read_file ${p}${ln}`; } },
+	write_file: { Icon: FileText, summary: (a) => `write_file ${shortPath(a.path ?? a.file_path)}` },
+	edit_file: { Icon: Pencil, summary: (a) => `edit_file ${shortPath(a.path ?? a.file_path)}` },
+	multi_edit_file: { Icon: Pencil, summary: (a) => `multi_edit_file ${shortPath(a.path ?? a.file_path)}` },
+	append_file: { Icon: FileText, summary: (a) => `append_file ${shortPath(a.path ?? a.file_path)}` },
+	delete_file: { Icon: Trash2, summary: (a) => `delete_file ${shortPath(a.path ?? a.file_path)}` },
+	move_file: { Icon: FileText, summary: (a) => `move_file ${shortPath(a.source)} → ${shortPath(a.destination)}` },
+	copy_file: { Icon: CopyIcon, summary: (a) => `copy_file ${shortPath(a.source)}` },
+	patch_file: { Icon: Pencil, summary: (a) => `patch_file ${shortPath(a.path ?? a.file_path)}` },
+	file_info: { Icon: FileText, summary: (a) => `file_info ${shortPath(a.path)}` },
+	diff_text: { Icon: GitCompare, summary: () => "diff_text" },
+	find_dead_code: { Icon: Search, summary: (a) => `find_dead_code ${shortPath(a.directory)}` },
+	is_binary: { Icon: FileText, summary: (a) => `is_binary ${shortPath(a.path)}` },
+	download_file: { Icon: Globe, summary: (a) => `download_file ${truncate(String(a.url ?? ""), 50)}` },
+	checksum: { Icon: FileText, summary: (a) => `checksum ${shortPath(a.path)}` },
+	batch_rename: { Icon: Pencil, summary: () => "batch_rename" },
+	archive: { Icon: FileText, summary: (a) => `archive ${shortPath(a.output_path)}` },
 
 	// Directory operations
-	list_directory: { Icon: FolderOpen, summary: (a) => `List ${shortPath(a.directory ?? a.path) || "directory"}` },
-	directory_tree: { Icon: FolderTree, summary: (a) => `Tree ${shortPath(a.path) || "workspace"}` },
-	search_files: { Icon: Search, summary: (a) => `Find ${truncate(String(a.pattern ?? ""), 50)}` },
-	search_content: { Icon: Search, summary: (a) => `Grep ${truncate(String(a.query ?? a.pattern ?? ""), 50)}` },
-	create_directory: { Icon: FolderOpen, summary: (a) => `Mkdir ${shortPath(a.path)}` },
+	list_directory: { Icon: FolderOpen, summary: (a) => `list_directory ${shortPath(a.directory ?? a.path) || ""}`.trimEnd() },
+	directory_tree: { Icon: FolderTree, summary: (a) => `directory_tree ${shortPath(a.path) || ""}`.trimEnd() },
+	search_files: { Icon: Search, summary: (a) => `search_files ${truncate(String(a.pattern ?? ""), 50)}` },
+	search_content: { Icon: Search, summary: (a) => `search_content ${truncate(String(a.query ?? a.pattern ?? ""), 50)}` },
+	create_directory: { Icon: FolderOpen, summary: (a) => `create_directory ${shortPath(a.path)}` },
 
 	// Shell
-	run_shell: { Icon: Play, summary: (a) => `Run ${truncate(String(a.command ?? ""), 80)}` },
+	run_shell: { Icon: Play, summary: (a) => `run_shell ${truncate(String(a.command ?? ""), 80)}` },
 
 	// Git
-	git_status: { Icon: GitBranch, summary: () => "Git status" },
-	git_diff: { Icon: GitCompare, summary: () => "Git diff" },
-	git_commit: { Icon: GitBranch, summary: (a) => `Commit ${truncate(String(a.message ?? ""), 60)}` },
-	git_push: { Icon: GitBranch, summary: () => "Git push" },
-	git_pull: { Icon: GitBranch, summary: () => "Git pull" },
-	git_fetch: { Icon: GitBranch, summary: () => "Git fetch" },
-	git_log: { Icon: GitBranch, summary: () => "Git log" },
-	git_branch: { Icon: GitBranch, summary: (a) => `Branch ${a.name ?? a.action ?? ""}` },
-	git_stash: { Icon: GitBranch, summary: (a) => `Stash ${a.action ?? ""}` },
-	git_reset: { Icon: GitBranch, summary: () => "Git reset" },
-	git_cherry_pick: { Icon: GitBranch, summary: (a) => `Cherry-pick ${truncate(String(a.commit ?? ""), 12)}` },
-	git_pr: { Icon: GitBranch, summary: (a) => `PR ${a.action ?? ""}` },
+	git_status: { Icon: GitBranch, summary: () => "git_status" },
+	git_diff: { Icon: GitCompare, summary: () => "git_diff" },
+	git_commit: { Icon: GitBranch, summary: (a) => `git_commit ${truncate(String(a.message ?? ""), 60)}` },
+	git_push: { Icon: GitBranch, summary: () => "git_push" },
+	git_pull: { Icon: GitBranch, summary: () => "git_pull" },
+	git_fetch: { Icon: GitBranch, summary: () => "git_fetch" },
+	git_log: { Icon: GitBranch, summary: () => "git_log" },
+	git_branch: { Icon: GitBranch, summary: (a) => `git_branch ${a.name ?? a.action ?? ""}`.trimEnd() },
+	git_stash: { Icon: GitBranch, summary: (a) => `git_stash ${a.action ?? ""}`.trimEnd() },
+	git_reset: { Icon: GitBranch, summary: () => "git_reset" },
+	git_cherry_pick: { Icon: GitBranch, summary: (a) => `git_cherry_pick ${truncate(String(a.commit ?? ""), 12)}` },
+	git_pr: { Icon: GitBranch, summary: (a) => `git_pr ${a.action ?? ""}`.trimEnd() },
 
 	// Web
-	web_search: { Icon: Globe, summary: (a) => `Search ${truncate(String(a.query ?? ""), 60)}` },
-	enhanced_web_search: { Icon: Globe, summary: (a) => `Search ${truncate(String(a.query ?? ""), 60)}` },
-	web_fetch: { Icon: Globe, summary: (a) => `Fetch ${truncate(String(a.url ?? ""), 60)}` },
-	http_request: { Icon: Globe, summary: (a) => `${a.method ?? "GET"} ${truncate(String(a.url ?? ""), 50)}` },
+	web_search: { Icon: Globe, summary: (a) => `web_search ${truncate(String(a.query ?? ""), 60)}` },
+	enhanced_web_search: { Icon: Globe, summary: (a) => `enhanced_web_search ${truncate(String(a.query ?? ""), 60)}` },
+	web_fetch: { Icon: Globe, summary: (a) => `web_fetch ${truncate(String(a.url ?? ""), 60)}` },
+	http_request: { Icon: Globe, summary: (a) => `http_request ${a.method ?? "GET"} ${truncate(String(a.url ?? ""), 50)}` },
 
 	// Kanban
-	create_task: { Icon: Pencil, summary: (a) => `Create task ${truncate(String(a.title ?? ""), 40)}` },
-	move_task: { Icon: FolderOpen, summary: (a) => `Move task → ${a.column ?? ""}` },
-	update_task: { Icon: Pencil, summary: (a) => `Update task ${truncate(String(a.title ?? a.id ?? ""), 30)}` },
-	get_task: { Icon: FileText, summary: (a) => `Get task ${truncate(String(a.id ?? ""), 12)}` },
-	delete_task: { Icon: Trash2, summary: (a) => `Delete task ${truncate(String(a.id ?? ""), 12)}` },
-	list_tasks: { Icon: FolderOpen, summary: () => "List tasks" },
-	get_kanban_stats: { Icon: FolderOpen, summary: () => "Kanban stats" },
-	submit_review: { Icon: Search, summary: (a) => `Review ${a.verdict ?? ""}` },
-	verify_implementation: { Icon: Search, summary: () => "Verify implementation" },
+	create_task: { Icon: Pencil, summary: (a) => `create_task ${truncate(String(a.title ?? ""), 40)}` },
+	move_task: { Icon: FolderOpen, summary: (a) => `move_task → ${a.column ?? ""}` },
+	update_task: { Icon: Pencil, summary: (a) => `update_task ${truncate(String(a.title ?? a.id ?? ""), 30)}` },
+	get_task: { Icon: FileText, summary: (a) => `get_task ${truncate(String(a.id ?? ""), 12)}` },
+	delete_task: { Icon: Trash2, summary: (a) => `delete_task ${truncate(String(a.id ?? ""), 12)}` },
+	list_tasks: { Icon: FolderOpen, summary: () => "list_tasks" },
+	get_kanban_stats: { Icon: FolderOpen, summary: () => "get_kanban_stats" },
+	submit_review: { Icon: Search, summary: (a) => `submit_review ${a.verdict ?? ""}`.trimEnd() },
+	verify_implementation: { Icon: Search, summary: () => "verify_implementation" },
 
 	// Notes / docs
-	list_docs: { Icon: FileText, summary: () => "List docs" },
-	get_doc: { Icon: FileText, summary: (a) => `Get doc ${truncate(String(a.id ?? a.title ?? ""), 30)}` },
-	create_doc: { Icon: Pencil, summary: (a) => `Create doc ${truncate(String(a.title ?? ""), 30)}` },
-	update_doc: { Icon: Pencil, summary: (a) => `Update doc ${truncate(String(a.title ?? a.id ?? ""), 30)}` },
-	create_note: { Icon: Pencil, summary: (a) => `Create note ${truncate(String(a.title ?? ""), 30)}` },
-	update_note: { Icon: Pencil, summary: (a) => `Update note ${truncate(String(a.title ?? a.id ?? ""), 30)}` },
+	list_docs: { Icon: FileText, summary: () => "list_docs" },
+	get_doc: { Icon: FileText, summary: (a) => `get_doc ${truncate(String(a.id ?? a.title ?? ""), 30)}` },
+	create_doc: { Icon: Pencil, summary: (a) => `create_doc ${truncate(String(a.title ?? ""), 30)}` },
+	update_doc: { Icon: Pencil, summary: (a) => `update_doc ${truncate(String(a.title ?? a.id ?? ""), 30)}` },
+	create_note: { Icon: Pencil, summary: (a) => `create_note ${truncate(String(a.title ?? ""), 30)}` },
+	update_note: { Icon: Pencil, summary: (a) => `update_note ${truncate(String(a.title ?? a.id ?? ""), 30)}` },
 
 	// System
-	environment_info: { Icon: Cpu, summary: () => "Environment info" },
-	sleep: { Icon: Cpu, summary: (a) => `Sleep ${a.seconds ?? a.ms ?? ""}s` },
-	run_background: { Icon: Play, summary: (a) => `Background ${truncate(String(a.command ?? ""), 50)}` },
-	check_process: { Icon: Play, summary: (a) => `Check process ${a.pid ?? ""}` },
-	kill_process: { Icon: Play, summary: (a) => `Kill process ${a.pid ?? ""}` },
+	environment_info: { Icon: Cpu, summary: () => "environment_info" },
+	sleep: { Icon: Cpu, summary: (a) => `sleep ${a.seconds ?? a.ms ?? ""}s` },
+	run_background: { Icon: Play, summary: (a) => `run_background ${truncate(String(a.command ?? ""), 50)}` },
+	check_process: { Icon: Play, summary: (a) => `check_process ${a.pid ?? ""}`.trimEnd() },
+	kill_process: { Icon: Play, summary: (a) => `kill_process ${a.pid ?? ""}`.trimEnd() },
 
 	// Agent
-	run_agent: { Icon: Wrench, summary: (a) => `Run ${a.agent ?? "agent"}` },
-	run_agents_parallel: { Icon: Wrench, summary: (a) => `Run parallel ${Array.isArray(a.tasks) ? `(${a.tasks.length})` : ""}` },
-	request_human_input: { Icon: Wrench, summary: () => "Ask user" },
-	get_agent_status: { Icon: Wrench, summary: () => "Agent status" },
-	define_tasks: { Icon: Pencil, summary: (a) => `Define ${Array.isArray(a.tasks) ? `${a.tasks.length} tasks` : "tasks"}` },
+	run_agent: { Icon: Wrench, summary: (a) => `run_agent ${a.agent ?? ""}`.trimEnd() },
+	run_agents_parallel: { Icon: Wrench, summary: (a) => `run_agents_parallel ${Array.isArray(a.tasks) ? `(${a.tasks.length})` : ""}`.trimEnd() },
+	request_human_input: { Icon: Wrench, summary: () => "request_human_input" },
+	get_agent_status: { Icon: Wrench, summary: () => "get_agent_status" },
+	define_tasks: { Icon: Pencil, summary: (a) => `define_tasks ${Array.isArray(a.tasks) ? `(${a.tasks.length})` : ""}`.trimEnd() },
 };
 
 function shortPath(p: unknown): string {
@@ -185,7 +185,7 @@ export const ToolCallCard = memo(function ToolCallCard({ part }: { part: ToolCal
 	const meta = TOOL_META[toolName];
 	const Icon = meta?.Icon ?? Wrench;
 	const input = parseInput(part.toolInput);
-	const summary = meta?.summary(input) ?? part.content ?? toolName.replace(/_/g, " ");
+	const summary = meta?.summary(input) ?? toolName;
 
 	const isError = part.toolState === "error";
 	const isDone = part.toolState === "success" || part.toolState === "error";
@@ -214,12 +214,12 @@ export const ToolCallCard = memo(function ToolCallCard({ part }: { part: ToolCal
 				) : (
 					<ChevronRight className="w-3 h-3 text-gray-600 shrink-0" strokeWidth={3} />
 				)}
-				<Icon className="w-3.5 h-3.5 text-gray-700 shrink-0" />
-				<span className="text-gray-700 truncate flex-1">
+				<Icon className="w-3.5 h-3.5 text-blue-500 shrink-0" />
+				<span className="truncate flex-1">
 					{(() => {
 						const spaceIdx = summary.indexOf(" ");
-						if (spaceIdx < 0) return <span className="font-semibold">{summary}</span>;
-						return <><span className="font-semibold">{summary.slice(0, spaceIdx)}</span> <span className="font-medium">{summary.slice(spaceIdx + 1)}</span></>;
+						if (spaceIdx < 0) return <span className="font-semibold text-blue-600">{summary}</span>;
+						return <><span className="font-semibold text-blue-600">{summary.slice(0, spaceIdx)}</span><span className="font-bold text-gray-600"> {summary.slice(spaceIdx + 1)}</span></>;
 					})()}
 				</span>
 				<StateIcon state={part.toolState} />
@@ -583,7 +583,7 @@ function UnifiedDiffCard({ oldStr, newStr, filePath, editIndex, editTotal }: {
 					{editIndex != null ? `Edit ${editIndex}/${editTotal} — ` : ""}{label}
 				</span>
 				<div className="flex items-center gap-2 text-[10px] font-mono shrink-0">
-					{additions > 0 && <span className="text-emerald-600">+{additions}</span>}
+					{additions > 0 && <span className="text-blue-600">+{additions}</span>}
 					{deletions > 0 && <span className="text-red-600">-{deletions}</span>}
 				</div>
 			</div>
@@ -625,7 +625,7 @@ function PatchDiffCard({ patch, filePath }: { patch: string; filePath?: string }
 					{filePath ? shortPath(filePath) : "patch"}
 				</span>
 				<div className="flex items-center gap-2 text-[10px] font-mono shrink-0">
-					{additions > 0 && <span className="text-emerald-600">+{additions}</span>}
+					{additions > 0 && <span className="text-blue-600">+{additions}</span>}
 					{deletions > 0 && <span className="text-red-600">-{deletions}</span>}
 				</div>
 			</div>

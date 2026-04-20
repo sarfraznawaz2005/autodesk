@@ -417,6 +417,10 @@ export class AgentEngine {
 						console.log("[Engine] PM stream will stop after current step");
 					},
 					planMode,
+					// Pass the original user message so sub-agents get the user's exact words
+					// appended to their task prompt (only for direct queries, not kanban tasks).
+					// Agent reports start with "[Agent Report]" — skip those.
+					lastUserMessage: content.startsWith("[Agent Report]") ? undefined : content,
 					onAgentDone: async (agentName, displayName, result) => {
 						// Delay to let review cycle spawn (it does async DB lookups)
 						// and agent completion events propagate to frontend
