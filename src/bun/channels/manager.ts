@@ -243,6 +243,40 @@ export async function broadcastTaskDoneNotification(taskTitle: string, projectNa
 }
 
 /**
+ * Broadcast the result of a scheduled agent task to all connected channels.
+ * Models after broadcastTaskDoneNotification — Discord uses configured channel,
+ * WhatsApp/Email use inbound context or default recipient.
+ */
+export async function broadcastSchedulerResult(jobName: string, result: string): Promise<void> {
+	const text = `🤖 *${jobName}*\n${result}`;
+
+	for (const [channelId, adapter] of activeAdapters) {
+		if (adapter.getStatus() !== "connected") continue;
+
+		const config = channelConfigs.get(channelId);
+		if (!config) continue;
+
+		try {
+			if (config.platform === "discord") {
+				const discordChannelId = (config.config as { channelId?: string }).channelId;
+				if (discordChannelId) {
+					await adapter.sendMessage(discordChannelId, text);
+				}
+			} else {
+				const defaultRecipient = adapter.getDefaultRecipient?.() ?? null;
+				const ctx = lastInboundContext.get(channelId);
+				const recipient = defaultRecipient ?? ctx?.msgChannelId ?? ctx?.senderId;
+				if (!recipient) continue;
+				const outbound = config.platform === "whatsapp" ? text : result;
+				await adapter.sendMessage(recipient, outbound);
+			}
+		} catch (err) {
+			console.warn(`[ChannelManager] broadcastSchedulerResult failed for channel ${channelId}:`, err);
+		}
+	}
+}
+
+/**
  * Return a snapshot of connection statuses for every connected adapter.
  */
 export function getChannelStatuses(): ChannelStatus[] {

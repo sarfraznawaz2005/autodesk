@@ -19,10 +19,49 @@ import {
   DialogClose,
 } from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
-import { Separator } from "@/components/ui/separator";
 import { toast } from "@/components/ui/toast";
 import { rpc } from "@/lib/rpc";
 import { ScheduleBuilder } from "./schedule-builder";
+
+// ---------------------------------------------------------------------------
+// Constants
+// ---------------------------------------------------------------------------
+
+const COMMON_TIMEZONES = [
+  "UTC",
+  "America/New_York",
+  "America/Chicago",
+  "America/Denver",
+  "America/Los_Angeles",
+  "America/Anchorage",
+  "America/Honolulu",
+  "America/Toronto",
+  "America/Vancouver",
+  "America/Sao_Paulo",
+  "America/Argentina/Buenos_Aires",
+  "Europe/London",
+  "Europe/Paris",
+  "Europe/Berlin",
+  "Europe/Rome",
+  "Europe/Madrid",
+  "Europe/Amsterdam",
+  "Europe/Stockholm",
+  "Europe/Helsinki",
+  "Europe/Moscow",
+  "Africa/Cairo",
+  "Africa/Johannesburg",
+  "Asia/Dubai",
+  "Asia/Karachi",
+  "Asia/Kolkata",
+  "Asia/Bangkok",
+  "Asia/Singapore",
+  "Asia/Shanghai",
+  "Asia/Tokyo",
+  "Asia/Seoul",
+  "Australia/Sydney",
+  "Australia/Melbourne",
+  "Pacific/Auckland",
+];
 
 // ---------------------------------------------------------------------------
 // Types
@@ -48,12 +87,18 @@ export interface CronJob {
   createdAt: string;
 }
 
-type TaskType = "pm_prompt" | "reminder" | "shell" | "webhook" | "agent_task";
+type TaskType = "reminder" | "shell" | "webhook" | "agent_task" | "agent_task_simple";
+
+interface AgentOption {
+  name: string;
+  displayName: string;
+}
 
 interface TaskConfig {
-  // pm_prompt
+  // agent_task / pm_prompt (legacy)
   projectId?: string;
   prompt?: string;
+  agentId?: string;
   // reminder
   message?: string;
   // shell
@@ -91,10 +136,13 @@ function parseTaskConfig(taskConfig: string): TaskConfig {
 
 function buildTaskConfig(type: TaskType, config: TaskConfig): string {
   switch (type) {
-    case "pm_prompt":
-      return JSON.stringify({ projectId: config.projectId ?? "", prompt: config.prompt ?? "" });
     case "reminder":
       return JSON.stringify({ message: config.message ?? "" });
+    case "agent_task_simple":
+      return JSON.stringify({
+        instructions: config.instructions ?? "",
+        agentId: config.agentId || "project-manager",
+      });
     case "shell":
       return JSON.stringify({ command: config.command ?? "", timeout: Number(config.timeout ?? 60000) });
     case "webhook":
@@ -105,7 +153,11 @@ function buildTaskConfig(type: TaskType, config: TaskConfig): string {
         body: config.body ?? "",
       });
     case "agent_task":
-      return JSON.stringify({ projectId: config.projectId ?? "", instructions: config.instructions ?? "" });
+      return JSON.stringify({
+        projectId: config.projectId ?? "",
+        instructions: config.instructions ?? "",
+        agentId: config.agentId || "project-manager",
+      });
     default:
       return "{}";
   }
@@ -115,11 +167,14 @@ function buildTaskConfig(type: TaskType, config: TaskConfig): string {
 // Task-type-specific fields
 // ---------------------------------------------------------------------------
 
+const READ_ONLY_AGENTS = new Set(["code-explorer", "research-expert", "task-planner"]);
+
 interface TaskFieldsProps {
   type: TaskType;
   config: TaskConfig;
   onChange: (patch: Partial<TaskConfig>) => void;
   projects: ProjectOption[];
+  agents: AgentOption[];
 }
 
 function ProjectSelect({ value, onChange, projects, required }: { value: string; onChange: (v: string) => void; projects: ProjectOption[]; required?: boolean }) {
@@ -138,28 +193,8 @@ function ProjectSelect({ value, onChange, projects, required }: { value: string;
   );
 }
 
-function TaskFields({ type, config, onChange, projects }: TaskFieldsProps) {
+function TaskFields({ type, config, onChange, projects, agents }: TaskFieldsProps) {
   switch (type) {
-    case "pm_prompt":
-      return (
-        <div className="space-y-3">
-          <div className="space-y-1.5">
-            <Label>Project</Label>
-            <ProjectSelect value={config.projectId ?? ""} onChange={(v) => onChange({ projectId: v })} projects={projects} required />
-          </div>
-          <div className="space-y-1.5">
-            <Label htmlFor="tf-prompt">Prompt</Label>
-            <Textarea
-              id="tf-prompt"
-              value={config.prompt ?? ""}
-              onChange={(e) => onChange({ prompt: e.target.value })}
-              placeholder="Enter the PM prompt to run..."
-              rows={3}
-            />
-          </div>
-        </div>
-      );
-
     case "reminder":
       return (
         <div className="space-y-1.5">
@@ -256,12 +291,70 @@ function TaskFields({ type, config, onChange, projects }: TaskFieldsProps) {
         </div>
       );
 
+    case "agent_task_simple":
+      return (
+        <div className="space-y-3">
+          <div className="space-y-1.5">
+            <Label>Agent</Label>
+            <Select
+              value={config.agentId || "project-manager"}
+              onValueChange={(v) => onChange({ agentId: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="project-manager">Project Manager</SelectItem>
+                {agents
+                  .filter((a) => a.name !== "project-manager")
+                  .map((a) => (
+                    <SelectItem key={a.name} value={a.name}>
+                      {a.displayName}{READ_ONLY_AGENTS.has(a.name) ? " (read-only)" : ""}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-1.5">
+            <Label htmlFor="tf-instructions-simple">Instructions</Label>
+            <Textarea
+              id="tf-instructions-simple"
+              value={config.instructions ?? ""}
+              onChange={(e) => onChange({ instructions: e.target.value })}
+              placeholder="Instructions for the agent..."
+              rows={4}
+            />
+          </div>
+        </div>
+      );
+
     case "agent_task":
       return (
         <div className="space-y-3">
           <div className="space-y-1.5">
             <Label>Project</Label>
             <ProjectSelect value={config.projectId ?? ""} onChange={(v) => onChange({ projectId: v })} projects={projects} required />
+          </div>
+          <div className="space-y-1.5">
+            <Label>Agent</Label>
+            <Select
+              value={config.agentId || "project-manager"}
+              onValueChange={(v) => onChange({ agentId: v })}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select agent" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="project-manager">Project Manager</SelectItem>
+                {agents
+                  .filter((a) => a.name !== "project-manager")
+                  .map((a) => (
+                    <SelectItem key={a.name} value={a.name}>
+                      {a.displayName}{READ_ONLY_AGENTS.has(a.name) ? " (read-only)" : ""}
+                    </SelectItem>
+                  ))}
+              </SelectContent>
+            </Select>
           </div>
           <div className="space-y-1.5">
             <Label htmlFor="tf-instructions">Instructions</Label>
@@ -292,17 +385,21 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
   const [name, setName] = useState("");
   const [cronExpr, setCronExpr] = useState(DEFAULT_CRON);
   const [timezone, setTimezone] = useState("UTC");
-  const [taskType, setTaskType] = useState<TaskType>("reminder");
-  const [taskConfig, setTaskConfig] = useState<TaskConfig>({});
+  const [taskType, setTaskType] = useState<TaskType>("agent_task");
+  const [taskConfig, setTaskConfig] = useState<TaskConfig>({ agentId: "project-manager" });
   const [oneShot, setOneShot] = useState(false);
   const [saving, setSaving] = useState(false);
   const [projects, setProjects] = useState<ProjectOption[]>([]);
+  const [agents, setAgents] = useState<AgentOption[]>([]);
 
-  // Load projects once when dialog opens
+  // Load projects and agents once when dialog opens
   useEffect(() => {
     if (!open) return;
     rpc.getProjects().then((result) => {
       setProjects(Array.isArray(result) ? (result as unknown as ProjectOption[]) : []);
+    }).catch(() => { /* ignore */ });
+    rpc.getAgents().then((result) => {
+      setAgents(result.filter((a) => a.isEnabled).map((a) => ({ name: a.name, displayName: a.displayName })));
     }).catch(() => { /* ignore */ });
   }, [open]);
 
@@ -321,8 +418,8 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
       setName("");
       setCronExpr(DEFAULT_CRON);
       setTimezone("UTC");
-      setTaskType("reminder");
-      setTaskConfig({});
+      setTaskType("agent_task");
+      setTaskConfig({ agentId: "project-manager" });
       setOneShot(false);
       // Prefill timezone from global setting
       rpc.getSetting("timezone", "general").then((val) => {
@@ -344,7 +441,8 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
     if (taskType === "webhook" && !taskConfig.url?.trim()) return "Webhook URL is required.";
     if (taskType === "shell" && !taskConfig.command?.trim()) return "Shell command is required.";
     if (taskType === "reminder" && !taskConfig.message?.trim()) return "Reminder message is required.";
-    if ((taskType === "pm_prompt" || taskType === "agent_task") && !taskConfig.projectId?.trim()) return "A project is required for this task type.";
+    if (taskType === "agent_task" && !taskConfig.projectId?.trim()) return "A project is required for agent tasks.";
+    if (taskType === "agent_task_simple" && !taskConfig.instructions?.trim()) return "Instructions are required.";
     return null;
   }
 
@@ -413,7 +511,6 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
             />
           </div>
 
-          <Separator />
 
           {/* Schedule section */}
           <div className="space-y-2">
@@ -425,23 +522,22 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
             />
           </div>
 
-          <Separator />
 
           {/* Timezone */}
           <div className="space-y-1.5">
             <Label htmlFor="cjf-tz">Timezone</Label>
-            <Input
-              id="cjf-tz"
-              value={timezone}
-              onChange={(e) => setTimezone(e.target.value)}
-              placeholder="UTC"
-            />
-            <p className="text-xs text-muted-foreground">
-              IANA timezone (e.g. America/New_York). Defaults to UTC.
-            </p>
+            <Select value={timezone} onValueChange={setTimezone}>
+              <SelectTrigger id="cjf-tz">
+                <SelectValue placeholder="Select timezone" />
+              </SelectTrigger>
+              <SelectContent>
+                {COMMON_TIMEZONES.map((tz) => (
+                  <SelectItem key={tz} value={tz}>{tz}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
           </div>
 
-          <Separator />
 
           {/* Task type */}
           <div className="space-y-3">
@@ -451,18 +547,19 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
                 value={taskType}
                 onValueChange={(v) => {
                   setTaskType(v as TaskType);
-                  setTaskConfig({});
+                  const needsAgent = v === "agent_task" || v === "agent_task_simple";
+                  setTaskConfig(needsAgent ? { agentId: "project-manager" } : {});
                 }}
               >
                 <SelectTrigger id="cjf-type">
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  <SelectItem value="pm_prompt">PM Prompt</SelectItem>
+                  <SelectItem value="agent_task_simple">Agent Task</SelectItem>
+                  <SelectItem value="agent_task">Agent Project Task</SelectItem>
                   <SelectItem value="reminder">Reminder</SelectItem>
                   <SelectItem value="shell">Shell Command</SelectItem>
                   <SelectItem value="webhook">Webhook</SelectItem>
-                  <SelectItem value="agent_task">Agent Task</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -472,10 +569,10 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
               config={taskConfig}
               onChange={handleTaskConfigChange}
               projects={projects}
+              agents={agents}
             />
           </div>
 
-          <Separator />
 
           {/* One-shot toggle */}
           <div className="flex items-center justify-between">

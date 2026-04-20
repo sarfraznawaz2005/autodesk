@@ -61,6 +61,7 @@ export function HeaderProvider({ children }: { children: ReactNode }) {
  * numbers). Never put plain function declarations — they create new references
  * on every render and cause infinite update loops via the context.
  */
+// eslint-disable-next-line react-refresh/only-export-components
 export function useHeaderActions(factory: () => ReactNode, deps: unknown[]) {
   const { setHeaderActions } = useContext(HeaderContext);
   // Keep a ref to the latest factory so handlers are never stale, regardless
@@ -75,6 +76,7 @@ export function useHeaderActions(factory: () => ReactNode, deps: unknown[]) {
   }, deps);
 }
 
+// eslint-disable-next-line react-refresh/only-export-components
 export function useHeaderContext() {
   return useContext(HeaderContext);
 }

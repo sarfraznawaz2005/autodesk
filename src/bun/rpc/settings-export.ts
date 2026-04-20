@@ -10,7 +10,7 @@
 import { sqlite } from "../db/connection";
 import { logAudit } from "../db/audit";
 
-const SETTINGS_EXPORT_VERSION = 1;
+const SETTINGS_EXPORT_VERSION = 2;
 
 export interface SettingsBundle {
 	version: number;
@@ -36,6 +36,34 @@ export interface SettingsBundle {
 		badgeEnabled: boolean;
 		bannerEnabled: boolean;
 		muteUntil: string | null;
+	}>;
+	// v2 additions
+	cronJobs?: Array<{
+		name: string;
+		cronExpression: string;
+		timezone: string;
+		taskType: string;
+		taskConfig: string;
+		enabled: boolean;
+		oneShot: boolean;
+	}>;
+	prompts?: Array<{
+		name: string;
+		description: string;
+		content: string;
+		category: string;
+	}>;
+	customAgents?: Array<{
+		name: string;
+		displayName: string;
+		color: string;
+		systemPrompt: string;
+		modelId: string | null;
+		temperature: string | null;
+		maxTokens: number | null;
+		isEnabled: boolean;
+		thinkingBudget: string | null;
+		tools: Array<{ toolName: string; isEnabled: boolean }>;
 	}>;
 }
 
@@ -74,6 +102,46 @@ export function exportSettings(): { data: string } {
 		banner_enabled: number; mute_until: string | null;
 	}>;
 
+	// Global cron jobs (no projectId — project-specific jobs aren't portable)
+	const cronJobRows = sqlite.prepare(
+		"SELECT name, cron_expression, timezone, task_type, task_config, enabled, one_shot FROM cron_jobs WHERE project_id IS NULL ORDER BY name ASC"
+	).all() as Array<{
+		name: string; cron_expression: string; timezone: string; task_type: string;
+		task_config: string; enabled: number; one_shot: number;
+	}>;
+
+	// Custom prompts only (built-ins are re-seeded on every launch)
+	const promptRows = sqlite.prepare(
+		"SELECT name, description, content, category FROM prompts WHERE category != 'builtin' ORDER BY name ASC"
+	).all() as Array<{ name: string; description: string; content: string; category: string }>;
+
+	// User-created agents (isBuiltin = 0) + their tool assignments
+	const customAgentRows = sqlite.prepare(
+		"SELECT id, name, display_name, color, system_prompt, model_id, temperature, max_tokens, is_enabled, thinking_budget FROM agents WHERE is_builtin = 0 ORDER BY name ASC"
+	).all() as Array<{
+		id: string; name: string; display_name: string; color: string; system_prompt: string;
+		model_id: string | null; temperature: string | null; max_tokens: number | null;
+		is_enabled: number; thinking_budget: string | null;
+	}>;
+
+	const customAgents = customAgentRows.map((a) => {
+		const toolRows = sqlite.prepare(
+			"SELECT tool_name, is_enabled FROM agent_tools WHERE agent_id = ?"
+		).all(a.id) as Array<{ tool_name: string; is_enabled: number }>;
+		return {
+			name: a.name,
+			displayName: a.display_name,
+			color: a.color,
+			systemPrompt: a.system_prompt,
+			modelId: a.model_id ?? null,
+			temperature: a.temperature ?? null,
+			maxTokens: a.max_tokens ?? null,
+			isEnabled: a.is_enabled === 1,
+			thinkingBudget: a.thinking_budget ?? null,
+			tools: toolRows.map((t) => ({ toolName: t.tool_name, isEnabled: t.is_enabled === 1 })),
+		};
+	});
+
 	const bundle: SettingsBundle = {
 		version: SETTINGS_EXPORT_VERSION,
 		exportedAt: new Date().toISOString(),
@@ -99,6 +167,17 @@ export function exportSettings(): { data: string } {
 			bannerEnabled: n.banner_enabled === 1,
 			muteUntil: n.mute_until ?? null,
 		})),
+		cronJobs: cronJobRows.map((j) => ({
+			name: j.name,
+			cronExpression: j.cron_expression,
+			timezone: j.timezone,
+			taskType: j.task_type,
+			taskConfig: j.task_config,
+			enabled: j.enabled === 1,
+			oneShot: j.one_shot === 1,
+		})),
+		prompts: promptRows,
+		customAgents,
 	};
 
 	logAudit({ action: "settings.export", entityType: "settings", entityId: "all", details: {} });
@@ -117,7 +196,7 @@ export function importSettings(data: string): { success: boolean; error?: string
 	if (bundle.type !== "autodesk-settings") {
 		return { success: false, error: "Not a valid AutoDesk settings export file." };
 	}
-	if (bundle.version !== SETTINGS_EXPORT_VERSION) {
+	if (bundle.version !== 1 && bundle.version !== SETTINGS_EXPORT_VERSION) {
 		return { success: false, error: `Unsupported version: ${bundle.version}` };
 	}
 
@@ -164,6 +243,75 @@ export function importSettings(data: string): { success: boolean; error?: string
 		);
 		for (const n of bundle.notificationPreferences ?? []) {
 			insertPref.run(n.platform, n.soundEnabled ? 1 : 0, n.badgeEnabled ? 1 : 0, n.bannerEnabled ? 1 : 0, n.muteUntil ?? null);
+		}
+
+		// Cron jobs: insert new, update existing (matched by name), global jobs only
+		const findCronJob = sqlite.prepare("SELECT id FROM cron_jobs WHERE name = ? AND project_id IS NULL LIMIT 1");
+		const insertCronJob = sqlite.prepare(
+			"INSERT INTO cron_jobs (id, name, cron_expression, timezone, task_type, task_config, enabled, one_shot, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+		);
+		const updateCronJob = sqlite.prepare(
+			"UPDATE cron_jobs SET cron_expression = ?, timezone = ?, task_type = ?, task_config = ?, enabled = ?, one_shot = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?"
+		);
+		for (const j of bundle.cronJobs ?? []) {
+			const existing = findCronJob.get(j.name) as { id: string } | undefined;
+			if (existing) {
+				updateCronJob.run(j.cronExpression, j.timezone, j.taskType, j.taskConfig, j.enabled ? 1 : 0, j.oneShot ? 1 : 0, existing.id);
+			} else {
+				insertCronJob.run(j.name, j.cronExpression, j.timezone, j.taskType, j.taskConfig, j.enabled ? 1 : 0, j.oneShot ? 1 : 0);
+			}
+		}
+
+		// Prompts: insert new, update existing (matched by name), skip built-ins
+		const findPrompt = sqlite.prepare("SELECT id FROM prompts WHERE name = ? LIMIT 1");
+		const insertPrompt = sqlite.prepare(
+			"INSERT INTO prompts (id, name, description, content, category, created_at, updated_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)"
+		);
+		const updatePrompt = sqlite.prepare(
+			"UPDATE prompts SET description = ?, content = ?, category = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ? AND category != 'builtin'"
+		);
+		for (const p of bundle.prompts ?? []) {
+			if (p.category === "builtin") continue;
+			const existing = findPrompt.get(p.name) as { id: string } | undefined;
+			if (existing) {
+				updatePrompt.run(p.description ?? "", p.content, p.category ?? "custom", existing.id);
+			} else {
+				insertPrompt.run(p.name, p.description ?? "", p.content, p.category ?? "custom");
+			}
+		}
+
+		// Custom agents: insert new, update existing (matched by name), never touch built-ins
+		const findCustomAgent = sqlite.prepare("SELECT id FROM agents WHERE name = ? AND is_builtin = 0 LIMIT 1");
+		const insertAgent = sqlite.prepare(
+			"INSERT INTO agents (id, name, display_name, color, system_prompt, is_builtin, model_id, temperature, max_tokens, is_enabled, thinking_budget, created_at) VALUES (lower(hex(randomblob(16))), ?, ?, ?, ?, 0, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP)"
+		);
+		const updateAgent = sqlite.prepare(
+			"UPDATE agents SET display_name = ?, color = ?, system_prompt = ?, model_id = ?, temperature = ?, max_tokens = ?, is_enabled = ?, thinking_budget = ? WHERE id = ?"
+		);
+		const deleteAgentTools = sqlite.prepare("DELETE FROM agent_tools WHERE agent_id = ?");
+		const insertAgentTool = sqlite.prepare(
+			"INSERT INTO agent_tools (id, agent_id, tool_name, is_enabled) VALUES (lower(hex(randomblob(16))), ?, ?, ?)"
+		);
+		for (const a of bundle.customAgents ?? []) {
+			let agentId: string;
+			const existing = findCustomAgent.get(a.name) as { id: string } | undefined;
+			if (existing) {
+				updateAgent.run(a.displayName, a.color, a.systemPrompt, a.modelId ?? null, a.temperature ?? null, a.maxTokens ?? null, a.isEnabled ? 1 : 0, a.thinkingBudget ?? null, existing.id);
+				agentId = existing.id;
+			} else {
+				const newId = crypto.randomUUID();
+				insertAgent.run(a.name, a.displayName, a.color, a.systemPrompt, a.modelId ?? null, a.temperature ?? null, a.maxTokens ?? null, a.isEnabled ? 1 : 0, a.thinkingBudget ?? null);
+				// Fetch the just-inserted id
+				const inserted = findCustomAgent.get(a.name) as { id: string } | undefined;
+				agentId = inserted?.id ?? newId;
+			}
+			// Restore tool assignments
+			if (a.tools?.length) {
+				deleteAgentTools.run(agentId);
+				for (const t of a.tools) {
+					insertAgentTool.run(agentId, t.toolName, t.isEnabled ? 1 : 0);
+				}
+			}
 		}
 	});
 

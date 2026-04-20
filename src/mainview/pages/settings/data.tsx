@@ -352,8 +352,8 @@ function SettingsExportImportCard() {
       <CardHeader>
         <CardTitle>Export / Import Settings</CardTitle>
         <CardDescription>
-          Back up or restore your app configuration — AI providers (including API keys), channel
-          configs, notification preferences, and all settings. Useful for migrating to a new machine.
+          Back up or restore your app configuration — AI providers (including API keys), channel configs,
+          notification preferences, settings, scheduled jobs, prompts, and custom agents. Useful for migrating to a new machine.
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-4">
@@ -459,15 +459,16 @@ export function DataSettings() {
       {/* Settings Export / Import */}
       <SettingsExportImportCard />
 
-      {/* Export */}
+      {/* Project Data Export / Import */}
       <Card>
         <CardHeader>
-          <CardTitle>Export Project Data</CardTitle>
+          <CardTitle>Project Data</CardTitle>
           <CardDescription>
-            Download all conversations, tasks, docs, and more for a project.
+            Export or import all conversations, tasks, docs, and more for a project.
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          {/* Export */}
           <div className="flex items-end gap-3">
             <div className="space-y-1">
               <Label>Project</Label>
@@ -482,28 +483,14 @@ export function DataSettings() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleExport} disabled={exporting || !exportProjectId}>
-              {exporting ? "Exporting…" : "Export"}
+            <Button variant="outline" size="sm" onClick={handleExport} disabled={exporting || !exportProjectId}>
+              {exporting ? "Exporting…" : "Export Project Data"}
             </Button>
           </div>
-        </CardContent>
-      </Card>
 
-      {/* Database Maintenance */}
-      <DatabaseMaintenanceCard />
+          <Separator />
 
-      {/* Database Backups */}
-      <BackupsCard />
-
-      {/* Import */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Import Project Data</CardTitle>
-          <CardDescription>
-            Import data from a previously exported JSON file into a project.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+          {/* Import */}
           <div className="flex items-end gap-3 flex-wrap">
             <div className="space-y-1">
               <Label>Target Project</Label>
@@ -530,8 +517,8 @@ export function DataSettings() {
                 </SelectContent>
               </Select>
             </div>
-            <Button onClick={handleImport} disabled={importing || !importProjectId}>
-              {importing ? "Importing…" : "Choose File & Import"}
+            <Button variant="outline" size="sm" onClick={handleImport} disabled={importing || !importProjectId}>
+              {importing ? "Importing…" : "Import Project Data"}
             </Button>
           </div>
 
@@ -556,6 +543,12 @@ export function DataSettings() {
           )}
         </CardContent>
       </Card>
+
+      {/* Database Maintenance */}
+      <DatabaseMaintenanceCard />
+
+      {/* Database Backups */}
+      <BackupsCard />
     </div>
   );
 }

@@ -34,8 +34,9 @@ async function runJob(jobId: string): Promise<void> {
 		status: "running",
 	});
 
-	// Execute
+	// Execute — inject _jobName so task-executor can use it for notifications
 	const taskConfig = JSON.parse(job.taskConfig);
+	taskConfig._jobName = job.name;
 	const result = await executeTask(job.taskType as TaskType, taskConfig);
 
 	// Update history

@@ -85,9 +85,11 @@ function getTaskTypeLabel(type: string): string {
   switch (type) {
     case "pm_prompt": return "PM Prompt";
     case "reminder": return "Reminder";
-    case "shell": return "Shell";
+    case "shell": return "Shell Command";
     case "webhook": return "Webhook";
-    case "agent_task": return "Agent Task";
+    case "agent_task": return "Agent Project Task";
+    case "agent_task_simple": return "Agent Task";
+    case "send_channel_message": return "Send Message";
     default: return type;
   }
 }

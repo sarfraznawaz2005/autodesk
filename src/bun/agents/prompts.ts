@@ -547,7 +547,7 @@ function buildDirectToolsSection(tools: Array<{ name: string; description: strin
  * Lists ALL skill names and one-line descriptions so agents know what's available.
  * Agents load full content on demand via `read_skill`.
  */
-function buildSkillsDescriptionSection(): string {
+export function buildSkillsDescriptionSection(): string {
 	const skills = skillRegistry.getAll();
 	if (skills.length === 0) return "";
 
@@ -617,7 +617,7 @@ async function buildPMMcpSection(): Promise<string> {
 /**
  * Returns a section for sub-agent prompts listing all MCP tool names they have access to.
  */
-async function buildAgentMcpSection(): Promise<string> {
+export async function buildAgentMcpSection(): Promise<string> {
 	try {
 		const { getMcpTools } = await import("../mcp/client");
 		const tools = getMcpTools();
