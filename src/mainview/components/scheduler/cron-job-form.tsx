@@ -385,7 +385,7 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
   const [name, setName] = useState("");
   const [cronExpr, setCronExpr] = useState(DEFAULT_CRON);
   const [timezone, setTimezone] = useState("UTC");
-  const [taskType, setTaskType] = useState<TaskType>("agent_task");
+  const [taskType, setTaskType] = useState<TaskType>("reminder");
   const [taskConfig, setTaskConfig] = useState<TaskConfig>({ agentId: "project-manager" });
   const [oneShot, setOneShot] = useState(false);
   const [saving, setSaving] = useState(false);
@@ -418,8 +418,8 @@ export function CronJobForm({ open, onOpenChange, onSaved, job }: CronJobFormPro
       setName("");
       setCronExpr(DEFAULT_CRON);
       setTimezone("UTC");
-      setTaskType("agent_task");
-      setTaskConfig({ agentId: "project-manager" });
+      setTaskType("reminder");
+      setTaskConfig({});
       setOneShot(false);
       // Prefill timezone from global setting
       rpc.getSetting("timezone", "general").then((val) => {

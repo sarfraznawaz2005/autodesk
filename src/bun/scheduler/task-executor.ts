@@ -7,6 +7,8 @@ import { aiProviders, agents as agentsTable, projects } from "../db/schema";
 import { eq } from "drizzle-orm";
 import { getDefaultModel } from "../providers/models";
 import { createProviderAdapter } from "../providers";
+import { broadcastToWebview, registerAgentController, unregisterAgentController } from "../engine-manager";
+import type { MessagePart } from "../agents/agent-loop";
 
 export type TaskType = "pm_prompt" | "reminder" | "shell" | "webhook" | "agent_task" | "agent_task_simple" | "send_channel_message";
 
@@ -42,6 +44,8 @@ export async function executeTask(
 				if (!projectId || !prompt) throw new Error("pm_prompt requires projectId and prompt");
 				if (!engineResolver) throw new Error("Engine not initialized");
 				const { id: conversationId } = await createConversation(projectId, "Scheduled prompt");
+				// Notify frontend so the new conversation appears in the sidebar
+				broadcastToWebview("conversationUpdated", { conversationId, updatedAt: new Date().toISOString(), projectId });
 				await engineResolver(projectId).sendMessage(conversationId, prompt);
 				output = "Agent task dispatched";
 				break;
@@ -125,6 +129,8 @@ export async function executeTask(
 					// Route through the PM engine (existing behavior)
 					if (!engineResolver) throw new Error("Engine not initialized");
 					const { id: convId } = await createConversation(projectId, "Scheduled agent task");
+					// Notify frontend so the new conversation appears in the sidebar
+					broadcastToWebview("conversationUpdated", { conversationId: convId, updatedAt: new Date().toISOString(), projectId });
 					await engineResolver(projectId).sendMessage(convId, instructions);
 				} else {
 					// Run the specified agent directly via runInlineAgent
@@ -159,34 +165,99 @@ export async function executeTask(
 					const workspacePath = projectRows[0]?.workspacePath ?? undefined;
 
 					const { id: convId } = await createConversation(projectId, `Scheduled: ${agentDisplayName}`);
+					// Notify frontend so the new conversation appears in the sidebar
+					broadcastToWebview("conversationUpdated", { conversationId: convId, updatedAt: new Date().toISOString(), projectId });
+
 					const projectContext = [
 						workspacePath ? `Workspace: ${workspacePath}` : "",
 						`Project ID: ${projectId}`,
 					].filter(Boolean).join("\n");
 
-					// No-op callbacks — scheduled runs have no live UI to update
+					// Register an AbortController so the stop button and dashboard
+					// "N agents working" badge work correctly.
+					const abortController = new AbortController();
+					registerAgentController(projectId, abortController, agentId);
+
+					// Real broadcast callbacks — mirrors engine-manager.ts callbacks so
+					// the frontend receives partCreated/partUpdated/agentInlineStart/etc.
 					const callbacks = {
-						onPartCreated: () => {},
-						onPartUpdated: () => {},
-						onTextDelta: () => {},
-						onAgentStart: () => {},
-						onAgentComplete: () => {},
+						onPartCreated: (part: MessagePart) => {
+							broadcastToWebview("partCreated", {
+								conversationId: convId,
+								messageId: part.messageId,
+								part: {
+									id: part.id,
+									type: part.type,
+									content: part.content,
+									toolName: part.toolName,
+									toolInput: part.toolInput,
+									toolOutput: part.toolOutput,
+									toolState: part.toolState,
+									sortOrder: part.sortOrder,
+									agentName: part.agentName,
+									timeStart: part.timeStart,
+									timeEnd: part.timeEnd,
+								},
+							});
+						},
+						onPartUpdated: (messageId: string, partId: string, updates: Partial<MessagePart>) => {
+							broadcastToWebview("partUpdated", {
+								conversationId: convId,
+								messageId,
+								partId,
+								updates: {
+									content: updates.content,
+									toolOutput: updates.toolOutput,
+									toolState: updates.toolState,
+									timeEnd: updates.timeEnd,
+								},
+							});
+						},
+						onTextDelta: (messageId: string, delta: string) => {
+							broadcastToWebview("streamToken", {
+								conversationId: convId,
+								messageId,
+								token: delta,
+								agentId,
+							});
+						},
+						onAgentStart: (messageId: string, agName: string, agDisplayName: string, task: string) => {
+							broadcastToWebview("agentInlineStart", { conversationId: convId, messageId, agentName: agName, agentDisplayName: agDisplayName, task });
+						},
+						onAgentComplete: (messageId: string, agName: string, status: string, summary: string, _filesModified: string[], tokensUsed: { prompt: number; completion: number; contextLimit?: number }) => {
+							broadcastToWebview("agentInlineComplete", { conversationId: convId, messageId, agentName: agName, status, summary, tokensUsed });
+						},
+						onMessageCreated: (messageId: string, cId: string, agName: string, content: string) => {
+							broadcastToWebview("newMessage", {
+								conversationId: cId,
+								messageId,
+								agentId: agName,
+								agentName: agName,
+								content,
+								metadata: JSON.stringify({ source: "agent" }),
+							});
+						},
 					};
 
-					const result = await runInlineAgent({
-						conversationId: convId,
-						agentName: agentId,
-						agentDisplayName,
-						task: instructions,
-						projectContext,
-						providerConfig,
-						modelId,
-						readOnly: READ_ONLY_AGENTS.has(agentId),
-						workspacePath: workspacePath ?? undefined,
-						projectId,
-						callbacks,
-					});
-					output = `Agent task completed: ${result.status}`;
+					try {
+						const result = await runInlineAgent({
+							conversationId: convId,
+							agentName: agentId,
+							agentDisplayName,
+							task: instructions,
+							projectContext,
+							providerConfig,
+							modelId,
+							readOnly: READ_ONLY_AGENTS.has(agentId),
+							workspacePath: workspacePath ?? undefined,
+							projectId,
+							callbacks,
+							abortSignal: abortController.signal,
+						});
+						output = `Agent task completed: ${result.status}`;
+					} finally {
+						unregisterAgentController(projectId, abortController);
+					}
 				}
 				output = output || "Agent task dispatched";
 				break;
@@ -196,7 +267,15 @@ export async function executeTask(
 				const instructions = config.instructions as string;
 				const agentId = (config.agentId as string | undefined) || "project-manager";
 				const jobName = (config._jobName as string | undefined) || "Agent Task";
+				const simpleProjectId = config._projectId as string | undefined;
 				if (!instructions) throw new Error("agent_task_simple requires instructions");
+
+				// Register an AbortController so the dashboard "N agents working" badge
+				// and stop button work when this task is associated with a project.
+				const simpleAbortController = simpleProjectId ? new AbortController() : null;
+				if (simpleProjectId && simpleAbortController) {
+					registerAgentController(simpleProjectId, simpleAbortController, agentId);
+				}
 
 				// Resolve provider
 				let providerRows = await db.select().from(aiProviders)
@@ -270,6 +349,11 @@ export async function executeTask(
 					responseText = result.text.trim();
 				} catch (err) {
 					responseText = `Error: ${err instanceof Error ? err.message : String(err)}`;
+				} finally {
+					// Always unregister controller so the dashboard badge clears
+					if (simpleProjectId && simpleAbortController) {
+						unregisterAgentController(simpleProjectId, simpleAbortController);
+					}
 				}
 
 				// Update inbox message with agent response (shows "Replied" badge)

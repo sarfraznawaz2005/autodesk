@@ -12,7 +12,7 @@ allowed-tools: read_file, search_files, search_content, directory_tree
 - **Desktop**: Electrobun (Bun + native WebView2) — NOT Electron
 - **Frontend**: React 19, TanStack Router, Zustand, Tailwind CSS, Radix UI
 - **Backend**: Bun (TypeScript), Drizzle ORM, SQLite (WAL mode)
-- **AI**: Vercel AI SDK (`ai` ^4.0) — provider-agnostic (Anthropic, OpenAI, OpenRouter, Ollama)
+- **AI**: Vercel AI SDK (`ai` ^6.0) — provider-agnostic (Anthropic, OpenAI, OpenRouter, Ollama, Google Gemini, DeepSeek, Groq, xAI Grok)
 
 ## Key Architecture Patterns
 
@@ -24,10 +24,10 @@ All communication goes through Electrobun's typed RPC:
 4. Call from frontend via `src/mainview/lib/rpc.ts`
 
 ### Agent System
-- **AgentEngine** (`src/bun/agents/engine.ts`) — PM streaming + sub-agent lifecycle
-- **WorkflowEngine** (`src/bun/agents/workflow.ts`) — state machine: idle → planning → awaiting_approval → executing → reviewing → testing → done
-- **Sub-agents** run in background, complete asynchronously, PM synthesises results
-- Kanban tasks created ONLY after plan approval
+- **AgentEngine** (`src/bun/agents/engine.ts`) — PM streaming + inline sub-agent execution
+- **PM is the sole orchestrator** — there is no separate WorkflowEngine state machine. The PM handles planning, approval, task creation, and agent dispatch directly.
+- **Inline sub-agents** run in the main conversation via `run_agent` / `run_agents_parallel` — their tool calls are visible as message parts in chat
+- **Kanban tasks** created ONLY after plan approval (via `create_tasks_from_plan`)
 
 ### Database
 - Schema: `src/bun/db/schema.ts` (single source of truth)

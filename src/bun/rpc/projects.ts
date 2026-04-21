@@ -25,17 +25,19 @@ export interface ProjectListItem {
  */
 export async function getProjectsList(): Promise<ProjectListItem[]> {
 	const rows = await db.select().from(projects);
-	return rows.map((row) => ({
-		id: row.id,
-		name: row.name,
-		description: row.description,
-		status: row.status,
-		workspacePath: row.workspacePath,
-		githubUrl: row.githubUrl,
-		workingBranch: row.workingBranch,
-		createdAt: row.createdAt,
-		updatedAt: row.updatedAt,
-	}));
+	return rows
+		.map((row) => ({
+			id: row.id,
+			name: row.name,
+			description: row.description,
+			status: row.status,
+			workspacePath: row.workspacePath,
+			githubUrl: row.githubUrl,
+			workingBranch: row.workingBranch,
+			createdAt: row.createdAt,
+			updatedAt: row.updatedAt,
+		}))
+		.sort((a, b) => a.name.localeCompare(b.name, undefined, { sensitivity: "base" }));
 }
 
 export interface CreateProjectParams {

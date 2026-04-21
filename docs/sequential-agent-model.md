@@ -39,10 +39,12 @@ writes all files sequentially with full conversation context between steps.
 
 | Category | Agents | Can Run in Parallel |
 |----------|--------|---------------------|
-| Read-only | `code-explorer`, `research-expert`, `task-planner` | Yes |
-| Write | All others (`frontend_engineer`, `backend-engineer`, `software-architect`, `code-reviewer`, `qa-engineer`, `devops-engineer`, `debugging-specialist`, `performance-expert`, `security-expert`, `ui-ux-designer`, `data-engineer`, `refactoring-specialist`, `api-designer`, `database-expert`, `mobile-engineer`, `ml-engineer`) | No — one at a time |
+| Read-only | `code-explorer`, `research-expert`, `task-planner` | Yes — via `run_agents_parallel` |
+| Write | All others (`frontend_engineer`, `backend-engineer`, `software-architect`, `code-reviewer`, `qa-engineer`, `devops-engineer`, `debugging-specialist`, `performance-expert`, `security-expert`, `ui-ux-designer`, `data-engineer`, `refactoring-specialist`, `api-designer`, `database-expert`, `mobile-engineer`, `ml-engineer`) | No — one at a time via `run_agent` |
 
-**Exception**: `code-reviewer` is auto-spawned by `review-cycle.ts` (`notifyTaskInReview()`) when a task enters the "review" column — it runs independently of the write-agent guard. This is fine because review happens after the write agent finishes.
+**Exception**: `code-reviewer` is auto-spawned by `review-cycle.ts` when a task enters the "review" column — it runs independently of the write-agent guard. This is fine because review happens after the write agent finishes.
+
+**Enforcement**: The `READ_ONLY_AGENTS` set is defined in `src/bun/agents/agent-loop.ts` and validated in `pm-tools.ts`. Write agents are guarded by a `writeAgentRunning` boolean closure variable in `createPMTools`.
 
 ### Enforcement Mechanism
 

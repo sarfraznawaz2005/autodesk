@@ -2,7 +2,7 @@
 
 **Directory:** `src/bun`
 **Files:** 141
-**Symbols:** 1044
+**Symbols:** 1047
 
 ## Files
 
@@ -1480,6 +1480,7 @@
 - `getCronJobHistory` (line 98)
 - `clearCronJobHistory` (line 107)
 - `previewCronSchedule` (line 116)
+- `triggerCronJob` (line 120)
 
 
 ### `src/bun/rpc/dashboard.ts`
@@ -1735,30 +1736,30 @@
 
 **Interfaces:**
 - `ProjectListItem` (line 11)
-- `CreateProjectParams` (line 41)
+- `CreateProjectParams` (line 43)
 
 **Types:**
-- `StmtCache` (line 273)
+- `StmtCache` (line 275)
 
 **Functions:**
 - `getProjectsList` (line 26)
-- `createProjectHandler` (line 61)
-- `deleteProjectHandler` (line 211)
-- `getProject` (line 221)
-- `updateProject` (line 241)
-- `buildStmts` (line 276)
-- `getStmts` (line 306)
-- `deleteProjectCascade` (line 315)
-- `resetProjectData` (line 363)
-- `saveProjectSetting` (line 396)
-- `getProjectSettings` (line 426)
-- `detectVerifyCommand` (line 445)
-- `exists` (line 462)
-- `readJson` (line 463)
-- `listWorkspaceFiles` (line 587)
-- `readWorkspaceFile` (line 659)
-- `readWorkspaceImageFile` (line 698)
-- `syncWorkspaceFolders` (line 738)
+- `createProjectHandler` (line 63)
+- `deleteProjectHandler` (line 213)
+- `getProject` (line 223)
+- `updateProject` (line 243)
+- `buildStmts` (line 278)
+- `getStmts` (line 308)
+- `deleteProjectCascade` (line 317)
+- `resetProjectData` (line 365)
+- `saveProjectSetting` (line 398)
+- `getProjectSettings` (line 428)
+- `detectVerifyCommand` (line 447)
+- `exists` (line 464)
+- `readJson` (line 465)
+- `listWorkspaceFiles` (line 589)
+- `readWorkspaceFile` (line 661)
+- `readWorkspaceImageFile` (line 700)
+- `syncWorkspaceFolders` (line 740)
 
 
 ### `src/bun/rpc/prompts.ts`
@@ -1908,13 +1909,14 @@
 - `ManagedJob` (line 14)
 
 **Functions:**
-- `runJob` (line 21)
-- `startJob` (line 78)
-- `stopJob` (line 90)
-- `initCronScheduler` (line 98)
-- `shutdownCronScheduler` (line 128)
-- `refreshJob` (line 135)
-- `getNextRuns` (line 147)
+- `triggerJobNow` (line 21)
+- `runJob` (line 25)
+- `startJob` (line 83)
+- `stopJob` (line 95)
+- `initCronScheduler` (line 103)
+- `shutdownCronScheduler` (line 133)
+- `refreshJob` (line 140)
+- `getNextRuns` (line 152)
 
 
 ### `src/bun/scheduler/event-bus.ts`
@@ -1949,6 +1951,7 @@
 - `shutdownCronScheduler` (line 4)
 - `refreshJob` (line 4)
 - `getNextRuns` (line 4)
+- `triggerJobNow` (line 4)
 - `initAutomationEngine` (line 5)
 - `shutdownAutomationEngine` (line 5)
 
@@ -1956,15 +1959,15 @@
 ### `src/bun/scheduler/task-executor.ts`
 
 **Interfaces:**
-- `TaskResult` (line 13)
+- `TaskResult` (line 15)
 
 **Types:**
-- `TaskType` (line 11)
-- `GetOrCreateEngine` (line 20)
+- `TaskType` (line 13)
+- `GetOrCreateEngine` (line 22)
 
 **Functions:**
-- `setTaskExecutorEngine` (line 24)
-- `executeTask` (line 28)
+- `setTaskExecutorEngine` (line 26)
+- `executeTask` (line 30)
 
 
 ### `src/bun/skills/loader.ts`

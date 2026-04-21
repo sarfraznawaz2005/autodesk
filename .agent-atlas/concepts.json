@@ -690,7 +690,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 41,
+      "line": 42,
       "symbol": "CronJobHistoryEntry",
       "type": "interface"
     },
@@ -1016,7 +1016,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 488,
+      "line": 515,
       "symbol": "handleClearAll",
       "type": "function"
     },
@@ -2330,19 +2330,19 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 221,
+      "line": 223,
       "symbol": "getProject",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 306,
+      "line": 308,
       "symbol": "getStmts",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 426,
+      "line": 428,
       "symbol": "getProjectSettings",
       "type": "function"
     },
@@ -2462,7 +2462,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 147,
+      "line": 152,
       "symbol": "getNextRuns",
       "type": "function"
     },
@@ -2474,7 +2474,7 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 20,
+      "line": 22,
       "symbol": "GetOrCreateEngine",
       "type": "type"
     },
@@ -2582,7 +2582,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 84,
+      "line": 85,
       "symbol": "getTaskTypeLabel",
       "type": "function"
     },
@@ -2930,7 +2930,7 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 24,
+      "line": 26,
       "symbol": "setTaskExecutorEngine",
       "type": "function"
     },
@@ -3644,13 +3644,13 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 20,
+      "line": 22,
       "symbol": "GetOrCreateEngine",
       "type": "type"
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 24,
+      "line": 26,
       "symbol": "setTaskExecutorEngine",
       "type": "function"
     }
@@ -4542,13 +4542,13 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 61,
+      "line": 63,
       "symbol": "createProjectHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 211,
+      "line": 213,
       "symbol": "deleteProjectHandler",
       "type": "function"
     },
@@ -5018,13 +5018,13 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 41,
+      "line": 43,
       "symbol": "CreateProjectParams",
       "type": "interface"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 61,
+      "line": 63,
       "symbol": "createProjectHandler",
       "type": "function"
     },
@@ -5036,7 +5036,7 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 20,
+      "line": 22,
       "symbol": "GetOrCreateEngine",
       "type": "type"
     },
@@ -5430,13 +5430,13 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 659,
+      "line": 661,
       "symbol": "readWorkspaceFile",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 698,
+      "line": 700,
       "symbol": "readWorkspaceImageFile",
       "type": "function"
     },
@@ -5758,7 +5758,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 185,
+      "line": 186,
       "symbol": "load",
       "type": "function"
     },
@@ -5862,7 +5862,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 396,
+      "line": 398,
       "symbol": "saveProjectSetting",
       "type": "function"
     },
@@ -6298,31 +6298,9 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 128,
+      "line": 129,
       "symbol": "LastRunBadge",
       "type": "function"
-    }
-  ],
-  "known": [
-    {
-      "file": "src/bun/rpc-registration.ts",
-      "line": 56,
-      "symbol": "getLastKnownRoute",
-      "type": "function"
-    }
-  ],
-  "route": [
-    {
-      "file": "src/bun/rpc-registration.ts",
-      "line": 56,
-      "symbol": "getLastKnownRoute",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/components/layout/app-shell.tsx",
-      "line": 74,
-      "symbol": "restoreRoute",
-      "type": "route"
     }
   ],
   "setting": [
@@ -6346,7 +6324,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 396,
+      "line": 398,
       "symbol": "saveProjectSetting",
       "type": "function"
     },
@@ -6779,14 +6757,6 @@
       "line": 45,
       "symbol": "AutoDeskRPC",
       "type": "type"
-    }
-  ],
-  "walk": [
-    {
-      "file": "src/bun/rpc-registration.ts",
-      "line": 539,
-      "symbol": "walk",
-      "type": "function"
     }
   ],
   "windows": [
@@ -8314,55 +8284,55 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 41,
+      "line": 43,
       "symbol": "CreateProjectParams",
       "type": "interface"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 61,
+      "line": 63,
       "symbol": "createProjectHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 211,
+      "line": 213,
       "symbol": "deleteProjectHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 221,
+      "line": 223,
       "symbol": "getProject",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 241,
+      "line": 243,
       "symbol": "updateProject",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 315,
+      "line": 317,
       "symbol": "deleteProjectCascade",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 363,
+      "line": 365,
       "symbol": "resetProjectData",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 396,
+      "line": 398,
       "symbol": "saveProjectSetting",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 426,
+      "line": 428,
       "symbol": "getProjectSettings",
       "type": "function"
     },
@@ -8840,25 +8810,25 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 11,
+      "line": 13,
       "symbol": "TaskType",
       "type": "type"
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 13,
+      "line": 15,
       "symbol": "TaskResult",
       "type": "interface"
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 24,
+      "line": 26,
       "symbol": "setTaskExecutorEngine",
       "type": "function"
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 28,
+      "line": 30,
       "symbol": "executeTask",
       "type": "function"
     },
@@ -8930,7 +8900,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 84,
+      "line": 85,
       "symbol": "getTaskTypeLabel",
       "type": "function"
     },
@@ -9176,6 +9146,24 @@
     }
   ],
   "now": [
+    {
+      "file": "src/bun/scheduler/cron-scheduler.ts",
+      "line": 21,
+      "symbol": "triggerJobNow",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/scheduler/index.ts",
+      "line": 4,
+      "symbol": "triggerJobNow",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/pages/scheduler.tsx",
+      "line": 327,
+      "symbol": "handleRunNow",
+      "type": "function"
+    },
     {
       "file": "tests/frontend/date-utils.test.ts",
       "line": 40,
@@ -9740,7 +9728,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 98,
+      "line": 103,
       "symbol": "initCronScheduler",
       "type": "function"
     },
@@ -10052,13 +10040,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 715,
+      "line": 742,
       "symbol": "handleAddJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 761,
+      "line": 788,
       "symbol": "handleAddRule",
       "type": "function"
     },
@@ -10226,25 +10214,25 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 587,
+      "line": 589,
       "symbol": "listWorkspaceFiles",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 659,
+      "line": 661,
       "symbol": "readWorkspaceFile",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 698,
+      "line": 700,
       "symbol": "readWorkspaceImageFile",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 738,
+      "line": 740,
       "symbol": "syncWorkspaceFolders",
       "type": "function"
     },
@@ -10768,13 +10756,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 209,
+      "line": 210,
       "symbol": "handleClear",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 488,
+      "line": 515,
       "symbol": "handleClearAll",
       "type": "function"
     },
@@ -11761,6 +11749,12 @@
       "type": "function"
     },
     {
+      "file": "src/bun/rpc/cron.ts",
+      "line": 120,
+      "symbol": "triggerCronJob",
+      "type": "function"
+    },
+    {
       "file": "src/bun/scheduler/cron-scheduler.ts",
       "line": 14,
       "symbol": "ManagedJob",
@@ -11769,24 +11763,30 @@
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
       "line": 21,
+      "symbol": "triggerJobNow",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/scheduler/cron-scheduler.ts",
+      "line": 25,
       "symbol": "runJob",
       "type": "function"
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 78,
+      "line": 83,
       "symbol": "startJob",
       "type": "function"
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 90,
+      "line": 95,
       "symbol": "stopJob",
       "type": "function"
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 135,
+      "line": 140,
       "symbol": "refreshJob",
       "type": "function"
     },
@@ -11794,6 +11794,12 @@
       "file": "src/bun/scheduler/index.ts",
       "line": 4,
       "symbol": "refreshJob",
+      "type": "export"
+    },
+    {
+      "file": "src/bun/scheduler/index.ts",
+      "line": 4,
+      "symbol": "triggerJobNow",
       "type": "export"
     },
     {
@@ -11816,49 +11822,49 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 41,
+      "line": 42,
       "symbol": "CronJobHistoryEntry",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 101,
+      "line": 102,
       "symbol": "CronJobCardSkeleton",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 313,
+      "line": 314,
       "symbol": "CronJobCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 321,
+      "line": 322,
       "symbol": "CronJobCard",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 715,
+      "line": 742,
       "symbol": "handleAddJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 720,
+      "line": 747,
       "symbol": "handleEditJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 725,
+      "line": 752,
       "symbol": "handleDeleteJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 730,
+      "line": 757,
       "symbol": "confirmDeleteJob",
       "type": "function"
     },
@@ -11920,19 +11926,19 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 41,
+      "line": 42,
       "symbol": "CronJobHistoryEntry",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 168,
+      "line": 169,
       "symbol": "HistorySectionProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 174,
+      "line": 175,
       "symbol": "HistorySection",
       "type": "function"
     },
@@ -12482,7 +12488,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 806,
+      "line": 833,
       "symbol": "handleUseTemplate",
       "type": "function"
     },
@@ -13082,7 +13088,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 147,
+      "line": 152,
       "symbol": "getNextRuns",
       "type": "function"
     },
@@ -13420,7 +13426,7 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 11,
+      "line": 13,
       "symbol": "TaskType",
       "type": "type"
     },
@@ -13480,7 +13486,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 84,
+      "line": 85,
       "symbol": "getTaskTypeLabel",
       "type": "function"
     },
@@ -13890,7 +13896,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 698,
+      "line": 700,
       "symbol": "readWorkspaceImageFile",
       "type": "function"
     },
@@ -15100,7 +15106,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 587,
+      "line": 589,
       "symbol": "listWorkspaceFiles",
       "type": "function"
     },
@@ -15210,7 +15216,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 241,
+      "line": 243,
       "symbol": "updateProject",
       "type": "function"
     },
@@ -15690,7 +15696,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 84,
+      "line": 85,
       "symbol": "getTaskTypeLabel",
       "type": "function"
     },
@@ -15818,7 +15824,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 276,
+      "line": 278,
       "symbol": "buildStmts",
       "type": "function"
     },
@@ -16030,7 +16036,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 587,
+      "line": 589,
       "symbol": "listWorkspaceFiles",
       "type": "function"
     },
@@ -16514,7 +16520,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 745,
+      "line": 772,
       "symbol": "handleToggleEnabled",
       "type": "function"
     }
@@ -17052,7 +17058,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 21,
+      "line": 25,
       "symbol": "runJob",
       "type": "function"
     },
@@ -17064,8 +17070,14 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 128,
+      "line": 129,
       "symbol": "LastRunBadge",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/scheduler.tsx",
+      "line": 327,
+      "symbol": "handleRunNow",
       "type": "function"
     }
   ],
@@ -17128,7 +17140,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 463,
+      "line": 465,
       "symbol": "readJson",
       "type": "function"
     },
@@ -17720,7 +17732,7 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 13,
+      "line": 15,
       "symbol": "TaskResult",
       "type": "interface"
     },
@@ -17862,19 +17874,19 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 463,
+      "line": 465,
       "symbol": "readJson",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 659,
+      "line": 661,
       "symbol": "readWorkspaceFile",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 698,
+      "line": 700,
       "symbol": "readWorkspaceImageFile",
       "type": "function"
     },
@@ -18462,31 +18474,31 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 761,
+      "line": 788,
       "symbol": "handleAddRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 767,
+      "line": 794,
       "symbol": "handleEditRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 773,
+      "line": 800,
       "symbol": "handleDeleteRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 778,
+      "line": 805,
       "symbol": "confirmDeleteRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 793,
+      "line": 820,
       "symbol": "handleToggleRule",
       "type": "function"
     }
@@ -18748,7 +18760,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 445,
+      "line": 447,
       "symbol": "detectVerifyCommand",
       "type": "function"
     },
@@ -18972,7 +18984,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 738,
+      "line": 740,
       "symbol": "syncWorkspaceFolders",
       "type": "function"
     },
@@ -19788,7 +19800,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 90,
+      "line": 95,
       "symbol": "stopJob",
       "type": "function"
     },
@@ -19826,7 +19838,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 363,
+      "line": 365,
       "symbol": "resetProjectData",
       "type": "function"
     },
@@ -21088,73 +21100,79 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 209,
+      "line": 210,
       "symbol": "handleClear",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 328,
+      "line": 327,
+      "symbol": "handleRunNow",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/scheduler.tsx",
+      "line": 344,
       "symbol": "handleToggle",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 488,
+      "line": 515,
       "symbol": "handleClearAll",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 715,
+      "line": 742,
       "symbol": "handleAddJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 720,
+      "line": 747,
       "symbol": "handleEditJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 725,
+      "line": 752,
       "symbol": "handleDeleteJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 745,
+      "line": 772,
       "symbol": "handleToggleEnabled",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 761,
+      "line": 788,
       "symbol": "handleAddRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 767,
+      "line": 794,
       "symbol": "handleEditRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 773,
+      "line": 800,
       "symbol": "handleDeleteRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 793,
+      "line": 820,
       "symbol": "handleToggleRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 806,
+      "line": 833,
       "symbol": "handleUseTemplate",
       "type": "function"
     },
@@ -21467,6 +21485,12 @@
       "type": "function"
     },
     {
+      "file": "src/bun/rpc/cron.ts",
+      "line": 120,
+      "symbol": "triggerCronJob",
+      "type": "function"
+    },
+    {
       "file": "src/bun/scheduler/automation-engine.ts",
       "line": 10,
       "symbol": "TriggerCondition",
@@ -21477,6 +21501,18 @@
       "line": 16,
       "symbol": "TriggerConfig",
       "type": "interface"
+    },
+    {
+      "file": "src/bun/scheduler/cron-scheduler.ts",
+      "line": 21,
+      "symbol": "triggerJobNow",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/scheduler/index.ts",
+      "line": 4,
+      "symbol": "triggerJobNow",
+      "type": "export"
     },
     {
       "file": "src/mainview/components/scheduler/automation-rule-form.tsx",
@@ -21796,7 +21832,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 273,
+      "line": 275,
       "symbol": "StmtCache",
       "type": "type"
     }
@@ -21816,7 +21852,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 135,
+      "line": 140,
       "symbol": "refreshJob",
       "type": "function"
     },
@@ -22278,13 +22314,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 168,
+      "line": 169,
       "symbol": "HistorySectionProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 174,
+      "line": 175,
       "symbol": "HistorySection",
       "type": "function"
     }
@@ -23642,7 +23678,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 78,
+      "line": 83,
       "symbol": "startJob",
       "type": "function"
     },
@@ -23838,7 +23874,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 128,
+      "line": 133,
       "symbol": "shutdownCronScheduler",
       "type": "function"
     },
@@ -23984,13 +24020,13 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 98,
+      "line": 103,
       "symbol": "initCronScheduler",
       "type": "function"
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 128,
+      "line": 133,
       "symbol": "shutdownCronScheduler",
       "type": "function"
     },
@@ -24008,7 +24044,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 654,
+      "line": 681,
       "symbol": "SchedulerPage",
       "type": "function"
     },
@@ -24252,7 +24288,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 806,
+      "line": 833,
       "symbol": "handleUseTemplate",
       "type": "function"
     },
@@ -24358,7 +24394,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 273,
+      "line": 275,
       "symbol": "StmtCache",
       "type": "type"
     }
@@ -24694,7 +24730,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 363,
+      "line": 365,
       "symbol": "resetProjectData",
       "type": "function"
     },
@@ -24832,7 +24868,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 426,
+      "line": 428,
       "symbol": "getProjectSettings",
       "type": "function"
     },
@@ -25354,13 +25390,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 571,
+      "line": 598,
       "symbol": "AutomationRulesTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 581,
+      "line": 608,
       "symbol": "AutomationRulesTab",
       "type": "function"
     }
@@ -25421,14 +25457,20 @@
       "type": "function"
     },
     {
+      "file": "src/bun/rpc/cron.ts",
+      "line": 120,
+      "symbol": "triggerCronJob",
+      "type": "function"
+    },
+    {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 98,
+      "line": 103,
       "symbol": "initCronScheduler",
       "type": "function"
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 128,
+      "line": 133,
       "symbol": "shutdownCronScheduler",
       "type": "function"
     },
@@ -25488,43 +25530,43 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 41,
+      "line": 42,
       "symbol": "CronJobHistoryEntry",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 56,
+      "line": 57,
       "symbol": "humanizeCron",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 101,
+      "line": 102,
       "symbol": "CronJobCardSkeleton",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 313,
+      "line": 314,
       "symbol": "CronJobCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 321,
+      "line": 322,
       "symbol": "CronJobCard",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 467,
+      "line": 494,
       "symbol": "CronJobsTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 477,
+      "line": 504,
       "symbol": "CronJobsTab",
       "type": "function"
     }
@@ -25550,13 +25592,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 467,
+      "line": 494,
       "symbol": "CronJobsTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 477,
+      "line": 504,
       "symbol": "CronJobsTab",
       "type": "function"
     }
@@ -25684,13 +25726,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 571,
+      "line": 598,
       "symbol": "AutomationRulesTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 581,
+      "line": 608,
       "symbol": "AutomationRulesTab",
       "type": "function"
     }
@@ -26422,13 +26464,13 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 211,
+      "line": 213,
       "symbol": "deleteProjectHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 315,
+      "line": 317,
       "symbol": "deleteProjectCascade",
       "type": "function"
     },
@@ -26626,25 +26668,25 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 725,
+      "line": 752,
       "symbol": "handleDeleteJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 730,
+      "line": 757,
       "symbol": "confirmDeleteJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 773,
+      "line": 800,
       "symbol": "handleDeleteRule",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 778,
+      "line": 805,
       "symbol": "confirmDeleteRule",
       "type": "function"
     },
@@ -27780,7 +27822,7 @@
     },
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 41,
+      "line": 43,
       "symbol": "CreateProjectParams",
       "type": "interface"
     },
@@ -28506,25 +28548,25 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 467,
+      "line": 494,
       "symbol": "CronJobsTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 477,
+      "line": 504,
       "symbol": "CronJobsTab",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 571,
+      "line": 598,
       "symbol": "AutomationRulesTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 581,
+      "line": 608,
       "symbol": "AutomationRulesTab",
       "type": "function"
     }
@@ -30177,22 +30219,6 @@
       "type": "function"
     }
   ],
-  "timezone": [
-    {
-      "file": "src/bun/rpc/cron.ts",
-      "line": 11,
-      "symbol": "getGlobalTimezone",
-      "type": "function"
-    }
-  ],
-  "preview": [
-    {
-      "file": "src/bun/rpc/cron.ts",
-      "line": 116,
-      "symbol": "previewCronSchedule",
-      "type": "function"
-    }
-  ],
   "dashboard": [
     {
       "file": "src/bun/rpc/dashboard.ts",
@@ -30356,7 +30382,7 @@
     },
     {
       "file": "src/bun/scheduler/task-executor.ts",
-      "line": 28,
+      "line": 30,
       "symbol": "executeTask",
       "type": "function"
     },
@@ -31582,19 +31608,19 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 328,
+      "line": 344,
       "symbol": "handleToggle",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 745,
+      "line": 772,
       "symbol": "handleToggleEnabled",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 793,
+      "line": 820,
       "symbol": "handleToggleRule",
       "type": "function"
     },
@@ -31623,32 +31649,10 @@
       "type": "function"
     }
   ],
-  "stmts": [
-    {
-      "file": "src/bun/rpc/projects.ts",
-      "line": 276,
-      "symbol": "buildStmts",
-      "type": "function"
-    },
-    {
-      "file": "src/bun/rpc/projects.ts",
-      "line": 306,
-      "symbol": "getStmts",
-      "type": "function"
-    }
-  ],
-  "cascade": [
-    {
-      "file": "src/bun/rpc/projects.ts",
-      "line": 315,
-      "symbol": "deleteProjectCascade",
-      "type": "function"
-    }
-  ],
   "detect": [
     {
       "file": "src/bun/rpc/projects.ts",
-      "line": 445,
+      "line": 447,
       "symbol": "detectVerifyCommand",
       "type": "function"
     },
@@ -31656,30 +31660,6 @@
       "file": "src/mainview/components/chat/tool-call-card.tsx",
       "line": 673,
       "symbol": "detectLanguageFromContent",
-      "type": "function"
-    }
-  ],
-  "verify": [
-    {
-      "file": "src/bun/rpc/projects.ts",
-      "line": 445,
-      "symbol": "detectVerifyCommand",
-      "type": "function"
-    }
-  ],
-  "exists": [
-    {
-      "file": "src/bun/rpc/projects.ts",
-      "line": 462,
-      "symbol": "exists",
-      "type": "function"
-    }
-  ],
-  "folders": [
-    {
-      "file": "src/bun/rpc/projects.ts",
-      "line": 738,
-      "symbol": "syncWorkspaceFolders",
       "type": "function"
     }
   ],
@@ -32028,7 +32008,7 @@
     },
     {
       "file": "src/bun/scheduler/cron-scheduler.ts",
-      "line": 147,
+      "line": 152,
       "symbol": "getNextRuns",
       "type": "function"
     },
@@ -32073,20 +32053,6 @@
       "line": 35,
       "symbol": "onAny",
       "type": "method"
-    }
-  ],
-  "executor": [
-    {
-      "file": "src/bun/scheduler/index.ts",
-      "line": 3,
-      "symbol": "setTaskExecutorEngine",
-      "type": "export"
-    },
-    {
-      "file": "src/bun/scheduler/task-executor.ts",
-      "line": 24,
-      "symbol": "setTaskExecutorEngine",
-      "type": "function"
     }
   ],
   "frontmatter": [
@@ -32826,25 +32792,25 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 168,
+      "line": 169,
       "symbol": "HistorySectionProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 313,
+      "line": 314,
       "symbol": "CronJobCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 467,
+      "line": 494,
       "symbol": "CronJobsTabProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 571,
+      "line": 598,
       "symbol": "AutomationRulesTabProps",
       "type": "interface"
     },
@@ -33223,14 +33189,6 @@
       "line": 54,
       "symbol": "getModelPrice",
       "type": "function"
-    }
-  ],
-  "electroview": [
-    {
-      "file": "src/mainview/lib/rpc.ts",
-      "line": 176,
-      "symbol": "electroview",
-      "type": "export"
     }
   ],
   "assign": [
@@ -33988,19 +33946,19 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 101,
+      "line": 102,
       "symbol": "CronJobCardSkeleton",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 313,
+      "line": 314,
       "symbol": "CronJobCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 321,
+      "line": 322,
       "symbol": "CronJobCard",
       "type": "function"
     },
@@ -34182,7 +34140,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 101,
+      "line": 102,
       "symbol": "CronJobCardSkeleton",
       "type": "function"
     },
@@ -34256,7 +34214,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 654,
+      "line": 681,
       "symbol": "SchedulerPage",
       "type": "function"
     },
@@ -34762,7 +34720,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 128,
+      "line": 129,
       "symbol": "LastRunBadge",
       "type": "function"
     },
@@ -35324,7 +35282,7 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 56,
+      "line": 57,
       "symbol": "humanizeCron",
       "type": "function"
     }
@@ -35368,13 +35326,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 720,
+      "line": 747,
       "symbol": "handleEditJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 767,
+      "line": 794,
       "symbol": "handleEditRule",
       "type": "function"
     },
@@ -35442,13 +35400,13 @@
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 730,
+      "line": 757,
       "symbol": "confirmDeleteJob",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/scheduler.tsx",
-      "line": 778,
+      "line": 805,
       "symbol": "confirmDeleteRule",
       "type": "function"
     },
@@ -37917,22 +37875,6 @@
       "type": "function"
     }
   ],
-  "focus": [
-    {
-      "file": "src/mainview/components/layout/app-shell.tsx",
-      "line": 130,
-      "symbol": "onFocus",
-      "type": "function"
-    }
-  ],
-  "blur": [
-    {
-      "file": "src/mainview/components/layout/app-shell.tsx",
-      "line": 131,
-      "symbol": "onBlur",
-      "type": "function"
-    }
-  ],
   "nav": [
     {
       "file": "src/mainview/components/layout/sidebar.tsx",
@@ -40193,6 +40135,136 @@
       "line": 104,
       "symbol": "_generate_detailed_diff",
       "type": "method"
+    }
+  ],
+  "known": [
+    {
+      "file": "src/bun/rpc-registration.ts",
+      "line": 56,
+      "symbol": "getLastKnownRoute",
+      "type": "function"
+    }
+  ],
+  "route": [
+    {
+      "file": "src/bun/rpc-registration.ts",
+      "line": 56,
+      "symbol": "getLastKnownRoute",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/components/layout/app-shell.tsx",
+      "line": 74,
+      "symbol": "restoreRoute",
+      "type": "route"
+    }
+  ],
+  "walk": [
+    {
+      "file": "src/bun/rpc-registration.ts",
+      "line": 539,
+      "symbol": "walk",
+      "type": "function"
+    }
+  ],
+  "timezone": [
+    {
+      "file": "src/bun/rpc/cron.ts",
+      "line": 11,
+      "symbol": "getGlobalTimezone",
+      "type": "function"
+    }
+  ],
+  "preview": [
+    {
+      "file": "src/bun/rpc/cron.ts",
+      "line": 116,
+      "symbol": "previewCronSchedule",
+      "type": "function"
+    }
+  ],
+  "stmts": [
+    {
+      "file": "src/bun/rpc/projects.ts",
+      "line": 278,
+      "symbol": "buildStmts",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/rpc/projects.ts",
+      "line": 308,
+      "symbol": "getStmts",
+      "type": "function"
+    }
+  ],
+  "cascade": [
+    {
+      "file": "src/bun/rpc/projects.ts",
+      "line": 317,
+      "symbol": "deleteProjectCascade",
+      "type": "function"
+    }
+  ],
+  "verify": [
+    {
+      "file": "src/bun/rpc/projects.ts",
+      "line": 447,
+      "symbol": "detectVerifyCommand",
+      "type": "function"
+    }
+  ],
+  "exists": [
+    {
+      "file": "src/bun/rpc/projects.ts",
+      "line": 464,
+      "symbol": "exists",
+      "type": "function"
+    }
+  ],
+  "folders": [
+    {
+      "file": "src/bun/rpc/projects.ts",
+      "line": 740,
+      "symbol": "syncWorkspaceFolders",
+      "type": "function"
+    }
+  ],
+  "executor": [
+    {
+      "file": "src/bun/scheduler/index.ts",
+      "line": 3,
+      "symbol": "setTaskExecutorEngine",
+      "type": "export"
+    },
+    {
+      "file": "src/bun/scheduler/task-executor.ts",
+      "line": 26,
+      "symbol": "setTaskExecutorEngine",
+      "type": "function"
+    }
+  ],
+  "electroview": [
+    {
+      "file": "src/mainview/lib/rpc.ts",
+      "line": 176,
+      "symbol": "electroview",
+      "type": "export"
+    }
+  ],
+  "focus": [
+    {
+      "file": "src/mainview/components/layout/app-shell.tsx",
+      "line": 130,
+      "symbol": "onFocus",
+      "type": "function"
+    }
+  ],
+  "blur": [
+    {
+      "file": "src/mainview/components/layout/app-shell.tsx",
+      "line": 131,
+      "symbol": "onBlur",
+      "type": "function"
     }
   ]
 }

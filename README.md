@@ -139,9 +139,9 @@ backlog → working → review → done
 - `review`: agent finishes and moves task; code-reviewer auto-spawns
 - `done`: review-cycle moves task after `submit_review(approved)`
 
-### Agent Sessions
+### Inline Agent Execution
 
-When the same agent type is re-dispatched in a conversation, it resumes its **persistent session** — it remembers prior work, design decisions, and tool results. Sessions are stored in SQLite and survive app restarts. Sessions auto-summarize at ~40k tokens.
+Sub-agents run **inline** in the main conversation with fresh context per invocation. Each agent receives only its system prompt and task description — no persistent session memory. This stateless model proved simpler and more reliable than the earlier session-based approach.
 
 ### Feature Branch Workflow
 
@@ -264,7 +264,7 @@ SQLite database in WAL mode, managed by Drizzle ORM. Key tables:
 
 `projects` · `conversations` · `messages` · `message_parts` · `kanban_tasks` · `agents` · `settings` · `notes` · `channels` · `pull_requests` · `github_issues` · `webhook_configs` · `webhook_events` · `cron_jobs` · `automation_rules` · `audit_log`
 
-Agent sessions (raw SQL, v3 migration): `agent_sessions` · `agent_session_messages`
+> Note: Agent sessions tables (`agent_sessions`, `agent_session_messages`) and `agent_task_results` were created in v3 but dropped in v4 when the inline agent model replaced persistent agent sessions. See `docs/agent-sessions-proposal.md` for the historical design.
 
 **Schema changes require a new migration file** in `src/bun/db/migrations/`. Never edit `schema.ts` without adding the corresponding migration.
 

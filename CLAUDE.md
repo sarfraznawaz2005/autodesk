@@ -1,6 +1,6 @@
-# AGENTS.md — AutoDesk
+IMPORTANT: Before starting any task, read and follow .agent-atlas/index.json — a codebase navigation layer providing domain docs, a keyword→file:line concepts index, conventions, and constraints.
 
-IMPORTANT: Before starting any task, read .agent-atlas/index.json first.
+# AGENTS.md — AutoDesk
 
 > This file is the **map**, not the manual. It orients AI agents quickly and
 > points to the deeper sources of truth. Keep it short and current.
@@ -212,8 +212,10 @@ src/
 
 **Raw SQL migrations** (created by migration files, not in schema.ts):
 
-`agent_sessions` · `agent_session_messages` (v3 — persistent per-agent conversation history) ·
-`keyboard_shortcuts` (v1) · `message_parts` (also Drizzle)
+
+`keyboard_shortcuts` (v1)
+
+> Note: `agent_sessions` and `agent_session_messages` tables were created in v3 but dropped in v4 when the inline agent model replaced persistent agent sessions. `message_parts` is now managed by Drizzle in `schema.ts`.
 
 > Feature branch name is persisted in `settings` table under key `currentFeatureBranch:<projectId>` with category `git`.
 

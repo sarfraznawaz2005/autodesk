@@ -764,6 +764,9 @@ export const rpc = {
   previewCronSchedule: (cronExpression: string, timezone?: string, count?: number) =>
     electroviewRpc.request.previewCronSchedule({ cronExpression, timezone, count }),
 
+  triggerCronJob: (params: { id: string }) =>
+    electroviewRpc.request.triggerCronJob(params),
+
   // ---- Automation Rules ----------------------------------------------------
 
   getAutomationRules: (projectId?: string) =>

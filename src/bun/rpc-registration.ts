@@ -48,7 +48,7 @@ import * as resetRpc from "./rpc/reset";
 import * as updaterRpc from "./rpc/updater";
 import * as healthRpc from "./rpc/health";
 import * as dashboardRpc from "./rpc/dashboard";
-import { engines, getOrCreateEngine, broadcastToWebview, removeEngine, resolveShellApproval, resolveUserQuestion, setAppFocused, abortAllAgents, abortAgentByName, getRunningAgentCount, getRunningAgentNames } from "./engine-manager";
+import { engines, getOrCreateEngine, broadcastToWebview, removeEngine, resolveShellApproval, resolveUserQuestion, setAppFocused, abortAllAgents, abortAgentByName, getRunningAgentCount, getRunningAgentNames, getAllRunningAgents } from "./engine-manager";
 import { logError } from "./db/error-logger";
 
 // Track the frontend's current route so we can restore it after tray-hide.
@@ -767,6 +767,7 @@ When enhancing a prompt:
 			getCronJobHistory: (params) => cronRpc.getCronJobHistory(params),
 			clearCronJobHistory: (params) => cronRpc.clearCronJobHistory(params),
 			previewCronSchedule: (params) => cronRpc.previewCronSchedule(params),
+			triggerCronJob: (params) => cronRpc.triggerCronJob(params),
 			// ── Automation Rules ──
 			getAutomationRules: (params) => automationRpc.getAutomationRules(params),
 			createAutomationRule: (params) => automationRpc.createAutomationRule(params),
@@ -817,7 +818,11 @@ When enhancing a prompt:
 
 			getActiveProjectAgents: () => {
 				const result: Array<{ projectId: string; agentCount: number }> = [];
+				const seen = new Set<string>();
+
+				// Engine-based projects (PM streaming or PM-dispatched sub-agents)
 				for (const [projectId, engine] of engines) {
+					seen.add(projectId);
 					const subAgentCount = getRunningAgentCount(projectId);
 					// If sub-agents are running, show their count.
 					// If only the PM itself is processing (planning phase or writing summary),
@@ -825,6 +830,16 @@ When enhancing a prompt:
 					const total = subAgentCount > 0 ? subAgentCount : (engine.isProcessing() ? 1 : 0);
 					if (total > 0) result.push({ projectId, agentCount: total });
 				}
+
+				// Projects with registered running agents that have no engine (e.g. direct
+				// runInlineAgent calls from the scheduler for non-PM agent_task jobs).
+				const allRunning = getAllRunningAgents();
+				for (const [projectId, agentNames] of Object.entries(allRunning)) {
+					if (!seen.has(projectId) && agentNames.length > 0) {
+						result.push({ projectId, agentCount: agentNames.length });
+					}
+				}
+
 				return result;
 			},
 

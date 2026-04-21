@@ -2,7 +2,7 @@
 
 **Directory:** `src/mainview`
 **Files:** 129
-**Symbols:** 1085
+**Symbols:** 1086
 
 ## Files
 
@@ -1679,37 +1679,38 @@
 ### `src/mainview/pages/scheduler.tsx`
 
 **Interfaces:**
-- `CronJobHistoryEntry` (line 41)
-- `HistorySectionProps` (line 168)
-- `CronJobCardProps` (line 313)
-- `CronJobsTabProps` (line 467)
-- `AutomationRulesTabProps` (line 571)
+- `CronJobHistoryEntry` (line 42)
+- `HistorySectionProps` (line 169)
+- `CronJobCardProps` (line 314)
+- `CronJobsTabProps` (line 494)
+- `AutomationRulesTabProps` (line 598)
 
 **Functions:**
-- `humanizeCron` (line 56)
-- `getTaskTypeLabel` (line 84)
-- `CronJobCardSkeleton` (line 101)
-- `LastRunBadge` (line 128)
-- `HistorySection` (line 174)
-- `load` (line 185)
-- `handleClear` (line 209)
-- `CronJobCard` (line 321)
-- `handleToggle` (line 328)
-- `CronJobsTab` (line 477)
-- `handleClearAll` (line 488)
-- `AutomationRulesTab` (line 581)
-- `SchedulerPage` (line 654)
-- `handleAddJob` (line 715)
-- `handleEditJob` (line 720)
-- `handleDeleteJob` (line 725)
-- `confirmDeleteJob` (line 730)
-- `handleToggleEnabled` (line 745)
-- `handleAddRule` (line 761)
-- `handleEditRule` (line 767)
-- `handleDeleteRule` (line 773)
-- `confirmDeleteRule` (line 778)
-- `handleToggleRule` (line 793)
-- `handleUseTemplate` (line 806)
+- `humanizeCron` (line 57)
+- `getTaskTypeLabel` (line 85)
+- `CronJobCardSkeleton` (line 102)
+- `LastRunBadge` (line 129)
+- `HistorySection` (line 175)
+- `load` (line 186)
+- `handleClear` (line 210)
+- `CronJobCard` (line 322)
+- `handleRunNow` (line 327)
+- `handleToggle` (line 344)
+- `CronJobsTab` (line 504)
+- `handleClearAll` (line 515)
+- `AutomationRulesTab` (line 608)
+- `SchedulerPage` (line 681)
+- `handleAddJob` (line 742)
+- `handleEditJob` (line 747)
+- `handleDeleteJob` (line 752)
+- `confirmDeleteJob` (line 757)
+- `handleToggleEnabled` (line 772)
+- `handleAddRule` (line 788)
+- `handleEditRule` (line 794)
+- `handleDeleteRule` (line 800)
+- `confirmDeleteRule` (line 805)
+- `handleToggleRule` (line 820)
+- `handleUseTemplate` (line 833)
 
 
 ### `src/mainview/pages/settings.tsx`

@@ -1,16 +1,22 @@
 # Agent Sessions — Design Document
 
-> **STATUS: IMPLEMENTED** — This proposal was approved and implemented. See implementation notes below.
+> **STATUS: SUPERSEDED** — This proposal was initially implemented in v3 but **reversed in v4** when the inline agent model replaced persistent agent sessions.
 >
-> **Implementation summary:**
-> - Database: `agent_sessions` and `agent_session_messages` tables created via raw SQL in `src/bun/db/migrations/v3_agent-sessions.ts` (not added to Drizzle `schema.ts`)
+> **Current state (v4+):**
+> - Agent session tables (`agent_sessions`, `agent_session_messages`) were **dropped** in migration v4 (`src/bun/db/migrations/v4_inline-agents.ts`)
+> - Sub-agents now run **inline** with fresh context per invocation — no persistent session memory
+> - The inline model proved simpler and more reliable than session-based continuity
+> - `agent_task_results` table was also dropped as obsolete
+>
+> **Historical note:**
+> The v3 implementation included:
+> - Database: `agent_sessions` and `agent_session_messages` tables created via raw SQL in `src/bun/db/migrations/v3_agent-sessions.ts`
 > - Sub-agent executor: `agent-loop.ts` (replaced `sub-agent.ts`) accepts `sessionMessages` option and returns `newMessages` in `AgentResult`
-> - Session lifecycle (load/save/summarize): implemented in `src/bun/agents/engine.ts` via `_resolveSessionName()`, `_loadAgentSession()`, `_saveSessionMessages()`, `_summarizeAgentSession()`
+> - Session lifecycle (load/save/summarize): implemented in `src/bun/agents/engine.ts`
 > - `FileTracker.trackWrite()` / `getModifiedFiles()`: implemented in `src/bun/agents/tools/file-tracker.ts`
-> - `AgentResult` extended with `newMessages: CoreMessage[]` and `filesModified: string[]`
 > - Summarization threshold: 40k tokens (as proposed); per-session lock prevents concurrent summarization
-> - Cascade delete: handled by SQLite FK constraints on `conversations.id`
-> - Section 12 "What Does NOT Change" note: `delegate_task` referenced in that section is now `run_agent` (PM tool rename)
+>
+> The v4 migration dropped all session tables in favor of the simpler inline execution model where each agent invocation is stateless.
 
 ---
 

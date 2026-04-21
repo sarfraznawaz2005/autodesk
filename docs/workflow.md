@@ -36,7 +36,7 @@ planning, approval, agent dispatch, code review, and completion phases.
 
 The motto: **99% of work is done automatically once the human approves the plan.**
 
-> **Note**: There is no separate WorkflowEngine state machine. The PM is the sole
+> **Note**: The PM is the sole orchestrator. There is no separate WorkflowEngine state machine. References to "WorkflowEngine" in this document should be understood as "the PM's workflow logic" — not a separate class. The PM is the sole
 > orchestrator. Workflow state (plan pending, tasks in flight, etc.) is tracked
 > directly in the PM's conversation context and the kanban board.
 
@@ -69,7 +69,7 @@ Human request
 
 3. **Source-aware approval.** In-app and channels both use chat-based approval
    with keyword detection (fast) and LLM fallback (flexible). Both trigger the
-   same `WorkflowEngine.approvePlan()`.
+   same approval logic (keyword detection in `AgentEngine.sendMessage()`).
 
 4. **Two-way visibility.** Every PM response goes to the app webview AND all
    connected channels. Every channel message is visible in-app as a conversation.
@@ -107,14 +107,14 @@ Message arrives at engine.sendMessage(conversationId, content, metadata?)
   |-- metadata.source = "app" | "discord" | "whatsapp" | "email"
   |
   |-- GATE 1: Soft Approval Gate
-  |     Is there an active WorkflowEngine workflow for this conversation
+  |     Is there a pending plan awaiting approval for this conversation
   |     in "awaiting_approval" state?
   |     |
   |     |-- YES + clear approval keyword ("approve", "yes", "go ahead", "lgtm")
-  |     |     -> WorkflowEngine.approvePlan() immediately (no LLM)
+  |     |     -> PM approval logic triggers immediately (no LLM)
   |     |
   |     |-- YES + clear rejection keyword ("reject", "no", "change")
-  |     |     -> WorkflowEngine.rejectPlan(feedback) immediately (no LLM)
+  |     |     -> PM rejection logic triggers immediately (no LLM)
   |     |
   |     |-- YES + ambiguous message
   |     |     -> Pass to PM with context: "There is a pending plan awaiting approval"
@@ -146,7 +146,7 @@ metadata?: {
 - Discord router passes `source: "discord"`, `channelId`, `username`.
 - Other channel integrations follow the same pattern.
 
-The source flows into the WorkflowEngine context and determines HOW plan
+The source flows into the PM's context and determines HOW plan
 approval is presented (in-app chat message vs channel message), not WHETHER it happens.
 
 ---
@@ -170,7 +170,7 @@ Human says "start working" or project already has kanban tasks in backlog.
 Human: "Start working on the backlog tasks"
   -> PM calls list_tasks(project_id)
   -> PM sees N tasks in backlog
-  -> PM confirms briefly, then starts WorkflowEngine in executing state
+  -> PM confirms briefly, then starts executing workflow (skips planning and approval)
      (skips planning and approval)
 ```
 
@@ -206,7 +206,7 @@ In a single invocation, the task-planner:
    dependencies, effort estimates, assigned agent types, and acceptance criteria.
 
 2. **Calls `define_tasks(tasks)`** — stores structured task definitions in the
-   WorkflowEngine context (`context.taskDefinitions`). This does NOT create
+   PM context (`context.taskDefinitions`). This does NOT create
    kanban tasks. The definitions include:
    - `title` — short task name
    - `description` — full task description
@@ -239,7 +239,7 @@ This PM tool:
 - Plan note visible in Docs tab (rendered markdown)
 - Structured task definitions stored in WorkflowContext
 - Kanban board is still empty — no tasks created yet
-- WorkflowEngine in `awaiting_approval` state
+- PM workflow in `awaiting_approval` state
 - Soft approval gate is now active for this conversation
 
 ---
@@ -252,7 +252,7 @@ an active `awaiting_approval` workflow before running the PM.
 ### Skipping the Approval Gate
 
 The approval gate can be skipped entirely by the PM via `request_plan_approval` with
-`skip_approval: true`. This calls `WorkflowEngine.startAndExecute()` which:
+`skip_approval: true`. This calls the PM's workflow start logic which:
 
 1. Creates kanban tasks deterministically from the task-planner's `taskDefinitions`
 2. Transitions the workflow directly to `executing` (no `awaiting_approval` step)
@@ -283,7 +283,7 @@ When a message arrives for a conversation with a pending approval:
 ### Rejection Flow
 
 On rejection (chat reply with feedback):
-1. `WorkflowEngine.rejectPlan(workflowId, feedback)`
+1. PM rejection logic is triggered with feedback
 2. Feedback is embedded into the workflow prompt context
 3. task-planner is re-invoked with the feedback
 4. task-planner updates the plan note (`update_note`) and regenerates `taskDefinitions`
@@ -314,7 +314,7 @@ When the user approves (says "approve" / "yes" / "go ahead"), the PM:
 
 ## Execution Phase
 
-The WorkflowEngine's `executing` state drives autonomous agent dispatch.
+The PM's execution logic drives autonomous agent dispatch.
 
 ### Sequential Single-Agent Model
 
@@ -331,7 +331,7 @@ See [`docs/sequential-agent-model.md`](./sequential-agent-model.md) for the full
 **Enforcement:**
 - `writeAgentRunning` closure-scoped boolean in `createPMTools` prevents concurrent write agents
 - `run_agents_parallel` validates agents are in the `READ_ONLY_AGENTS` set
-- `WorkflowEngine.dispatchUnblockedTasks` hardcodes `maxConcurrent = 1`
+- PM dispatch logic hardcodes `maxConcurrent = 1` for write agents
 
 ### Handoff Summaries
 
@@ -345,7 +345,7 @@ When a workflow agent completes, a handoff summary is generated from its modifie
 ### Dispatch Logic
 
 ```
-1. WorkflowEngine dispatches unblocked kanban tasks one at a time
+1. PM dispatches unblocked kanban tasks one at a time
 2. Each agent receives:
    - Task description + acceptance criteria
    - Handoff summary from completed predecessor tasks
@@ -379,7 +379,7 @@ Each inline worker agent:
 
 ## Completion
 
-When the WorkflowEngine transitions to `done`:
+When the PM workflow transitions to `done`:
 
 1. PM generates a completion summary covering:
    - What was built
@@ -400,7 +400,7 @@ When the WorkflowEngine transitions to `done`:
 When a worker agent fails during execution:
 
 ```
-WorkflowEngine.notifyTaskFailed(workflowId, taskId, error)
+PM.notifyTaskFailed(workflowId, taskId, error)
   |
   |-- retries < 2
   |     -> Re-dispatch the same task (fresh agent instance)
@@ -456,7 +456,7 @@ forwarded to all channels connected to that project:
 
 ## Execution Flow Reference
 
-There is no WorkflowEngine state machine. The PM orchestrates directly:
+The PM orchestrates directly (no separate WorkflowEngine state machine):
 
 ```
 Human request
@@ -544,7 +544,7 @@ Moving to "done" is blocked — tasks are moved to "done" only by `review-cycle.
 
 The code-reviewer is read-only except for `submit_review`. It does NOT call
 `move_task`. It calls `submit_review` with a structured verdict that the
-WorkflowEngine processes via `handleReviewVerdict`.
+`review-cycle.ts` processes via `handleReviewVerdict`.
 
 | Tool | Description |
 |---|---|

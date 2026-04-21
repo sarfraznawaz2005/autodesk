@@ -2,7 +2,7 @@
 import { db } from "../db";
 import { cronJobs, cronJobHistory, settings } from "../db/schema";
 import { eq, desc } from "drizzle-orm";
-import { refreshJob, getNextRuns } from "../scheduler";
+import { refreshJob, getNextRuns, triggerJobNow } from "../scheduler";
 
 // ---------------------------------------------------------------------------
 // Helper — read global timezone from settings (fallback UTC)
@@ -115,4 +115,11 @@ export async function clearCronJobHistory(params: { jobId?: string }) {
 
 export async function previewCronSchedule(params: { cronExpression: string; timezone?: string; count?: number }) {
 	return { runs: getNextRuns(params.cronExpression, params.timezone ?? "UTC", params.count ?? 5) };
+}
+
+export async function triggerCronJob(params: { id: string }) {
+	const rows = await db.select().from(cronJobs).where(eq(cronJobs.id, params.id)).limit(1);
+	if (rows.length === 0) throw new Error("Job not found");
+	await triggerJobNow(params.id);
+	return { success: true };
 }

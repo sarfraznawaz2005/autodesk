@@ -18,6 +18,10 @@ interface ManagedJob {
 
 const activeJobs = new Map<string, ManagedJob>();
 
+export async function triggerJobNow(jobId: string): Promise<void> {
+	return runJob(jobId);
+}
+
 async function runJob(jobId: string): Promise<void> {
 	const rows = await db.select().from(cronJobs).where(eq(cronJobs.id, jobId)).limit(1);
 	if (rows.length === 0) return;
@@ -34,9 +38,10 @@ async function runJob(jobId: string): Promise<void> {
 		status: "running",
 	});
 
-	// Execute — inject _jobName so task-executor can use it for notifications
+	// Execute — inject _jobName and _projectId so task-executor can use them
 	const taskConfig = JSON.parse(job.taskConfig);
 	taskConfig._jobName = job.name;
+	if (job.projectId) taskConfig._projectId = job.projectId;
 	const result = await executeTask(job.taskType as TaskType, taskConfig);
 
 	// Update history

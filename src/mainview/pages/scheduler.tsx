@@ -7,6 +7,7 @@ import {
   ChevronDown,
   ChevronRight,
   Zap,
+  Play,
 } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
@@ -321,6 +322,21 @@ interface CronJobCardProps {
 function CronJobCard({ job, onEdit, onDelete, onToggleEnabled, onJobsReload }: CronJobCardProps) {
   const [historyExpanded, setHistoryExpanded] = useState(false);
   const [toggling, setToggling] = useState(false);
+  const [running, setRunning] = useState(false);
+
+  async function handleRunNow() {
+    setRunning(true);
+    try {
+      await rpc.triggerCronJob({ id: job.id });
+      toast("success", `"${job.name}" triggered.`);
+      onJobsReload();
+    } catch (err) {
+      const msg = err instanceof Error ? err.message : "Failed to trigger job.";
+      toast("error", msg);
+    } finally {
+      setRunning(false);
+    }
+  }
 
   const isEnabled = job.enabled === 1;
   const humanSchedule = humanizeCron(job.cronExpression);
@@ -373,7 +389,7 @@ function CronJobCard({ job, onEdit, onDelete, onToggleEnabled, onJobsReload }: C
           </div>
 
           {/* Enable/disable switch */}
-          <div className="flex items-center gap-1.5 flex-shrink-0 pt-0.5">
+          <div className="relative flex items-center gap-1.5 flex-shrink-0 pt-0.5">
             <span className="text-xs text-muted-foreground sr-only">
               {isEnabled ? "Enabled" : "Disabled"}
             </span>
@@ -428,6 +444,17 @@ function CronJobCard({ job, onEdit, onDelete, onToggleEnabled, onJobsReload }: C
           </Button>
 
           <div className="ml-auto flex items-center gap-1.5">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="h-7 px-2 gap-1 text-xs text-green-700 hover:text-green-800 hover:bg-green-50"
+              onClick={handleRunNow}
+              disabled={running}
+              aria-label={`Run job ${job.name} now`}
+            >
+              <Play className="h-3.5 w-3.5" aria-hidden="true" />
+              {running ? "Running…" : "Run"}
+            </Button>
             <Button
               variant="ghost"
               size="sm"
@@ -814,40 +841,37 @@ export function SchedulerPage() {
   // ---------------------------------------------------------------------------
 
   return (
-    <div className="flex flex-1 flex-col min-h-0">
-      {/* Tab content */}
-      <div className="flex-1 overflow-y-auto min-h-0 px-6 py-5">
-        <Tabs value={activeTab} onValueChange={setActiveTab}>
-          <TabsList className="mb-5">
-            <TabsTrigger value="cron">Cron Jobs</TabsTrigger>
-            <TabsTrigger value="automation">Automation Rules</TabsTrigger>
-          </TabsList>
+    <div className="p-6 max-w-5xl mx-auto">
+      <Tabs value={activeTab} onValueChange={setActiveTab}>
+        <TabsList className="mb-5">
+          <TabsTrigger value="cron">Cron Jobs</TabsTrigger>
+          <TabsTrigger value="automation">Automation Rules</TabsTrigger>
+        </TabsList>
 
-          <TabsContent value="cron">
-            <CronJobsTab
-              jobs={jobs}
-              loading={loading}
-              onAdd={handleAddJob}
-              onEdit={handleEditJob}
-              onDelete={handleDeleteJob}
-              onToggleEnabled={handleToggleEnabled}
-              onJobsReload={loadJobs}
-            />
-          </TabsContent>
+        <TabsContent value="cron">
+          <CronJobsTab
+            jobs={jobs}
+            loading={loading}
+            onAdd={handleAddJob}
+            onEdit={handleEditJob}
+            onDelete={handleDeleteJob}
+            onToggleEnabled={handleToggleEnabled}
+            onJobsReload={loadJobs}
+          />
+        </TabsContent>
 
-          <TabsContent value="automation">
-            <AutomationRulesTab
-              rules={rules}
-              loading={rulesLoading}
-              onAdd={handleAddRule}
-              onEdit={handleEditRule}
-              onDelete={handleDeleteRule}
-              onToggle={handleToggleRule}
-              onUseTemplate={handleUseTemplate}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
+        <TabsContent value="automation">
+          <AutomationRulesTab
+            rules={rules}
+            loading={rulesLoading}
+            onAdd={handleAddRule}
+            onEdit={handleEditRule}
+            onDelete={handleDeleteRule}
+            onToggle={handleToggleRule}
+            onUseTemplate={handleUseTemplate}
+          />
+        </TabsContent>
+      </Tabs>
 
       {/* Cron job form dialog */}
       <CronJobForm

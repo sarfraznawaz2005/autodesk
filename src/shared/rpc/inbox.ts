@@ -138,6 +138,10 @@ export type InboxRequests = {
     params: { jobId?: string };
     response: { success: boolean };
   };
+  triggerCronJob: {
+    params: { id: string };
+    response: { success: boolean };
+  };
 
   // Automation rules
   getAutomationRules: {
