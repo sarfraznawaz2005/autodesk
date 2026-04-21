@@ -29,7 +29,7 @@ Motto: **99% agent-driven. Humans approve, deploy, and communicate.**
 
 | Layer | Technology |
 |---|---|
-| Desktop framework | Electrobun 1.15.1 (Bun runtime + native webview) |
+| Desktop framework | Electrobun 1.16.0 (Bun runtime + native webview) |
 | Frontend | React 19, TanStack Router, Zustand, Tailwind CSS, Radix UI |
 | Backend | Bun (TypeScript), Drizzle ORM |
 | Database | SQLite (WAL mode) via `better-sqlite3` through Drizzle |
@@ -268,10 +268,14 @@ from the frontend via `src/mainview/lib/rpc.ts`.
 bun run dev          # Start in dev mode (Vite build + Electrobun watch)
 bun run dev:fast     # HMR mode (Vite dev server + Electrobun)
 bun run build        # Production build
+bun run build:canary # Canary build variant
 bun run typecheck    # TypeScript type check (no emit)
 bun run lint         # ESLint
 bun run lint:fix     # ESLint with auto-fix
+bun run format       # Prettier
+bun run format:check # Prettier check
 bun run db:generate  # Generate Drizzle migrations from schema changes
+bun run db:migrate   # Run Drizzle migrations
 bun run db:studio    # Open Drizzle Studio (DB browser)
 ```
 

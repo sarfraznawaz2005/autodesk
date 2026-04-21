@@ -45,7 +45,7 @@ AutoDesk manages software development projects through a team of specialized AI 
 
 | Layer | Technology |
 |---|---|
-| Desktop framework | [Electrobun](https://electrobun.dev) 1.15.1 (Bun runtime + native WebView2) |
+| Desktop framework | [Electrobun](https://electrobun.dev) 1.16.0 (Bun runtime + native WebView2) |
 | Frontend | React 19, TanStack Router, Zustand, Tailwind CSS, Radix UI |
 | Backend | Bun (TypeScript), Drizzle ORM |
 | Database | SQLite (WAL mode) |
@@ -276,11 +276,14 @@ Agent sessions (raw SQL, v3 migration): `agent_sessions` · `agent_session_messa
 bun run dev          # Dev mode (Vite build + Electrobun watch)
 bun run dev:fast     # HMR mode (Vite dev server + Electrobun)
 bun run build        # Production build
+bun run build:canary # Canary build variant
 bun run typecheck    # TypeScript check (no emit)
 bun run lint         # ESLint
 bun run lint:fix     # ESLint with auto-fix
 bun run format       # Prettier
+bun run format:check # Prettier check
 bun run db:generate  # Generate Drizzle migrations from schema changes
+bun run db:migrate   # Run Drizzle migrations
 bun run db:studio    # Open Drizzle Studio (DB browser)
 ```
 

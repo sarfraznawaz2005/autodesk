@@ -52,7 +52,7 @@ AutoDesk is a cross-platform desktop application where AI agent teams autonomous
 | Frontend | React 19, TanStack Router, Zustand, Tailwind CSS, Radix UI |
 | Backend | Bun (TypeScript), Drizzle ORM |
 | Database | SQLite (WAL mode) via `better-sqlite3` through Drizzle |
-| AI | Vercel AI SDK (`ai` ^4.0) — provider-agnostic |
+| AI | Vercel AI SDK (`ai` ^6.0) — provider-agnostic |
 | AI Providers | Anthropic, OpenAI, OpenRouter, Ollama |
 | Channels | Discord (discord.js), WhatsApp (baileys), Email (imapflow + nodemailer) |
 | Build | Vite (frontend) + Electrobun build (app bundle) |
