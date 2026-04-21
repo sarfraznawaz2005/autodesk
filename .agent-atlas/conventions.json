@@ -1,0 +1,20 @@
+{
+  "naming": {
+    "files": "camelCase",
+    "functions": "camelCase",
+    "classes": "PascalCase",
+    "constants": "camelCase",
+    "confidence": 1
+  },
+  "patterns": {
+    "routing": "Express-style route handlers",
+    "react_hooks": "React hooks pattern (9 custom hooks)"
+  },
+  "test_patterns": {
+    "location": "tests/ directory",
+    "runner": "unknown"
+  },
+  "file_structure": {
+    "detected_pattern": "src/ root with subdirectories"
+  }
+}

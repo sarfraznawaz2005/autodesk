@@ -1,5 +1,7 @@
 # AGENTS.md — AutoDesk
 
+IMPORTANT: Before starting any task, read .agent-atlas/index.json first.
+
 > This file is the **map**, not the manual. It orients AI agents quickly and
 > points to the deeper sources of truth. Keep it short and current.
 
@@ -508,3 +510,5 @@ aitasks export --format json                Export all tasks
 
 <!-- aitasks:instructions:end -->
 
+
+Before starting any task, read .agent-atlas/index.json first.
