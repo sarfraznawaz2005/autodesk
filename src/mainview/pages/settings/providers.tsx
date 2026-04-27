@@ -341,6 +341,7 @@ function ProviderDialog({
   const [saving, setSaving] = useState(false);
   const [availableModels, setAvailableModels] = useState<string[]>([]);
   const [loadingModels, setLoadingModels] = useState(false);
+  const [toolChoiceWarning, setToolChoiceWarning] = useState<string | null>(null);
 
   // Reset form whenever the dialog opens or switches between add and edit
   useEffect(() => {
@@ -358,6 +359,7 @@ function ProviderDialog({
         setForm(EMPTY_FORM);
       }
       setShowApiKey(false);
+      setToolChoiceWarning(null);
     }
   }, [open, isEditing, editingProvider]);
 
@@ -402,6 +404,28 @@ function ProviderDialog({
     }, 500);
     return () => clearTimeout(timer);
   }, [form.providerType, form.apiKey, form.baseUrl, isEditing, editingProvider?.id]);
+
+  // Check tool_choice support for OpenRouter models
+  useEffect(() => {
+    if (form.providerType !== "openrouter" || !form.defaultModel.trim()) {
+      setToolChoiceWarning(null);
+      return;
+    }
+    const timer = setTimeout(async () => {
+      try {
+        const result = await rpc.checkModelToolSupport({
+          providerType: form.providerType,
+          apiKey: form.apiKey.trim() || undefined,
+          providerId: isEditing ? editingProvider?.id : undefined,
+          modelId: form.defaultModel.trim(),
+        });
+        setToolChoiceWarning(result.supportsToolChoice ? null : (result.warning ?? null));
+      } catch {
+        setToolChoiceWarning(null);
+      }
+    }, 600);
+    return () => clearTimeout(timer);
+  }, [form.providerType, form.defaultModel, form.apiKey, isEditing, editingProvider?.id]);
 
   function updateField<K extends keyof FormData>(key: K, value: FormData[K]) {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -607,6 +631,9 @@ function ProviderDialog({
                   <option key={m} value={m} />
                 ))}
               </datalist>
+            )}
+            {toolChoiceWarning && (
+              <p className="text-xs text-destructive">{toolChoiceWarning}</p>
             )}
           </div>
 

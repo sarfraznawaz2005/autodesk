@@ -31,6 +31,10 @@ export class OpenRouterAdapter implements ProviderAdapter {
 			name: "openrouter",
 			apiKey: config.apiKey,
 			baseURL: OPENROUTER_BASE_URL,
+			headers: {
+				"HTTP-Referer": "https://autodeskai.app",
+				"X-Title": "AutoDesk",
+			},
 		});
 	}
 

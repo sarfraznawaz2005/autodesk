@@ -119,6 +119,7 @@ export const rpc = BrowserView.defineRPC<AutoDeskRPC>({
 			listProviderModelsById: (params) => providersRpc.listProviderModelsByIdHandler(params.providerId),
 			deleteProvider: (params) => providersRpc.deleteProviderHandler(params.id),
 			getConnectedProviderModels: () => providersRpc.getConnectedProviderModelsHandler(),
+			checkModelToolSupport: (params) => providersRpc.checkModelToolSupportHandler(params),
 
 			// Projects
 			getProjects: () => projectsRpc.getProjectsList(),

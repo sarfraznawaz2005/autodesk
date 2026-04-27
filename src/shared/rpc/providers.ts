@@ -48,4 +48,8 @@ export type ProvidersRequests = {
       models: string[];
     }>;
   };
+  checkModelToolSupport: {
+    params: { providerType: string; apiKey?: string; providerId?: string; modelId: string };
+    response: { supportsToolChoice: boolean; warning?: string };
+  };
 };

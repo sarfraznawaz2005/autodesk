@@ -2,7 +2,7 @@
 
 **Directory:** `src/bun`
 **Files:** 141
-**Symbols:** 1047
+**Symbols:** 1048
 
 ## Files
 
@@ -1316,9 +1316,9 @@
 - `OpenRouterAdapter` (line 24)
 
 **Methods:**
-- `createModel` (line 37)
-- `listModels` (line 41)
-- `testConnection` (line 45)
+- `createModel` (line 41)
+- `listModels` (line 45)
+- `testConnection` (line 49)
 
 
 ### `src/bun/providers/types.ts`
@@ -1345,7 +1345,7 @@
 - `getLastKnownRoute` (line 56)
 - `onSettingChange` (line 60)
 - `withErrorToast` (line 69)
-- `walk` (line 539)
+- `walk` (line 540)
 
 **Exports:**
 - `rpc` (line 86)
@@ -1786,8 +1786,9 @@
 - `testProviderHandler` (line 161)
 - `deleteProviderHandler` (line 207)
 - `getConnectedProviderModelsHandler` (line 219)
-- `listProviderModelsHandler` (line 255)
-- `listProviderModelsByIdHandler` (line 282)
+- `listProviderModelsHandler` (line 259)
+- `checkModelToolSupportHandler` (line 288)
+- `listProviderModelsByIdHandler` (line 338)
 
 
 ### `src/bun/rpc/pulls.ts`

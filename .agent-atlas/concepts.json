@@ -4578,13 +4578,19 @@
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 255,
+      "line": 259,
       "symbol": "listProviderModelsHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 282,
+      "line": 288,
+      "symbol": "checkModelToolSupportHandler",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 338,
       "symbol": "listProviderModelsByIdHandler",
       "type": "function"
     },
@@ -4928,7 +4934,7 @@
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 37,
+      "line": 41,
       "symbol": "createModel",
       "type": "method"
     },
@@ -5794,7 +5800,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 681,
+      "line": 708,
       "symbol": "loadProviders",
       "type": "function"
     }
@@ -6030,7 +6036,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 410,
+      "line": 434,
       "symbol": "handleSave",
       "type": "function"
     },
@@ -9390,7 +9396,7 @@
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 45,
+      "line": 49,
       "symbol": "testConnection",
       "type": "method"
     },
@@ -9420,7 +9426,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 733,
+      "line": 760,
       "symbol": "handleTest",
       "type": "function"
     },
@@ -10052,7 +10058,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 700,
+      "line": 727,
       "symbol": "handleAdd",
       "type": "function"
     },
@@ -11338,13 +11344,13 @@
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 255,
+      "line": 259,
       "symbol": "listProviderModelsHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 282,
+      "line": 338,
       "symbol": "listProviderModelsByIdHandler",
       "type": "function"
     },
@@ -11484,13 +11490,13 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 662,
+      "line": 689,
       "symbol": "ProvidersSettings",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 681,
+      "line": 708,
       "symbol": "loadProviders",
       "type": "function"
     },
@@ -12102,6 +12108,12 @@
       "file": "src/bun/rpc/agents.ts",
       "line": 182,
       "symbol": "getAllToolDefinitions",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 288,
+      "symbol": "checkModelToolSupportHandler",
       "type": "function"
     },
     {
@@ -12806,7 +12818,7 @@
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 282,
+      "line": 338,
       "symbol": "listProviderModelsByIdHandler",
       "type": "function"
     },
@@ -13688,7 +13700,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 406,
+      "line": 430,
       "symbol": "updateField",
       "type": "function"
     }
@@ -15294,7 +15306,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 406,
+      "line": 430,
       "symbol": "updateField",
       "type": "function"
     }
@@ -15958,7 +15970,7 @@
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 41,
+      "line": 45,
       "symbol": "listModels",
       "type": "method"
     },
@@ -16054,13 +16066,13 @@
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 255,
+      "line": 259,
       "symbol": "listProviderModelsHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 282,
+      "line": 338,
       "symbol": "listProviderModelsByIdHandler",
       "type": "function"
     },
@@ -17786,7 +17798,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 737,
+      "line": 764,
       "symbol": "onResult",
       "type": "function"
     }
@@ -17912,20 +17924,6 @@
       "file": "src/mainview/pages/inbox.tsx",
       "line": 569,
       "symbol": "handleBulkMarkRead",
-      "type": "function"
-    }
-  ],
-  "only": [
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 162,
-      "symbol": "READ_ONLY_AGENTS",
-      "type": "export"
-    },
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 168,
-      "symbol": "filterReadOnlyTools",
       "type": "function"
     }
   ],
@@ -18285,20 +18283,6 @@
       "type": "function"
     }
   ],
-  "compact": [
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 299,
-      "symbol": "compactToolResultsInMessages",
-      "type": "function"
-    },
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 507,
-      "symbol": "aiCompactConversation",
-      "type": "function"
-    }
-  ],
   "old": [
     {
       "file": "src/bun/agents/agent-loop.ts",
@@ -18322,14 +18306,6 @@
       "file": "src/bun/rpc/conversations.ts",
       "line": 226,
       "symbol": "archiveOldConversations",
-      "type": "function"
-    }
-  ],
-  "assistant": [
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 334,
-      "symbol": "stripOldAssistantText",
       "type": "function"
     }
   ],
@@ -18500,14 +18476,6 @@
       "file": "src/mainview/pages/scheduler.tsx",
       "line": 820,
       "symbol": "handleToggleRule",
-      "type": "function"
-    }
-  ],
-  "based": [
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 369,
-      "symbol": "buildRuleBasedCompaction",
       "type": "function"
     }
   ],
@@ -18900,14 +18868,6 @@
       "file": "src/mainview/components/chat/tool-call-card.tsx",
       "line": 145,
       "symbol": "shortPath",
-      "type": "function"
-    }
-  ],
-  "describe": [
-    {
-      "file": "src/bun/agents/agent-loop.ts",
-      "line": 679,
-      "symbol": "describeToolCall",
       "type": "function"
     }
   ],
@@ -19733,20 +19693,6 @@
       "type": "function"
     }
   ],
-  "processing": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 222,
-      "symbol": "_runPMProcessing",
-      "type": "method"
-    },
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 960,
-      "symbol": "isProcessing",
-      "type": "method"
-    }
-  ],
   "emit": [
     {
       "file": "src/bun/agents/engine.ts",
@@ -19891,22 +19837,6 @@
       "type": "function"
     }
   ],
-  "stopped": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 945,
-      "symbol": "isStopped",
-      "type": "method"
-    }
-  ],
-  "fn": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 950,
-      "symbol": "setAbortAgentsFn",
-      "type": "method"
-    }
-  ],
   "active": [
     {
       "file": "src/bun/agents/engine.ts",
@@ -19963,14 +19893,6 @@
       "type": "interface"
     }
   ],
-  "queued": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 975,
-      "symbol": "getQueuedAgentsSnapshot",
-      "type": "method"
-    }
-  ],
   "snapshot": [
     {
       "file": "src/bun/agents/engine.ts",
@@ -19989,14 +19911,6 @@
       "line": 17,
       "symbol": "getProjectSnapshot",
       "type": "function"
-    }
-  ],
-  "present": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 982,
-      "symbol": "presentPlan",
-      "type": "method"
     }
   ],
   "plan": [
@@ -20323,14 +20237,6 @@
       "type": "type"
     }
   ],
-  "post": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 994,
-      "symbol": "postDeterministicMessage",
-      "type": "method"
-    }
-  ],
   "deterministic": [
     {
       "file": "src/bun/agents/engine.ts",
@@ -20343,14 +20249,6 @@
       "line": 69,
       "symbol": "buildDeterministicSummary",
       "type": "function"
-    }
-  ],
-  "invoke": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 1005,
-      "symbol": "invokePMWithEvent",
-      "type": "method"
     }
   ],
   "handle": [
@@ -21214,43 +21112,43 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 410,
+      "line": 434,
       "symbol": "handleSave",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 461,
+      "line": 485,
       "symbol": "handleCancel",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 700,
+      "line": 727,
       "symbol": "handleAdd",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 705,
+      "line": 732,
       "symbol": "handleEdit",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 710,
+      "line": 737,
       "symbol": "handleDeleteRequest",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 714,
+      "line": 741,
       "symbol": "handleDeleteConfirm",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 733,
+      "line": 760,
       "symbol": "handleTest",
       "type": "function"
     }
@@ -21449,28 +21347,6 @@
       "type": "type"
     }
   ],
-  "summarization": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 1083,
-      "symbol": "_loadSummarizationThreshold",
-      "type": "method"
-    },
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 1095,
-      "symbol": "triggerSummarization",
-      "type": "method"
-    }
-  ],
-  "threshold": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 1083,
-      "symbol": "_loadSummarizationThreshold",
-      "type": "method"
-    }
-  ],
   "trigger": [
     {
       "file": "src/bun/agents/engine.ts",
@@ -21591,14 +21467,6 @@
       "line": 54,
       "symbol": "TooltipTrigger",
       "type": "export"
-    }
-  ],
-  "touch": [
-    {
-      "file": "src/bun/agents/engine.ts",
-      "line": 1132,
-      "symbol": "_touchConversation",
-      "type": "method"
     }
   ],
   "title": [
@@ -21764,6 +21632,12 @@
       "file": "src/bun/rpc/health.ts",
       "line": 365,
       "symbol": "checkDatabase",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 288,
+      "symbol": "checkModelToolSupportHandler",
       "type": "function"
     },
     {
@@ -24132,7 +24006,7 @@
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 45,
+      "line": 49,
       "symbol": "testConnection",
       "type": "method"
     },
@@ -25054,7 +24928,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 662,
+      "line": 689,
       "symbol": "ProvidersSettings",
       "type": "function"
     },
@@ -26692,13 +26566,13 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 710,
+      "line": 737,
       "symbol": "handleDeleteRequest",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 714,
+      "line": 741,
       "symbol": "handleDeleteConfirm",
       "type": "function"
     }
@@ -27612,7 +27486,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 710,
+      "line": 737,
       "symbol": "handleDeleteRequest",
       "type": "function"
     },
@@ -29408,7 +29282,7 @@
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 37,
+      "line": 41,
       "symbol": "createModel",
       "type": "method"
     },
@@ -29417,6 +29291,12 @@
       "line": 25,
       "symbol": "createModel",
       "type": "method"
+    },
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 288,
+      "symbol": "checkModelToolSupportHandler",
+      "type": "function"
     },
     {
       "file": "src/mainview/components/chat/model-selector.tsx",
@@ -29482,7 +29362,7 @@
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 41,
+      "line": 45,
       "symbol": "listModels",
       "type": "method"
     },
@@ -29500,13 +29380,13 @@
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 255,
+      "line": 259,
       "symbol": "listProviderModelsHandler",
       "type": "function"
     },
     {
       "file": "src/bun/rpc/providers.ts",
-      "line": 282,
+      "line": 338,
       "symbol": "listProviderModelsByIdHandler",
       "type": "function"
     },
@@ -31660,22 +31540,6 @@
       "file": "src/mainview/components/chat/tool-call-card.tsx",
       "line": 673,
       "symbol": "detectLanguageFromContent",
-      "type": "function"
-    }
-  ],
-  "comparison": [
-    {
-      "file": "src/bun/rpc/providers.ts",
-      "line": 23,
-      "symbol": "normalizeUrlForComparison",
-      "type": "function"
-    }
-  ],
-  "connected": [
-    {
-      "file": "src/bun/rpc/providers.ts",
-      "line": 219,
-      "symbol": "getConnectedProviderModelsHandler",
       "type": "function"
     }
   ],
@@ -34231,22 +34095,6 @@
       "type": "function"
     }
   ],
-  "saved": [
-    {
-      "file": "src/mainview/pages/agents.tsx",
-      "line": 1118,
-      "symbol": "handleSaved",
-      "type": "function"
-    }
-  ],
-  "deleted": [
-    {
-      "file": "src/mainview/pages/agents.tsx",
-      "line": 1134,
-      "symbol": "handleDeleted",
-      "type": "function"
-    }
-  ],
   "created": [
     {
       "file": "src/mainview/components/chat/message-bubble.tsx",
@@ -34296,14 +34144,6 @@
       "file": "src/mainview/pages/settings.tsx",
       "line": 20,
       "symbol": "SubTabs",
-      "type": "function"
-    }
-  ],
-  "fmt": [
-    {
-      "file": "src/mainview/pages/analytics.tsx",
-      "line": 20,
-      "symbol": "fmtHours",
       "type": "function"
     }
   ],
@@ -34457,14 +34297,6 @@
       "type": "function"
     }
   ],
-  "loading": [
-    {
-      "file": "src/mainview/pages/analytics.tsx",
-      "line": 548,
-      "symbol": "Loading",
-      "type": "function"
-    }
-  ],
   "code": [
     {
       "file": "src/mainview/components/activity/docs-tab.tsx",
@@ -34531,14 +34363,6 @@
       "line": 172,
       "symbol": "code",
       "type": "method"
-    }
-  ],
-  "dots": [
-    {
-      "file": "src/mainview/pages/council.tsx",
-      "line": 163,
-      "symbol": "ThinkingDots",
-      "type": "function"
     }
   ],
   "bubble": [
@@ -34734,14 +34558,6 @@
       "file": "src/mainview/pages/settings/providers.tsx",
       "line": 106,
       "symbol": "providerTypeBadgeClass",
-      "type": "function"
-    }
-  ],
-  "style": [
-    {
-      "file": "src/mainview/pages/inbox.tsx",
-      "line": 82,
-      "symbol": "getSourceBadgeStyle",
       "type": "function"
     }
   ],
@@ -35338,7 +35154,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 705,
+      "line": 732,
       "symbol": "handleEdit",
       "type": "function"
     }
@@ -35412,40 +35228,8 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 714,
+      "line": 741,
       "symbol": "handleDeleteConfirm",
-      "type": "function"
-    }
-  ],
-  "tabs": [
-    {
-      "file": "src/mainview/components/ui/tabs.tsx",
-      "line": 53,
-      "symbol": "Tabs",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/tabs.tsx",
-      "line": 53,
-      "symbol": "TabsList",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/tabs.tsx",
-      "line": 53,
-      "symbol": "TabsTrigger",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/tabs.tsx",
-      "line": 53,
-      "symbol": "TabsContent",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/pages/settings.tsx",
-      "line": 20,
-      "symbol": "SubTabs",
       "type": "function"
     }
   ],
@@ -37740,7 +37524,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 461,
+      "line": 485,
       "symbol": "handleCancel",
       "type": "function"
     }
@@ -37872,92 +37656,6 @@
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
       "line": 190,
       "symbol": "saveDueDate",
-      "type": "function"
-    }
-  ],
-  "nav": [
-    {
-      "file": "src/mainview/components/layout/sidebar.tsx",
-      "line": 30,
-      "symbol": "NavItem",
-      "type": "interface"
-    },
-    {
-      "file": "src/mainview/components/layout/sidebar.tsx",
-      "line": 54,
-      "symbol": "NavItemButton",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/components/layout/topnav.tsx",
-      "line": 7,
-      "symbol": "TopNavProps",
-      "type": "interface"
-    },
-    {
-      "file": "src/mainview/components/layout/topnav.tsx",
-      "line": 13,
-      "symbol": "TopNav",
-      "type": "function"
-    }
-  ],
-  "button": [
-    {
-      "file": "src/mainview/components/layout/sidebar.tsx",
-      "line": 54,
-      "symbol": "NavItemButton",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/components/ui/button.tsx",
-      "line": 38,
-      "symbol": "ButtonProps",
-      "type": "interface"
-    },
-    {
-      "file": "src/mainview/components/ui/button.tsx",
-      "line": 58,
-      "symbol": "Button",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/button.tsx",
-      "line": 58,
-      "symbol": "buttonVariants",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/select.tsx",
-      "line": 146,
-      "symbol": "SelectScrollUpButton",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/select.tsx",
-      "line": 146,
-      "symbol": "SelectScrollDownButton",
-      "type": "export"
-    }
-  ],
-  "version": [
-    {
-      "file": "src/mainview/components/layout/sidebar.tsx",
-      "line": 222,
-      "symbol": "handleVersionClick",
-      "type": "function"
-    }
-  ],
-  "top": [
-    {
-      "file": "src/mainview/components/layout/topnav.tsx",
-      "line": 7,
-      "symbol": "TopNavProps",
-      "type": "interface"
-    },
-    {
-      "file": "src/mainview/components/layout/topnav.tsx",
-      "line": 13,
-      "symbol": "TopNav",
       "type": "function"
     }
   ],
@@ -38187,20 +37885,6 @@
       "line": 40,
       "symbol": "deriveInitials",
       "type": "function"
-    }
-  ],
-  "variants": [
-    {
-      "file": "src/mainview/components/ui/badge.tsx",
-      "line": 37,
-      "symbol": "badgeVariants",
-      "type": "export"
-    },
-    {
-      "file": "src/mainview/components/ui/button.tsx",
-      "line": 58,
-      "symbol": "buttonVariants",
-      "type": "export"
     }
   ],
   "shortcut": [
@@ -40137,14 +39821,6 @@
       "type": "method"
     }
   ],
-  "known": [
-    {
-      "file": "src/bun/rpc-registration.ts",
-      "line": 56,
-      "symbol": "getLastKnownRoute",
-      "type": "function"
-    }
-  ],
   "route": [
     {
       "file": "src/bun/rpc-registration.ts",
@@ -40157,14 +39833,6 @@
       "line": 74,
       "symbol": "restoreRoute",
       "type": "route"
-    }
-  ],
-  "walk": [
-    {
-      "file": "src/bun/rpc-registration.ts",
-      "line": 539,
-      "symbol": "walk",
-      "type": "function"
     }
   ],
   "timezone": [
@@ -40243,14 +39911,6 @@
       "type": "function"
     }
   ],
-  "electroview": [
-    {
-      "file": "src/mainview/lib/rpc.ts",
-      "line": 176,
-      "symbol": "electroview",
-      "type": "export"
-    }
-  ],
   "focus": [
     {
       "file": "src/mainview/components/layout/app-shell.tsx",
@@ -40265,6 +39925,378 @@
       "line": 131,
       "symbol": "onBlur",
       "type": "function"
+    }
+  ],
+  "known": [
+    {
+      "file": "src/bun/rpc-registration.ts",
+      "line": 56,
+      "symbol": "getLastKnownRoute",
+      "type": "function"
+    }
+  ],
+  "walk": [
+    {
+      "file": "src/bun/rpc-registration.ts",
+      "line": 540,
+      "symbol": "walk",
+      "type": "function"
+    }
+  ],
+  "only": [
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 162,
+      "symbol": "READ_ONLY_AGENTS",
+      "type": "export"
+    },
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 168,
+      "symbol": "filterReadOnlyTools",
+      "type": "function"
+    }
+  ],
+  "compact": [
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 299,
+      "symbol": "compactToolResultsInMessages",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 507,
+      "symbol": "aiCompactConversation",
+      "type": "function"
+    }
+  ],
+  "assistant": [
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 334,
+      "symbol": "stripOldAssistantText",
+      "type": "function"
+    }
+  ],
+  "based": [
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 369,
+      "symbol": "buildRuleBasedCompaction",
+      "type": "function"
+    }
+  ],
+  "describe": [
+    {
+      "file": "src/bun/agents/agent-loop.ts",
+      "line": 679,
+      "symbol": "describeToolCall",
+      "type": "function"
+    }
+  ],
+  "processing": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 222,
+      "symbol": "_runPMProcessing",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 960,
+      "symbol": "isProcessing",
+      "type": "method"
+    }
+  ],
+  "stopped": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 945,
+      "symbol": "isStopped",
+      "type": "method"
+    }
+  ],
+  "fn": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 950,
+      "symbol": "setAbortAgentsFn",
+      "type": "method"
+    }
+  ],
+  "queued": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 975,
+      "symbol": "getQueuedAgentsSnapshot",
+      "type": "method"
+    }
+  ],
+  "present": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 982,
+      "symbol": "presentPlan",
+      "type": "method"
+    }
+  ],
+  "post": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 994,
+      "symbol": "postDeterministicMessage",
+      "type": "method"
+    }
+  ],
+  "invoke": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 1005,
+      "symbol": "invokePMWithEvent",
+      "type": "method"
+    }
+  ],
+  "summarization": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 1083,
+      "symbol": "_loadSummarizationThreshold",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 1095,
+      "symbol": "triggerSummarization",
+      "type": "method"
+    }
+  ],
+  "threshold": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 1083,
+      "symbol": "_loadSummarizationThreshold",
+      "type": "method"
+    }
+  ],
+  "touch": [
+    {
+      "file": "src/bun/agents/engine.ts",
+      "line": 1132,
+      "symbol": "_touchConversation",
+      "type": "method"
+    }
+  ],
+  "comparison": [
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 23,
+      "symbol": "normalizeUrlForComparison",
+      "type": "function"
+    }
+  ],
+  "connected": [
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 219,
+      "symbol": "getConnectedProviderModelsHandler",
+      "type": "function"
+    }
+  ],
+  "support": [
+    {
+      "file": "src/bun/rpc/providers.ts",
+      "line": 288,
+      "symbol": "checkModelToolSupportHandler",
+      "type": "function"
+    }
+  ],
+  "electroview": [
+    {
+      "file": "src/mainview/lib/rpc.ts",
+      "line": 176,
+      "symbol": "electroview",
+      "type": "export"
+    }
+  ],
+  "saved": [
+    {
+      "file": "src/mainview/pages/agents.tsx",
+      "line": 1118,
+      "symbol": "handleSaved",
+      "type": "function"
+    }
+  ],
+  "deleted": [
+    {
+      "file": "src/mainview/pages/agents.tsx",
+      "line": 1134,
+      "symbol": "handleDeleted",
+      "type": "function"
+    }
+  ],
+  "fmt": [
+    {
+      "file": "src/mainview/pages/analytics.tsx",
+      "line": 20,
+      "symbol": "fmtHours",
+      "type": "function"
+    }
+  ],
+  "loading": [
+    {
+      "file": "src/mainview/pages/analytics.tsx",
+      "line": 548,
+      "symbol": "Loading",
+      "type": "function"
+    }
+  ],
+  "dots": [
+    {
+      "file": "src/mainview/pages/council.tsx",
+      "line": 163,
+      "symbol": "ThinkingDots",
+      "type": "function"
+    }
+  ],
+  "style": [
+    {
+      "file": "src/mainview/pages/inbox.tsx",
+      "line": 82,
+      "symbol": "getSourceBadgeStyle",
+      "type": "function"
+    }
+  ],
+  "tabs": [
+    {
+      "file": "src/mainview/components/ui/tabs.tsx",
+      "line": 53,
+      "symbol": "Tabs",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/tabs.tsx",
+      "line": 53,
+      "symbol": "TabsList",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/tabs.tsx",
+      "line": 53,
+      "symbol": "TabsTrigger",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/tabs.tsx",
+      "line": 53,
+      "symbol": "TabsContent",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/pages/settings.tsx",
+      "line": 20,
+      "symbol": "SubTabs",
+      "type": "function"
+    }
+  ],
+  "nav": [
+    {
+      "file": "src/mainview/components/layout/sidebar.tsx",
+      "line": 30,
+      "symbol": "NavItem",
+      "type": "interface"
+    },
+    {
+      "file": "src/mainview/components/layout/sidebar.tsx",
+      "line": 54,
+      "symbol": "NavItemButton",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/components/layout/topnav.tsx",
+      "line": 7,
+      "symbol": "TopNavProps",
+      "type": "interface"
+    },
+    {
+      "file": "src/mainview/components/layout/topnav.tsx",
+      "line": 13,
+      "symbol": "TopNav",
+      "type": "function"
+    }
+  ],
+  "button": [
+    {
+      "file": "src/mainview/components/layout/sidebar.tsx",
+      "line": 54,
+      "symbol": "NavItemButton",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/components/ui/button.tsx",
+      "line": 38,
+      "symbol": "ButtonProps",
+      "type": "interface"
+    },
+    {
+      "file": "src/mainview/components/ui/button.tsx",
+      "line": 58,
+      "symbol": "Button",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/button.tsx",
+      "line": 58,
+      "symbol": "buttonVariants",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/select.tsx",
+      "line": 146,
+      "symbol": "SelectScrollUpButton",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/select.tsx",
+      "line": 146,
+      "symbol": "SelectScrollDownButton",
+      "type": "export"
+    }
+  ],
+  "version": [
+    {
+      "file": "src/mainview/components/layout/sidebar.tsx",
+      "line": 222,
+      "symbol": "handleVersionClick",
+      "type": "function"
+    }
+  ],
+  "top": [
+    {
+      "file": "src/mainview/components/layout/topnav.tsx",
+      "line": 7,
+      "symbol": "TopNavProps",
+      "type": "interface"
+    },
+    {
+      "file": "src/mainview/components/layout/topnav.tsx",
+      "line": 13,
+      "symbol": "TopNav",
+      "type": "function"
+    }
+  ],
+  "variants": [
+    {
+      "file": "src/mainview/components/ui/badge.tsx",
+      "line": 37,
+      "symbol": "badgeVariants",
+      "type": "export"
+    },
+    {
+      "file": "src/mainview/components/ui/button.tsx",
+      "line": 58,
+      "symbol": "buttonVariants",
+      "type": "export"
     }
   ]
 }

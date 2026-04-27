@@ -237,6 +237,10 @@ export async function getConnectedProviderModelsHandler(): Promise<
 		} catch {
 			// Provider unreachable — return empty models
 		}
+		// Always include the user's saved default model even if the adapter didn't return it
+		if (row.defaultModel && !models.includes(row.defaultModel)) {
+			models = [row.defaultModel, ...models];
+		}
 		results.push({
 			providerId: row.id,
 			providerName: row.name,
@@ -273,6 +277,58 @@ export async function listProviderModelsHandler(params: {
 	} catch (err) {
 		const error = err instanceof Error ? err.message : String(err);
 		return { success: false, models: [], error };
+	}
+}
+
+/**
+ * Check whether a given OpenRouter model supports the `tool_choice` parameter.
+ * For non-OpenRouter providers, always returns supportsToolChoice: true.
+ * Resolves the API key from DB if a providerId is given and no key is passed.
+ */
+export async function checkModelToolSupportHandler(params: {
+	providerType: string;
+	apiKey?: string;
+	providerId?: string;
+	modelId: string;
+}): Promise<{ supportsToolChoice: boolean; warning?: string }> {
+	if (params.providerType !== "openrouter") {
+		return { supportsToolChoice: true };
+	}
+	if (!params.modelId.trim()) {
+		return { supportsToolChoice: true };
+	}
+
+	// Resolve API key — either passed directly or fetched from DB via providerId
+	let apiKey = params.apiKey?.trim() ?? "";
+	if (!apiKey && params.providerId) {
+		const rows = await db.select().from(aiProviders).where(eq(aiProviders.id, params.providerId)).limit(1);
+		if (rows.length > 0) apiKey = rows[0].apiKey ?? "";
+	}
+	if (!apiKey) return { supportsToolChoice: true };
+
+	try {
+		const res = await fetch("https://openrouter.ai/api/v1/models", {
+			headers: { Authorization: `Bearer ${apiKey}` },
+			signal: AbortSignal.timeout(8_000),
+		});
+		if (!res.ok) return { supportsToolChoice: true };
+		const json = await res.json() as { data?: Array<{ id: string; supported_parameters?: string[] }> };
+		const model = json.data?.find((m) => m.id === params.modelId);
+		if (!model) {
+			// Model not found in list — can't determine, assume ok
+			return { supportsToolChoice: true };
+		}
+		const supported = model.supported_parameters ?? [];
+		if (!supported.includes("tool_choice")) {
+			return {
+				supportsToolChoice: false,
+				warning: `"${params.modelId}" does not support tool_choice on OpenRouter. Sub-agents may fail to call tools reliably. Choose a model that lists tool_choice in its supported parameters.`,
+			};
+		}
+		return { supportsToolChoice: true };
+	} catch {
+		// Network error or timeout — don't block the user
+		return { supportsToolChoice: true };
 	}
 }
 

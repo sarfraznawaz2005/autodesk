@@ -236,6 +236,10 @@ export const rpc = {
   getConnectedProviderModels: () =>
     electroviewRpc.request.getConnectedProviderModels({}),
 
+  /** Check whether a model supports the tool_choice parameter (OpenRouter only). */
+  checkModelToolSupport: (params: { providerType: string; apiKey?: string; providerId?: string; modelId: string }) =>
+    electroviewRpc.request.checkModelToolSupport(params),
+
   // ---- Projects ------------------------------------------------------------
 
   /** Fetch all projects. */
