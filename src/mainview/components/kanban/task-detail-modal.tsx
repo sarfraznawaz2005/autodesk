@@ -85,13 +85,16 @@ function parseCriteria(raw: string | null): AcceptanceCriterionItem[] {
   try {
     const parsed = JSON.parse(raw) as unknown;
     if (!Array.isArray(parsed)) return [];
-    return parsed.filter(
-      (item): item is AcceptanceCriterionItem =>
-        typeof item === "object" &&
-        item !== null &&
-        "text" in item &&
-        "checked" in item,
-    );
+    return parsed.map((item) => {
+      if (typeof item === "string") return { text: item, checked: false };
+      if (typeof item === "object" && item !== null && "text" in item) {
+        return {
+          text: String((item as Record<string, unknown>).text ?? ""),
+          checked: Boolean((item as Record<string, unknown>).checked),
+        };
+      }
+      return null;
+    }).filter((item): item is AcceptanceCriterionItem => item !== null);
   } catch {
     // Plain-text fallback: newline-separated criteria (legacy agent format)
     return raw

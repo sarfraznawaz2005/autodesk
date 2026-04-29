@@ -693,19 +693,19 @@
 
 **Functions:**
 - `parseCriteria` (line 83)
-- `Section` (line 109)
-- `TaskDetailModal` (line 135)
-- `saveTitle` (line 174)
-- `saveDescription` (line 180)
-- `saveImportantNotes` (line 185)
-- `saveDueDate` (line 190)
-- `savePriority` (line 196)
-- `saveColumn` (line 201)
-- `toggleCriterion` (line 207)
-- `addCriterion` (line 218)
-- `removeCriterion` (line 228)
-- `handleDelete` (line 234)
-- `confirmDelete` (line 238)
+- `Section` (line 112)
+- `TaskDetailModal` (line 138)
+- `saveTitle` (line 177)
+- `saveDescription` (line 183)
+- `saveImportantNotes` (line 188)
+- `saveDueDate` (line 193)
+- `savePriority` (line 199)
+- `saveColumn` (line 204)
+- `toggleCriterion` (line 210)
+- `addCriterion` (line 221)
+- `removeCriterion` (line 231)
+- `handleDelete` (line 237)
+- `confirmDelete` (line 241)
 
 
 ### `src/mainview/components/layout/app-shell.tsx`

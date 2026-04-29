@@ -3546,7 +3546,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 228,
+      "line": 231,
       "symbol": "removeCriterion",
       "type": "function"
     },
@@ -5952,37 +5952,37 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 174,
+      "line": 177,
       "symbol": "saveTitle",
       "type": "function"
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 180,
+      "line": 183,
       "symbol": "saveDescription",
       "type": "function"
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 185,
+      "line": 188,
       "symbol": "saveImportantNotes",
       "type": "function"
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 190,
+      "line": 193,
       "symbol": "saveDueDate",
       "type": "function"
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 196,
+      "line": 199,
       "symbol": "savePriority",
       "type": "function"
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 201,
+      "line": 204,
       "symbol": "saveColumn",
       "type": "function"
     },
@@ -8864,7 +8864,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 135,
+      "line": 138,
       "symbol": "TaskDetailModal",
       "type": "function"
     },
@@ -9218,7 +9218,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 190,
+      "line": 193,
       "symbol": "saveDueDate",
       "type": "function"
     },
@@ -10046,7 +10046,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 218,
+      "line": 221,
       "symbol": "addCriterion",
       "type": "function"
     },
@@ -19170,7 +19170,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 185,
+      "line": 188,
       "symbol": "saveImportantNotes",
       "type": "function"
     },
@@ -20614,7 +20614,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 234,
+      "line": 237,
       "symbol": "handleDelete",
       "type": "function"
     },
@@ -21514,7 +21514,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 174,
+      "line": 177,
       "symbol": "saveTitle",
       "type": "function"
     },
@@ -22212,7 +22212,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 109,
+      "line": 112,
       "symbol": "Section",
       "type": "function"
     },
@@ -22364,7 +22364,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 180,
+      "line": 183,
       "symbol": "saveDescription",
       "type": "function"
     },
@@ -26488,13 +26488,13 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 234,
+      "line": 237,
       "symbol": "handleDelete",
       "type": "function"
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 238,
+      "line": 241,
       "symbol": "confirmDelete",
       "type": "function"
     },
@@ -31402,7 +31402,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 207,
+      "line": 210,
       "symbol": "toggleCriterion",
       "type": "function"
     },
@@ -33254,7 +33254,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 201,
+      "line": 204,
       "symbol": "saveColumn",
       "type": "function"
     },
@@ -33274,7 +33274,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 196,
+      "line": 199,
       "symbol": "savePriority",
       "type": "function"
     },
@@ -34212,7 +34212,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 135,
+      "line": 138,
       "symbol": "TaskDetailModal",
       "type": "function"
     },
@@ -35010,7 +35010,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 238,
+      "line": 241,
       "symbol": "confirmDelete",
       "type": "function"
     },
@@ -37419,40 +37419,6 @@
       "type": "function"
     }
   ],
-  "acceptance": [
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 23,
-      "symbol": "AcceptanceCriterionItem",
-      "type": "interface"
-    }
-  ],
-  "criterion": [
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 23,
-      "symbol": "AcceptanceCriterionItem",
-      "type": "interface"
-    },
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 207,
-      "symbol": "toggleCriterion",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 218,
-      "symbol": "addCriterion",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 228,
-      "symbol": "removeCriterion",
-      "type": "function"
-    }
-  ],
   "modal": [
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
@@ -37462,7 +37428,7 @@
     },
     {
       "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 135,
+      "line": 138,
       "symbol": "TaskDetailModal",
       "type": "function"
     },
@@ -37476,22 +37442,6 @@
       "file": "src/mainview/components/modals/new-project-modal.tsx",
       "line": 41,
       "symbol": "NewProjectModal",
-      "type": "function"
-    }
-  ],
-  "important": [
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 185,
-      "symbol": "saveImportantNotes",
-      "type": "function"
-    }
-  ],
-  "due": [
-    {
-      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
-      "line": 190,
-      "symbol": "saveDueDate",
       "type": "function"
     }
   ],
@@ -40360,6 +40310,56 @@
       "file": "src/mainview/pages/onboarding.tsx",
       "line": 1046,
       "symbol": "handleFinish",
+      "type": "function"
+    }
+  ],
+  "acceptance": [
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 23,
+      "symbol": "AcceptanceCriterionItem",
+      "type": "interface"
+    }
+  ],
+  "criterion": [
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 23,
+      "symbol": "AcceptanceCriterionItem",
+      "type": "interface"
+    },
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 210,
+      "symbol": "toggleCriterion",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 221,
+      "symbol": "addCriterion",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 231,
+      "symbol": "removeCriterion",
+      "type": "function"
+    }
+  ],
+  "important": [
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 188,
+      "symbol": "saveImportantNotes",
+      "type": "function"
+    }
+  ],
+  "due": [
+    {
+      "file": "src/mainview/components/kanban/task-detail-modal.tsx",
+      "line": 193,
+      "symbol": "saveDueDate",
       "type": "function"
     }
   ]
