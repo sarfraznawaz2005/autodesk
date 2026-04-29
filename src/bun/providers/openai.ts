@@ -4,6 +4,7 @@ import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
+import { PROVIDER_HEADERS } from "./headers";
 
 /**
  * Normalize a base URL by stripping endpoint suffixes and trailing slashes.
@@ -73,6 +74,7 @@ export class OpenAIAdapter implements ProviderAdapter {
 					name: "custom",
 					apiKey: this.config.apiKey,
 					baseURL: this.normalizedBaseUrl ?? "",
+					headers: PROVIDER_HEADERS,
 					fetch: interceptFetch as unknown as typeof fetch,
 				});
 				return provider(modelId);
@@ -81,13 +83,14 @@ export class OpenAIAdapter implements ProviderAdapter {
 				name: "custom",
 				apiKey: this.config.apiKey,
 				baseURL: this.normalizedBaseUrl ?? "",
+				headers: PROVIDER_HEADERS,
 			});
 			return provider(modelId);
 		}
 
 		// Standard OpenAI → use @ai-sdk/openai with .chat() for Chat Completions API.
 		// This ensures compatibility and avoids Responses API issues with tool calling.
-		const provider = createOpenAI({ apiKey: this.config.apiKey });
+		const provider = createOpenAI({ apiKey: this.config.apiKey, headers: PROVIDER_HEADERS });
 		return provider.chat(modelId);
 	}
 
@@ -131,6 +134,7 @@ export class OpenAIAdapter implements ProviderAdapter {
 				const response = await fetch(fullUrl, {
 					method: "POST",
 					headers: {
+						...PROVIDER_HEADERS,
 						"Content-Type": "application/json",
 						"Authorization": `Bearer ${this.config.apiKey}`,
 					},

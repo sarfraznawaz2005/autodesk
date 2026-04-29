@@ -2,6 +2,7 @@ import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
+import { PROVIDER_HEADERS } from "./headers";
 
 const OLLAMA_DEFAULT_BASE_URL = "http://localhost:11434/v1";
 const OLLAMA_TAGS_URL = "http://localhost:11434/api/tags";
@@ -29,6 +30,7 @@ export class OllamaAdapter implements ProviderAdapter {
 			name: "ollama",
 			apiKey: "ollama",
 			baseURL: config.baseUrl ?? OLLAMA_DEFAULT_BASE_URL,
+			headers: PROVIDER_HEADERS,
 		});
 	}
 

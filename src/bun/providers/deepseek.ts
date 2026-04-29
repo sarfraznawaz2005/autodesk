@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
+import { PROVIDER_HEADERS } from "./headers";
 
 const FALLBACK_MODELS = [
 	"deepseek-chat",
@@ -17,6 +18,7 @@ export class DeepSeekAdapter implements ProviderAdapter {
 		this.config = config;
 		this.provider = createDeepSeek({
 			apiKey: config.apiKey,
+			headers: PROVIDER_HEADERS,
 		});
 	}
 

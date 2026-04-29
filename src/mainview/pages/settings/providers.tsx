@@ -72,11 +72,12 @@ const PROVIDER_TYPE_OPTIONS = [
   { value: "openai", label: "OpenAI" },
   { value: "openrouter", label: "OpenRouter" },
   { value: "xai", label: "xAI Grok" },
+  { value: "zai", label: "Z.AI" },
   { value: "custom", label: "Custom (OpenAI-compatible)" },
 ] as const;
 
 // Provider types that need a base URL
-const BASE_URL_PROVIDERS = ["ollama", "openrouter", "custom"];
+const BASE_URL_PROVIDERS = ["ollama", "custom"];
 
 function isValidUrl(v: string): boolean {
   try {
@@ -103,17 +104,8 @@ function normalizeBaseUrl(url: string): string {
 // Provider type badge colour
 // ---------------------------------------------------------------------------
 
-function providerTypeBadgeClass(providerType: string): string {
-  switch (providerType.toLowerCase()) {
-    case "anthropic":
-      return "border-transparent bg-orange-100 text-orange-800";
-    case "openai":
-      return "border-transparent bg-green-100 text-green-800";
-    case "custom":
-      return "border-transparent bg-purple-100 text-purple-800";
-    default:
-      return "border-transparent bg-secondary text-secondary-foreground";
-  }
+function providerTypeBadgeClass(): string {
+  return "border-transparent bg-secondary text-secondary-foreground";
 }
 
 function providerTypeLabel(providerType: string): string {
@@ -206,8 +198,8 @@ function ProviderCard({
             </h3>
             <Badge
               className={cn(
-                "shrink-0 text-xs font-medium",
-                providerTypeBadgeClass(provider.providerType)
+                "shrink-0 text-xs font-medium pointer-events-none",
+                providerTypeBadgeClass()
               )}
             >
               {providerTypeLabel(provider.providerType)}

@@ -1934,25 +1934,25 @@
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 12,
+      "line": 13,
       "symbol": "getContextLimit",
       "type": "export"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 12,
+      "line": 13,
       "symbol": "getDefaultModel",
       "type": "export"
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 27,
+      "line": 28,
       "symbol": "getContextLimit",
       "type": "function"
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 69,
+      "line": 70,
       "symbol": "getDefaultModel",
       "type": "function"
     },
@@ -3916,7 +3916,7 @@
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 18,
+      "line": 19,
       "symbol": "OllamaTagsResponse",
       "type": "interface"
     },
@@ -4886,61 +4886,67 @@
     },
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 30,
+      "line": 32,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 23,
+      "line": 25,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 26,
+      "line": 28,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 26,
+      "line": 28,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 28,
+      "line": 29,
       "symbol": "createProviderAdapter",
       "type": "function"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 62,
+      "line": 65,
       "symbol": "createProviderAdapterWithFallback",
       "type": "function"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 35,
+      "line": 37,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 52,
+      "line": 53,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 41,
+      "line": 39,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 25,
+      "line": 27,
+      "symbol": "createModel",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 31,
       "symbol": "createModel",
       "type": "method"
     },
@@ -5800,7 +5806,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 708,
+      "line": 700,
       "symbol": "loadProviders",
       "type": "function"
     }
@@ -6036,7 +6042,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 434,
+      "line": 426,
       "symbol": "handleSave",
       "type": "function"
     },
@@ -6096,13 +6102,13 @@
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 20,
+      "line": 21,
       "symbol": "joinUrl",
       "type": "function"
     },
@@ -6126,25 +6132,25 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 78,
+      "line": 79,
       "symbol": "isValidUrl",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 91,
+      "line": 92,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 81,
+      "line": 82,
       "symbol": "isValidUrl",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 94,
+      "line": 95,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     }
@@ -6354,7 +6360,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 984,
+      "line": 985,
       "symbol": "parseSetting",
       "type": "function"
     },
@@ -6514,7 +6520,7 @@
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 62,
+      "line": 65,
       "symbol": "createProviderAdapterWithFallback",
       "type": "function"
     },
@@ -6884,7 +6890,7 @@
   "router": [
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 24,
+      "line": 25,
       "symbol": "OpenRouterAdapter",
       "type": "class"
     },
@@ -7258,61 +7264,61 @@
     },
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 19,
+      "line": 20,
       "symbol": "AnthropicAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 12,
+      "line": 13,
       "symbol": "DeepSeekAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 15,
+      "line": 16,
       "symbol": "GoogleAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 15,
+      "line": 16,
       "symbol": "GroqAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "ProviderAdapter",
       "type": "export"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 28,
+      "line": 29,
       "symbol": "createProviderAdapter",
       "type": "function"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 62,
+      "line": 65,
       "symbol": "createProviderAdapterWithFallback",
       "type": "function"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 22,
+      "line": 23,
       "symbol": "OllamaAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 40,
+      "line": 41,
       "symbol": "OpenAIAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 24,
+      "line": 25,
       "symbol": "OpenRouterAdapter",
       "type": "class"
     },
@@ -7324,8 +7330,14 @@
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 14,
+      "line": 15,
       "symbol": "XaiAdapter",
+      "type": "class"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 18,
+      "symbol": "ZaiAdapter",
       "type": "class"
     },
     {
@@ -9360,49 +9372,55 @@
     },
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 54,
+      "line": 56,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 42,
+      "line": 44,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 49,
+      "line": 51,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 48,
+      "line": 50,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 66,
+      "line": 68,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 124,
+      "line": 127,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 49,
+      "line": 47,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 47,
+      "line": 49,
+      "symbol": "testConnection",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 39,
       "symbol": "testConnection",
       "type": "method"
     },
@@ -9426,7 +9444,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 760,
+      "line": 752,
       "symbol": "handleTest",
       "type": "function"
     },
@@ -10058,7 +10076,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 727,
+      "line": 719,
       "symbol": "handleAdd",
       "type": "function"
     },
@@ -10244,7 +10262,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 280,
+      "line": 281,
       "symbol": "handleBrowseWorkspace",
       "type": "function"
     },
@@ -10720,7 +10738,7 @@
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 61,
+      "line": 62,
       "symbol": "clearContextLimitCache",
       "type": "function"
     },
@@ -11253,26 +11271,32 @@
       "type": "method"
     },
     {
+      "file": "src/bun/providers/headers.ts",
+      "line": 7,
+      "symbol": "PROVIDER_HEADERS",
+      "type": "export"
+    },
+    {
       "file": "src/bun/providers/index.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "ProviderAdapter",
       "type": "export"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "ProviderConfig",
       "type": "export"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 28,
+      "line": 29,
       "symbol": "createProviderAdapter",
       "type": "function"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 62,
+      "line": 65,
       "symbol": "createProviderAdapterWithFallback",
       "type": "function"
     },
@@ -11398,13 +11422,13 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 376,
+      "line": 377,
       "symbol": "StepSelectProvider",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1017,
+      "line": 1018,
       "symbol": "handleProviderSelect",
       "type": "function"
     },
@@ -11422,43 +11446,43 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 106,
+      "line": 107,
       "symbol": "providerTypeBadgeClass",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 119,
+      "line": 111,
       "symbol": "providerTypeLabel",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 130,
+      "line": 122,
       "symbol": "ProviderCardSkeleton",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 182,
+      "line": 174,
       "symbol": "ProviderCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 190,
+      "line": 182,
       "symbol": "ProviderCard",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 324,
+      "line": 316,
       "symbol": "ProviderDialogProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 331,
+      "line": 323,
       "symbol": "ProviderDialog",
       "type": "function"
     },
@@ -11484,19 +11508,19 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 159,
+      "line": 151,
       "symbol": "EmptyProviders",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 689,
+      "line": 681,
       "symbol": "ProvidersSettings",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 708,
+      "line": 700,
       "symbol": "loadProviders",
       "type": "function"
     },
@@ -13112,7 +13136,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 852,
+      "line": 853,
       "symbol": "goNext",
       "type": "function"
     }
@@ -13504,13 +13528,13 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 106,
+      "line": 107,
       "symbol": "providerTypeBadgeClass",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 119,
+      "line": 111,
       "symbol": "providerTypeLabel",
       "type": "function"
     }
@@ -13700,7 +13724,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 430,
+      "line": 422,
       "symbol": "updateField",
       "type": "function"
     }
@@ -14032,7 +14056,7 @@
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 26,
+      "line": 27,
       "symbol": "naturalSort",
       "type": "function"
     },
@@ -14302,7 +14326,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 857,
+      "line": 858,
       "symbol": "updateForm",
       "type": "function"
     },
@@ -14916,7 +14940,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 984,
+      "line": 985,
       "symbol": "parseSetting",
       "type": "function"
     },
@@ -15300,13 +15324,13 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 857,
+      "line": 858,
       "symbol": "updateForm",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 430,
+      "line": 422,
       "symbol": "updateField",
       "type": "function"
     }
@@ -15468,13 +15492,13 @@
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 12,
+      "line": 13,
       "symbol": "getDefaultModel",
       "type": "export"
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 69,
+      "line": 70,
       "symbol": "getDefaultModel",
       "type": "function"
     },
@@ -15720,7 +15744,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 119,
+      "line": 111,
       "symbol": "providerTypeLabel",
       "type": "function"
     }
@@ -15934,49 +15958,55 @@
     },
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 36,
+      "line": 38,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 27,
+      "line": 29,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 30,
+      "line": 32,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 30,
+      "line": 32,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 44,
+      "line": 46,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 94,
+      "line": 97,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 45,
+      "line": 43,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 29,
+      "line": 31,
+      "symbol": "listModels",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 35,
       "symbol": "listModels",
       "type": "method"
     },
@@ -16558,7 +16588,7 @@
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     },
@@ -16576,13 +16606,13 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 91,
+      "line": 92,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 94,
+      "line": 95,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     }
@@ -17780,13 +17810,13 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 281,
+      "line": 282,
       "symbol": "onResult",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 911,
+      "line": 912,
       "symbol": "onResult",
       "type": "function"
     },
@@ -17798,7 +17828,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 764,
+      "line": 756,
       "symbol": "onResult",
       "type": "function"
     }
@@ -19012,19 +19042,19 @@
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 12,
+      "line": 13,
       "symbol": "getContextLimit",
       "type": "export"
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 27,
+      "line": 28,
       "symbol": "getContextLimit",
       "type": "function"
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 61,
+      "line": 62,
       "symbol": "clearContextLimitCache",
       "type": "function"
     },
@@ -19612,7 +19642,7 @@
     },
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 19,
+      "line": 20,
       "symbol": "AnthropicAdapter",
       "type": "class"
     }
@@ -20878,37 +20908,37 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 182,
+      "line": 183,
       "symbol": "handleImportClick",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 280,
+      "line": 281,
       "symbol": "handleBrowseWorkspace",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 959,
+      "line": 960,
       "symbol": "handleImportSettings",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1017,
+      "line": 1018,
       "symbol": "handleProviderSelect",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1023,
+      "line": 1024,
       "symbol": "handleRetry",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1045,
+      "line": 1046,
       "symbol": "handleFinish",
       "type": "function"
     },
@@ -21112,43 +21142,43 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 434,
+      "line": 426,
       "symbol": "handleSave",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 485,
+      "line": 477,
       "symbol": "handleCancel",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 727,
+      "line": 719,
       "symbol": "handleAdd",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 732,
+      "line": 724,
       "symbol": "handleEdit",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 737,
+      "line": 729,
       "symbol": "handleDeleteRequest",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 741,
+      "line": 733,
       "symbol": "handleDeleteConfirm",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 760,
+      "line": 752,
       "symbol": "handleTest",
       "type": "function"
     }
@@ -21700,7 +21730,7 @@
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 61,
+      "line": 62,
       "symbol": "clearContextLimitCache",
       "type": "function"
     },
@@ -22034,13 +22064,13 @@
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 40,
+      "line": 41,
       "symbol": "OpenAIAdapter",
       "type": "class"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 24,
+      "line": 25,
       "symbol": "OpenRouterAdapter",
       "type": "class"
     },
@@ -23042,7 +23072,7 @@
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "ProviderConfig",
       "type": "export"
     },
@@ -23490,7 +23520,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 74,
+      "line": 75,
       "symbol": "isValidEmail",
       "type": "function"
     },
@@ -23970,49 +24000,55 @@
     },
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 54,
+      "line": 56,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 42,
+      "line": 44,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 49,
+      "line": 51,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 48,
+      "line": 50,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 66,
+      "line": 68,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 124,
+      "line": 127,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 49,
+      "line": 47,
       "symbol": "testConnection",
       "type": "method"
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 47,
+      "line": 49,
+      "symbol": "testConnection",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 39,
       "symbol": "testConnection",
       "type": "method"
     },
@@ -24802,7 +24838,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 959,
+      "line": 960,
       "symbol": "handleImportSettings",
       "type": "function"
     },
@@ -24928,7 +24964,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 689,
+      "line": 681,
       "symbol": "ProvidersSettings",
       "type": "function"
     },
@@ -26566,13 +26602,13 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 737,
+      "line": 729,
       "symbol": "handleDeleteRequest",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 741,
+      "line": 733,
       "symbol": "handleDeleteConfirm",
       "type": "function"
     }
@@ -27486,7 +27522,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 737,
+      "line": 729,
       "symbol": "handleDeleteRequest",
       "type": "function"
     },
@@ -28076,7 +28112,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1023,
+      "line": 1024,
       "symbol": "handleRetry",
       "type": "function"
     }
@@ -29190,13 +29226,13 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 674,
+      "line": 675,
       "symbol": "StepValidate",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 884,
+      "line": 885,
       "symbol": "validate",
       "type": "function"
     }
@@ -29234,61 +29270,67 @@
   "model": [
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 30,
+      "line": 32,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 23,
+      "line": 25,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 26,
+      "line": 28,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 26,
+      "line": 28,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/index.ts",
-      "line": 12,
+      "line": 13,
       "symbol": "getDefaultModel",
       "type": "export"
     },
     {
       "file": "src/bun/providers/models.ts",
-      "line": 69,
+      "line": 70,
       "symbol": "getDefaultModel",
       "type": "function"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 35,
+      "line": 37,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 52,
+      "line": 53,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 41,
+      "line": 39,
       "symbol": "createModel",
       "type": "method"
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 25,
+      "line": 27,
+      "symbol": "createModel",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 31,
       "symbol": "createModel",
       "type": "method"
     },
@@ -29326,49 +29368,55 @@
   "models": [
     {
       "file": "src/bun/providers/anthropic.ts",
-      "line": 36,
+      "line": 38,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/deepseek.ts",
-      "line": 27,
+      "line": 29,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/google.ts",
-      "line": 30,
+      "line": 32,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/groq.ts",
-      "line": 30,
+      "line": 32,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 44,
+      "line": 46,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 94,
+      "line": 97,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/openrouter.ts",
-      "line": 45,
+      "line": 43,
       "symbol": "listModels",
       "type": "method"
     },
     {
       "file": "src/bun/providers/xai.ts",
-      "line": 29,
+      "line": 31,
+      "symbol": "listModels",
+      "type": "method"
+    },
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 35,
       "symbol": "listModels",
       "type": "method"
     },
@@ -29398,67 +29446,15 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 503,
+      "line": 504,
       "symbol": "fetchModels",
-      "type": "function"
-    }
-  ],
-  "deep": [
-    {
-      "file": "src/bun/providers/deepseek.ts",
-      "line": 12,
-      "symbol": "DeepSeekAdapter",
-      "type": "class"
-    }
-  ],
-  "seek": [
-    {
-      "file": "src/bun/providers/deepseek.ts",
-      "line": 12,
-      "symbol": "DeepSeekAdapter",
-      "type": "class"
-    }
-  ],
-  "google": [
-    {
-      "file": "src/bun/providers/google.ts",
-      "line": 15,
-      "symbol": "GoogleAdapter",
-      "type": "class"
-    }
-  ],
-  "groq": [
-    {
-      "file": "src/bun/providers/groq.ts",
-      "line": 15,
-      "symbol": "GroqAdapter",
-      "type": "class"
-    }
-  ],
-  "limit": [
-    {
-      "file": "src/bun/providers/index.ts",
-      "line": 12,
-      "symbol": "getContextLimit",
-      "type": "export"
-    },
-    {
-      "file": "src/bun/providers/models.ts",
-      "line": 27,
-      "symbol": "getContextLimit",
-      "type": "function"
-    },
-    {
-      "file": "src/bun/providers/models.ts",
-      "line": 61,
-      "symbol": "clearContextLimitCache",
       "type": "function"
     }
   ],
   "fallback": [
     {
       "file": "src/bun/providers/index.ts",
-      "line": 62,
+      "line": 65,
       "symbol": "createProviderAdapterWithFallback",
       "type": "function"
     },
@@ -29467,20 +29463,6 @@
       "line": 69,
       "symbol": "queueWindowsUpdateFallback",
       "type": "function"
-    }
-  ],
-  "ollama": [
-    {
-      "file": "src/bun/providers/ollama.ts",
-      "line": 18,
-      "symbol": "OllamaTagsResponse",
-      "type": "interface"
-    },
-    {
-      "file": "src/bun/providers/ollama.ts",
-      "line": 22,
-      "symbol": "OllamaAdapter",
-      "type": "class"
     }
   ],
   "tags": [
@@ -29504,7 +29486,7 @@
     },
     {
       "file": "src/bun/providers/ollama.ts",
-      "line": 18,
+      "line": 19,
       "symbol": "OllamaTagsResponse",
       "type": "interface"
     }
@@ -29530,7 +29512,7 @@
     },
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 11,
+      "line": 12,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     },
@@ -29542,45 +29524,21 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 91,
+      "line": 92,
       "symbol": "normalizeBaseUrl",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 94,
+      "line": 95,
       "symbol": "normalizeBaseUrl",
-      "type": "function"
-    }
-  ],
-  "join": [
-    {
-      "file": "src/bun/providers/openai.ts",
-      "line": 20,
-      "symbol": "joinUrl",
-      "type": "function"
-    }
-  ],
-  "natural": [
-    {
-      "file": "src/bun/providers/openai.ts",
-      "line": 26,
-      "symbol": "naturalSort",
-      "type": "function"
-    }
-  ],
-  "intercept": [
-    {
-      "file": "src/bun/providers/openai.ts",
-      "line": 60,
-      "symbol": "interceptFetch",
       "type": "function"
     }
   ],
   "fetch": [
     {
       "file": "src/bun/providers/openai.ts",
-      "line": 60,
+      "line": 61,
       "symbol": "interceptFetch",
       "type": "function"
     },
@@ -29610,17 +29568,9 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 503,
+      "line": 504,
       "symbol": "fetchModels",
       "type": "function"
-    }
-  ],
-  "xai": [
-    {
-      "file": "src/bun/providers/xai.ts",
-      "line": 14,
-      "symbol": "XaiAdapter",
-      "type": "class"
     }
   ],
   "definitions": [
@@ -30322,13 +30272,13 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 182,
+      "line": 183,
       "symbol": "handleImportClick",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 959,
+      "line": 960,
       "symbol": "handleImportSettings",
       "type": "function"
     },
@@ -32722,13 +32672,13 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 182,
+      "line": 174,
       "symbol": "ProviderCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 324,
+      "line": 316,
       "symbol": "ProviderDialogProps",
       "type": "interface"
     },
@@ -33592,13 +33542,13 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 324,
+      "line": 316,
       "symbol": "ProviderDialogProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 331,
+      "line": 323,
       "symbol": "ProviderDialog",
       "type": "function"
     },
@@ -33918,19 +33868,19 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 130,
+      "line": 122,
       "symbol": "ProviderCardSkeleton",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 182,
+      "line": 174,
       "symbol": "ProviderCardProps",
       "type": "interface"
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 190,
+      "line": 182,
       "symbol": "ProviderCard",
       "type": "function"
     },
@@ -34010,7 +33960,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 130,
+      "line": 122,
       "symbol": "ProviderCardSkeleton",
       "type": "function"
     }
@@ -34048,7 +33998,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 831,
+      "line": 832,
       "symbol": "OnboardingPage",
       "type": "function"
     },
@@ -34556,7 +34506,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 106,
+      "line": 107,
       "symbol": "providerTypeBadgeClass",
       "type": "function"
     }
@@ -34600,7 +34550,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 182,
+      "line": 183,
       "symbol": "handleImportClick",
       "type": "function"
     }
@@ -34740,85 +34690,27 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 376,
+      "line": 377,
       "symbol": "StepSelectProvider",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1017,
+      "line": 1018,
       "symbol": "handleProviderSelect",
-      "type": "function"
-    }
-  ],
-  "wizard": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 29,
-      "symbol": "WizardStep",
-      "type": "type"
-    }
-  ],
-  "step": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 29,
-      "symbol": "WizardStep",
-      "type": "type"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 112,
-      "symbol": "StepIndicator",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 173,
-      "symbol": "StepWelcome",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 258,
-      "symbol": "StepAboutYou",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 376,
-      "symbol": "StepSelectProvider",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 466,
-      "symbol": "StepConfigure",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 674,
-      "symbol": "StepValidate",
-      "type": "function"
-    },
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 757,
-      "symbol": "StepConfirmation",
       "type": "function"
     }
   ],
   "valid": [
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 74,
+      "line": 75,
       "symbol": "isValidEmail",
       "type": "function"
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 78,
+      "line": 79,
       "symbol": "isValidUrl",
       "type": "function"
     },
@@ -34830,7 +34722,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 81,
+      "line": 82,
       "symbol": "isValidUrl",
       "type": "function"
     }
@@ -34862,7 +34754,7 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 112,
+      "line": 113,
       "symbol": "StepIndicator",
       "type": "function"
     },
@@ -34891,30 +34783,6 @@
       "type": "function"
     }
   ],
-  "welcome": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 173,
-      "symbol": "StepWelcome",
-      "type": "function"
-    }
-  ],
-  "about": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 258,
-      "symbol": "StepAboutYou",
-      "type": "function"
-    }
-  ],
-  "you": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 258,
-      "symbol": "StepAboutYou",
-      "type": "function"
-    }
-  ],
   "browse": [
     {
       "file": "src/mainview/components/modals/new-project-modal.tsx",
@@ -34930,16 +34798,8 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 280,
+      "line": 281,
       "symbol": "handleBrowseWorkspace",
-      "type": "function"
-    }
-  ],
-  "configure": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 466,
-      "symbol": "StepConfigure",
       "type": "function"
     }
   ],
@@ -34958,32 +34818,8 @@
     },
     {
       "file": "src/mainview/pages/onboarding.tsx",
-      "line": 757,
+      "line": 758,
       "symbol": "StepConfirmation",
-      "type": "function"
-    }
-  ],
-  "onboarding": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 831,
-      "symbol": "OnboardingPage",
-      "type": "function"
-    }
-  ],
-  "back": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 854,
-      "symbol": "goBack",
-      "type": "function"
-    }
-  ],
-  "finish": [
-    {
-      "file": "src/mainview/pages/onboarding.tsx",
-      "line": 1045,
-      "symbol": "handleFinish",
       "type": "function"
     }
   ],
@@ -35154,7 +34990,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 732,
+      "line": 724,
       "symbol": "handleEdit",
       "type": "function"
     }
@@ -35228,7 +35064,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 741,
+      "line": 733,
       "symbol": "handleDeleteConfirm",
       "type": "function"
     }
@@ -36510,7 +36346,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 159,
+      "line": 151,
       "symbol": "EmptyProviders",
       "type": "function"
     }
@@ -37524,7 +37360,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 485,
+      "line": 477,
       "symbol": "handleCancel",
       "type": "function"
     }
@@ -37756,7 +37592,7 @@
     },
     {
       "file": "src/mainview/pages/settings/providers.tsx",
-      "line": 106,
+      "line": 107,
       "symbol": "providerTypeBadgeClass",
       "type": "function"
     }
@@ -40297,6 +40133,234 @@
       "line": 58,
       "symbol": "buttonVariants",
       "type": "export"
+    }
+  ],
+  "deep": [
+    {
+      "file": "src/bun/providers/deepseek.ts",
+      "line": 13,
+      "symbol": "DeepSeekAdapter",
+      "type": "class"
+    }
+  ],
+  "seek": [
+    {
+      "file": "src/bun/providers/deepseek.ts",
+      "line": 13,
+      "symbol": "DeepSeekAdapter",
+      "type": "class"
+    }
+  ],
+  "google": [
+    {
+      "file": "src/bun/providers/google.ts",
+      "line": 16,
+      "symbol": "GoogleAdapter",
+      "type": "class"
+    }
+  ],
+  "groq": [
+    {
+      "file": "src/bun/providers/groq.ts",
+      "line": 16,
+      "symbol": "GroqAdapter",
+      "type": "class"
+    }
+  ],
+  "headers": [
+    {
+      "file": "src/bun/providers/headers.ts",
+      "line": 7,
+      "symbol": "PROVIDER_HEADERS",
+      "type": "export"
+    }
+  ],
+  "limit": [
+    {
+      "file": "src/bun/providers/index.ts",
+      "line": 13,
+      "symbol": "getContextLimit",
+      "type": "export"
+    },
+    {
+      "file": "src/bun/providers/models.ts",
+      "line": 28,
+      "symbol": "getContextLimit",
+      "type": "function"
+    },
+    {
+      "file": "src/bun/providers/models.ts",
+      "line": 62,
+      "symbol": "clearContextLimitCache",
+      "type": "function"
+    }
+  ],
+  "ollama": [
+    {
+      "file": "src/bun/providers/ollama.ts",
+      "line": 19,
+      "symbol": "OllamaTagsResponse",
+      "type": "interface"
+    },
+    {
+      "file": "src/bun/providers/ollama.ts",
+      "line": 23,
+      "symbol": "OllamaAdapter",
+      "type": "class"
+    }
+  ],
+  "join": [
+    {
+      "file": "src/bun/providers/openai.ts",
+      "line": 21,
+      "symbol": "joinUrl",
+      "type": "function"
+    }
+  ],
+  "natural": [
+    {
+      "file": "src/bun/providers/openai.ts",
+      "line": 27,
+      "symbol": "naturalSort",
+      "type": "function"
+    }
+  ],
+  "intercept": [
+    {
+      "file": "src/bun/providers/openai.ts",
+      "line": 61,
+      "symbol": "interceptFetch",
+      "type": "function"
+    }
+  ],
+  "xai": [
+    {
+      "file": "src/bun/providers/xai.ts",
+      "line": 15,
+      "symbol": "XaiAdapter",
+      "type": "class"
+    }
+  ],
+  "zai": [
+    {
+      "file": "src/bun/providers/zai.ts",
+      "line": 18,
+      "symbol": "ZaiAdapter",
+      "type": "class"
+    }
+  ],
+  "wizard": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 29,
+      "symbol": "WizardStep",
+      "type": "type"
+    }
+  ],
+  "step": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 29,
+      "symbol": "WizardStep",
+      "type": "type"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 113,
+      "symbol": "StepIndicator",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 174,
+      "symbol": "StepWelcome",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 259,
+      "symbol": "StepAboutYou",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 377,
+      "symbol": "StepSelectProvider",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 467,
+      "symbol": "StepConfigure",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 675,
+      "symbol": "StepValidate",
+      "type": "function"
+    },
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 758,
+      "symbol": "StepConfirmation",
+      "type": "function"
+    }
+  ],
+  "welcome": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 174,
+      "symbol": "StepWelcome",
+      "type": "function"
+    }
+  ],
+  "about": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 259,
+      "symbol": "StepAboutYou",
+      "type": "function"
+    }
+  ],
+  "you": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 259,
+      "symbol": "StepAboutYou",
+      "type": "function"
+    }
+  ],
+  "configure": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 467,
+      "symbol": "StepConfigure",
+      "type": "function"
+    }
+  ],
+  "onboarding": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 832,
+      "symbol": "OnboardingPage",
+      "type": "function"
+    }
+  ],
+  "back": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 855,
+      "symbol": "goBack",
+      "type": "function"
+    }
+  ],
+  "finish": [
+    {
+      "file": "src/mainview/pages/onboarding.tsx",
+      "line": 1046,
+      "symbol": "handleFinish",
+      "type": "function"
     }
   ]
 }

@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
+import { PROVIDER_HEADERS } from "./headers";
 
 const FALLBACK_MODELS = [
 	"llama-3.3-70b-versatile",
@@ -20,6 +21,7 @@ export class GroqAdapter implements ProviderAdapter {
 		this.config = config;
 		this.provider = createGroq({
 			apiKey: config.apiKey,
+			headers: PROVIDER_HEADERS,
 		});
 	}
 

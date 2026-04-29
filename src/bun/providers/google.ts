@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
+import { PROVIDER_HEADERS } from "./headers";
 
 const FALLBACK_MODELS = [
 	"gemini-2.5-pro",
@@ -20,6 +21,7 @@ export class GoogleAdapter implements ProviderAdapter {
 		this.config = config;
 		this.provider = createGoogleGenerativeAI({
 			apiKey: config.apiKey,
+			headers: PROVIDER_HEADERS,
 		});
 	}
 

@@ -14,6 +14,7 @@ const PROVIDER_DEFAULT_MODELS: Record<string, string> = {
 	xai: "grok-3-mini",
 	openrouter: "anthropic/claude-sonnet-4-5",
 	ollama: "llama3.2",
+	zai: "glm-4.5",
 };
 
 /** Cached context limits per project (or "global" key). */

@@ -1,25 +1,29 @@
-import { createXai } from "@ai-sdk/xai";
+import { createZhipu } from "zhipu-ai-provider";
 import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
 import { PROVIDER_HEADERS } from "./headers";
 
-const FALLBACK_MODELS = [
-	"grok-3",
-	"grok-3-mini",
-	"grok-2",
-	"grok-2-mini",
+const ZAI_BASE_URL = "https://api.z.ai/api/paas/v4";
+
+const ZAI_MODELS = [
+	"glm-4.5",
+	"glm-4.5-air",
+	"glm-4.7",
+	"glm-5",
+	"glm-5-turbo",
 ];
 
-export class XaiAdapter implements ProviderAdapter {
+export class ZaiAdapter implements ProviderAdapter {
 	private config: ProviderConfig;
-	private provider: ReturnType<typeof createXai>;
+	private provider: ReturnType<typeof createZhipu>;
 
 	constructor(config: ProviderConfig) {
 		this.config = config;
-		this.provider = createXai({
+		this.provider = createZhipu({
 			apiKey: config.apiKey,
+			baseURL: ZAI_BASE_URL,
 			headers: PROVIDER_HEADERS,
 		});
 	}
@@ -29,26 +33,12 @@ export class XaiAdapter implements ProviderAdapter {
 	}
 
 	async listModels(): Promise<string[]> {
-		try {
-			const response = await fetch("https://api.x.ai/v1/models", {
-				headers: { Authorization: `Bearer ${this.config.apiKey}` },
-				signal: AbortSignal.timeout(10_000),
-			});
-			if (!response.ok) return FALLBACK_MODELS;
-			const data = await response.json() as { data?: Array<{ id: string }> };
-			const models = (data.data ?? [])
-				.map((m) => m.id)
-				.filter((id) => id.startsWith("grok"))
-				.sort();
-			return models.length > 0 ? models : FALLBACK_MODELS;
-		} catch {
-			return FALLBACK_MODELS;
-		}
+		return ZAI_MODELS;
 	}
 
 	async testConnection(): Promise<{ success: boolean; error?: string }> {
 		try {
-			const modelId = this.config.defaultModel ?? getDefaultModel("xai");
+			const modelId = this.config.defaultModel ?? getDefaultModel("zai");
 			await generateText({
 				model: this.createModel(modelId),
 				prompt: "Hi",

@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
+import { PROVIDER_HEADERS } from "./headers";
 
 const OPENROUTER_BASE_URL = "https://openrouter.ai/api/v1";
 
@@ -31,10 +32,7 @@ export class OpenRouterAdapter implements ProviderAdapter {
 			name: "openrouter",
 			apiKey: config.apiKey,
 			baseURL: OPENROUTER_BASE_URL,
-			headers: {
-				"HTTP-Referer": "https://autodeskai.app",
-				"X-Title": "AutoDesk",
-			},
+			headers: PROVIDER_HEADERS,
 		});
 	}
 

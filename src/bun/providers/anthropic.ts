@@ -3,6 +3,7 @@ import { generateText } from "ai";
 import type { LanguageModel } from "ai";
 import type { ProviderAdapter, ProviderConfig } from "./types";
 import { getDefaultModel } from "./models";
+import { PROVIDER_HEADERS } from "./headers";
 
 const ANTHROPIC_MODELS = [
 	"claude-opus-4-5",
@@ -24,6 +25,7 @@ export class AnthropicAdapter implements ProviderAdapter {
 		this.config = config;
 		this.provider = createAnthropic({
 			apiKey: config.apiKey,
+			headers: PROVIDER_HEADERS,
 		});
 	}
 

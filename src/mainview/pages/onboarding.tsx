@@ -25,7 +25,7 @@ import { rpc } from "@/lib/rpc";
 // Types
 // ---------------------------------------------------------------------------
 
-type ProviderType = "anthropic" | "openai" | "google" | "deepseek" | "groq" | "xai" | "ollama" | "openrouter" | "custom";
+type ProviderType = "anthropic" | "openai" | "google" | "deepseek" | "groq" | "xai" | "ollama" | "openrouter" | "zai" | "custom";
 type WizardStep = 1 | 2 | 3 | 4 | 5 | 6;
 
 interface FormData {
@@ -64,6 +64,7 @@ const PROVIDERS: {
   { id: "openai", label: "OpenAI", description: "GPT models — broad capability, wide ecosystem", Icon: Bot },
   { id: "openrouter", label: "OpenRouter", description: "Access 200+ models through one API", Icon: Globe },
   { id: "xai", label: "xAI Grok", description: "Grok models — competitive coding performance", Icon: Bot },
+  { id: "zai", label: "Z.AI", description: "GLM models from Zhipu AI via Z.AI", Icon: Bot },
   { id: "custom", label: "Custom", description: "Any other OpenAI-compatible endpoint", Icon: Globe },
 ];
 

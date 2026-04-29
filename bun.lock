@@ -65,6 +65,7 @@
         "tailwind-merge": "^2.6.0",
         "tailwindcss-animate": "^1.0.7",
         "tar": "^7.5.11",
+        "zhipu-ai-provider": "^0.3.0",
         "zod": "^3.24.0",
         "zustand": "^5.0.0",
       },
@@ -2061,6 +2062,8 @@
     "yauzl": ["yauzl@2.10.0", "", { "dependencies": { "buffer-crc32": "~0.2.3", "fd-slicer": "~1.1.0" } }, "sha512-p4a9I6X6nu6IhoGmBqAcbJy1mlC4j27vEPZX9F4L4/vZT3Lyq1VkFHw/V/PUcB9Buo+DG3iHkT0x3Qya58zc3g=="],
 
     "yocto-queue": ["yocto-queue@0.1.0", "", {}, "sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q=="],
+
+    "zhipu-ai-provider": ["zhipu-ai-provider@0.3.0", "", { "dependencies": { "@ai-sdk/provider": "^3.0.3", "@ai-sdk/provider-utils": "^4.0.6" } }, "sha512-KaA0APoGSJbuLO10QAC2tLX4mx4lVq7rDdl/023V3Wcnv9I57naVQ1EWEiOXklkM8tpEI20tbzHfhqL4JyK7nw=="],
 
     "zip-stream": ["zip-stream@6.0.1", "", { "dependencies": { "archiver-utils": "^5.0.0", "compress-commons": "^6.0.2", "readable-stream": "^4.0.0" } }, "sha512-zK7YHHz4ZXpW89AHXUPbQVGKI7uvkd3hzusTdotCg1UxyaVtg0zFJSTfW/Dq5f7OBBVnq6cZIaC8Ti4hb6dtCA=="],
 

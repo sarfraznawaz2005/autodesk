@@ -1,8 +1,8 @@
 # Domain: bun
 
 **Directory:** `src/bun`
-**Files:** 141
-**Symbols:** 1048
+**Files:** 143
+**Symbols:** 1053
 
 ## Files
 
@@ -1217,108 +1217,114 @@
 ### `src/bun/providers/anthropic.ts`
 
 **Classes:**
-- `AnthropicAdapter` (line 19)
+- `AnthropicAdapter` (line 20)
 
 **Methods:**
-- `createModel` (line 30)
-- `listModels` (line 36)
-- `testConnection` (line 54)
+- `createModel` (line 32)
+- `listModels` (line 38)
+- `testConnection` (line 56)
 
 
 ### `src/bun/providers/deepseek.ts`
 
 **Classes:**
-- `DeepSeekAdapter` (line 12)
+- `DeepSeekAdapter` (line 13)
 
 **Methods:**
-- `createModel` (line 23)
-- `listModels` (line 27)
-- `testConnection` (line 42)
+- `createModel` (line 25)
+- `listModels` (line 29)
+- `testConnection` (line 44)
 
 
 ### `src/bun/providers/google.ts`
 
 **Classes:**
-- `GoogleAdapter` (line 15)
+- `GoogleAdapter` (line 16)
 
 **Methods:**
-- `createModel` (line 26)
-- `listModels` (line 30)
-- `testConnection` (line 49)
+- `createModel` (line 28)
+- `listModels` (line 32)
+- `testConnection` (line 51)
 
 
 ### `src/bun/providers/groq.ts`
 
 **Classes:**
-- `GroqAdapter` (line 15)
+- `GroqAdapter` (line 16)
 
 **Methods:**
-- `createModel` (line 26)
-- `listModels` (line 30)
-- `testConnection` (line 48)
+- `createModel` (line 28)
+- `listModels` (line 32)
+- `testConnection` (line 50)
+
+
+### `src/bun/providers/headers.ts`
+
+**Exports:**
+- `PROVIDER_HEADERS` (line 7)
 
 
 ### `src/bun/providers/index.ts`
 
 **Functions:**
-- `createProviderAdapter` (line 28)
-- `createProviderAdapterWithFallback` (line 62)
+- `createProviderAdapter` (line 29)
+- `createProviderAdapterWithFallback` (line 65)
 
 **Exports:**
-- `ProviderAdapter` (line 11)
-- `ProviderConfig` (line 11)
-- `getContextLimit` (line 12)
-- `getDefaultModel` (line 12)
+- `ProviderAdapter` (line 12)
+- `ProviderConfig` (line 12)
+- `getContextLimit` (line 13)
+- `getDefaultModel` (line 13)
 
 
 ### `src/bun/providers/models.ts`
 
 **Functions:**
-- `getContextLimit` (line 27)
-- `clearContextLimitCache` (line 61)
-- `getDefaultModel` (line 69)
+- `getContextLimit` (line 28)
+- `clearContextLimitCache` (line 62)
+- `getDefaultModel` (line 70)
 
 
 ### `src/bun/providers/ollama.ts`
 
 **Classes:**
-- `OllamaAdapter` (line 22)
+- `OllamaAdapter` (line 23)
 
 **Interfaces:**
-- `OllamaTagsResponse` (line 18)
+- `OllamaTagsResponse` (line 19)
 
 **Methods:**
-- `createModel` (line 35)
-- `listModels` (line 44)
-- `testConnection` (line 66)
+- `createModel` (line 37)
+- `listModels` (line 46)
+- `testConnection` (line 68)
 
 
 ### `src/bun/providers/openai.ts`
 
 **Classes:**
-- `OpenAIAdapter` (line 40)
+- `OpenAIAdapter` (line 41)
 
 **Functions:**
-- `normalizeBaseUrl` (line 11)
-- `joinUrl` (line 20)
-- `naturalSort` (line 26)
-- `interceptFetch` (line 60)
+- `normalizeBaseUrl` (line 12)
+- `joinUrl` (line 21)
+- `naturalSort` (line 27)
+- `interceptFetch` (line 61)
 
 **Methods:**
-- `createModel` (line 52)
-- `listModels` (line 94)
-- `testConnection` (line 124)
+- `createModel` (line 53)
+- `listModels` (line 97)
+- `testConnection` (line 127)
 
 
 ### `src/bun/providers/openrouter.ts`
 
 **Classes:**
-- `OpenRouterAdapter` (line 24)
+- `OpenRouterAdapter` (line 25)
 
 **Methods:**
-- `createModel` (line 41)
-- `listModels` (line 45)
-- `testConnection` (line 49)
+- `createModel` (line 39)
+- `listModels` (line 43)
+- `testConnection` (line 47)
 
 
 ### `src/bun/providers/types.ts`
@@ -1331,12 +1337,23 @@
 ### `src/bun/providers/xai.ts`
 
 **Classes:**
-- `XaiAdapter` (line 14)
+- `XaiAdapter` (line 15)
 
 **Methods:**
-- `createModel` (line 25)
-- `listModels` (line 29)
-- `testConnection` (line 47)
+- `createModel` (line 27)
+- `listModels` (line 31)
+- `testConnection` (line 49)
+
+
+### `src/bun/providers/zai.ts`
+
+**Classes:**
+- `ZaiAdapter` (line 18)
+
+**Methods:**
+- `createModel` (line 31)
+- `listModels` (line 35)
+- `testConnection` (line 39)
 
 
 ### `src/bun/rpc-registration.ts`
